@@ -1,0 +1,1136 @@
+abstract
+We study the problem of providing privacy-preserving access to an
+outsourced honest-but-curious data repository for a group of 
+trusted users. 
+We show that such privacy-preserving data access is possible using a
+combination of probabilistic encryption, which directly hides data values, and
+stateless oblivious RAM simulation, which hides the pattern of data
+accesses.
+We give simulations that have only an  amortized time
+overhead for simulating a RAM algorithm, , that has a memory of
+size , using a scheme that is data-oblivious
+with very high probability assuming the simulation has access to a
+private workspace of size , for any given fixed constant .
+This simulation makes use of pseudorandom hash functions and is based on a
+novel hierarchy of cuckoo hash tables that all share a common stash.
+We also provide results from
+an experimental simulation of this scheme, showing its practicality.
+In addition, in a result that may be of some theoretical interest,
+we also show that one can eliminate the dependence on pseudorandom
+hash functions in our simulation while having the overhead rise to 
+be .
+abstract
+
+
+
+
+
+Conclusion
+sec:conclusion
+We have given schemes for achieving privacy-preserving access,
+with very high probability, to an
+outsourced data repository 
+for a group of trusted users.
+Our scheme assumes each user has a modest amount of private memory,
+of size , for any given fixed constant ,
+which is used as a workspace for private computation and carries no state from
+one interaction with the data repository to the next.
+Assuming the existence of pseudorandom hash functions, say
+implemented as keyed SHA-256 functions in practice, our
+protocol has an  amortized time overhead and an 
+space overhead.
+Moreover, our experiments show that this protocol
+would be effective in practice.
+If pseudorandom hash functions are not to be used, then we show 
+that our protocol can be adapted to have an overhead of .
+
+There are several directions for future work, including the
+following:
+itemize
+Our protocols assume that the manager of the data 
+repository, Bob, is honest-but-curious. 
+itemize
+Can our schemes be
+efficiently adapted to the case where Bob is only semi-trusted?
+Can we efficiently handle a situation
+where Bob acts maliciously against some users?
+Can we prevent Bob from performing a replay attack on some users
+using old versions of his memory?
+itemize
+Our protocols also assume that the members of the group of 
+cooperating users are all trusted. 
+itemize
+What if some of the members of the group are
+malicious? 
+What if some of them collude with Bob to try to reveal the access
+patterns of other users?
+itemize
+itemize
+
+
+
+
+
+Introduction
+sec:intro
+
+Companies offering outsourced data storage services 
+are defining a growing industry,
+with competitors that
+include Amazon, Google, 
+and Microsoft, which are
+providing outsourced data repositories 
+for individual or corporate users, with prices that amount to
+pennies per gigabyte stored.
+
+Clearly, the customers of such cloud computing services have an
+interest in security and privacy, particularly for proprietary data.
+As a recognition of this interest,
+we note that, as of November 2010, the Amazon S3
+and Microsoft Azure cloud platform 
+have achieved ISO 27001 certification and Google's cloud computing service
+has SAS70 certification.
+In spite of these certifications,
+the companies that provide outsourced data services nevertheless
+often have commercial interests in learning information
+about their customers' data.
+Thus, the users of such systems
+should also consider technological solutions for maintaining the privacy
+of their outsourced data in addition to the assurances that come from
+certifications and formal audits.
+
+Of course, a key component for
+users to maintain the privacy of their data is for them
+to store their data in encrypted form, e.g., using
+a group key known only to the set of users.
+Simply encrypting the group's data is not sufficient to
+achieve privacy, however,
+since information about the 
+data may be leaked by the pattern in which the users access it.
+For example, at the Oakland 2010 conference,
+Chen et al. cwwz-sclwa-10 show that
+highly sensitive data, such as financial and health information,
+can be inferred from access patterns at popular
+financial and health web sites even if
+the contents of those communications are encrypted.
+
+Group Access to Outsourced Data
+In this paper, we are interested in technological solutions 
+to the problem of protecting the privacy of a group's data 
+accesses to an outsourced data storage facility.
+In this framework,
+we assume that a trusted group, , of users shares a group key, , with
+which they encrypt all their shared data that is stored at a
+semi-trusted data outsourcer, Bob.
+Furthermore,
+we assume that the users access their data according to a public
+indexing scheme, which Bob knows; hence, we can model Bob's memory, ,
+as in the standard RAM model (e.g., 
+see ahu-dsa-83,clrs-ia-01,gt-adfai-02,kt-ad-05).
+
+Each time a user, Alice, in , accesses Bob's memory, she specifies
+an index , and Bob responds with .
+Alice then performs the following (atomic) sequence of operations:
+enumerate
+She decrypts  using , producing the plaintext
+value, ,
+that was stored in encrypted form at index  by Bob.
+She optionally changes the value of , depending on the
+computation she is performing, producing the plaintext value, .
+She encrypts 
+using a probabilistic encryption scheme based on , 
+producing ciphertext .
+She returns
+ to Bob for him to store back in his memory 
+at index ; that is, she directs
+Bob to assign .
+enumerate
+By using a probabilistic encryption scheme, the users in 
+the group  ensure
+that Bob is computationally unable to 
+determine the plaintext of any memory cell from that cell's
+contents alone. Also, it is unfeasible for Bob to determine whether
+two memory cells store encryptions of the same plaintext.
+
+Stateless Oblivious RAM Simulation
+In addition to using probabilistic encryption, 
+the users in the group  also need to hide their
+data access patterns from Bob, so as to avoid inadvertent information leaks.
+To facilitate such information hiding, we formulate the privacy
+objective of the users in  in terms
+of the stateless oblivious RAM simulation problem.
+
+In this framework, we model the group  as a single user, Alice, 
+who has a register holding the key  and
+a CPU with a private cache.
+Alice's interactions with Bob occur in discrete
+episodes in which she reads
+and writes a set of cells in his memory, using probabilistic
+encryption, as described above, to hide data contents.
+Alice's cache may be used as a private workspace
+during any episode, but it cannot store any information from one
+episode to the next.
+This requirement is meant to model the fact that Alice is
+representing a group of users who do not communicate outside of their
+shared access to Bob's memory. That is, each episode could model a
+consecutive set of accesses from different users in the group .
+Moreover, this requirement is what makes this framework
+"stateless,"
+in that no state can be carried from one episode to the next (other
+than the state that is maintained by Bob).
+
+To allow the group of users, which we model by the stateless Alice,
+to perform arbitrary computations on the data they share and
+outsource to Bob, we assume that Alice is simulating a RAM
+computation.
+We also assume
+the service provider, Bob, is trying to learn as much as possible about the
+contents of Alice's data from
+the sequence and location of all of Alice's memory accesses. 
+As mentioned above, however,
+he cannot see the content of what is read or
+written (since it is probabilistically encrypted).
+Moreover, Bob has no access to Alice's private cache.
+Bob is assumed to
+be an honest-but-curious adversary gmw-hpamg-87, 
+in that he correctly
+performs all protocols and does not tamper with data.
+
+We say that Alice's sequence of memory accesses is data-oblivious 
+if the
+distribution of this sequence depends only on , the size of the memory
+used by the
+RAM algorithm she is simulating, , the size of her private
+cache, and the length of the access sequence itself. 
+In particular, the distribution of Alice's memory accesses
+should be independent of the data values in the input.
+Put another way, this definition 
+means that ,
+the probability that Bob sees an access sequence, ,
+conditioned on a specific configuration of his memory, , satisfies
+
+(S  M) = (S  M'),
+
+for any memory configuration
+ such that .
+
+Examples of data-oblivious access sequences for an array, ,
+of size , in Bob's memory, 
+include the following:
+itemize
+Scanning  from beginning to end, accessing each item
+exactly once, for instance, to compute the minimum value in ,
+which is then stored in .
+Simulating a Boolean 
+circuit, , with its inputs taken in order from the bits of .
+Accessing the cells of  according to a random hash function, ,
+as , , , , or random permutation,
+,
+as , , , .
+itemize
+Examples of computations on  that would not be data-oblivious 
+include the following:
+itemize
+Scanning  from beginning to end, accessing each item
+exactly once, to compute the index  of the minimum value in ,
+and then reading  and writing it to .
+Using a standard heap-sort, merge-sort, or quick-sort algorithm to sort .
+(None of these well-known algorithms is data-oblivious.)
+Using values in  as indices for a hash table, ,
+and accessing them
+as , , , , where  is a
+random hash function.
+For example, consider what happens if the values in  are
+all equal and how unlikely the resulting collision
+in  would be.
+itemize
+Note that
+this last example access pattern 
+actually 
+would be data-oblivious if the elements in  
+were always guaranteed to be distinct,
+assuming the random hash function, , satisfies
+the standard assumptions of the random oracle model 
+(e.g., see br-roap-93).
+
+Related Prior Results
+Data-oblivious sorting is a fundamental 
+problem (e.g., see Knuth k-ss-73), with
+deterministic schemes giving rise to sorting networks, such as the
+impractical
+ AKS network aks-osn-83,aks-scps-83,p-isnod-90,s-snlgf-09
+as well as practical, but theoretically-suboptimal,
+sorting networks l-ipaaa-92,p-ssn-72.
+Randomized data-oblivious sorting algorithms running in
+  time and succeeding with high probability
+(In this paper, we take
+  the phrase "with very high probability" to mean that the
+  probability is at least , for any given fixed constant .)
+
+are
+studied by Leighton and
+Plaxton lp-hsn-98 and Goodrich g-rsaso-10.
+In addition, data-oblivious sorting is finding applications to
+privacy-preserving secure multi-party
+computations wlgdz-bpstp-10, and it is used in all the
+known oblivious
+RAM simulation schemes (including the ones in this paper).
+
+In early work on the topic of oblivious simulation,
+Pippenger and Fischer pf-racm-79 show that one can simulate a
+Turing machine computation of length  with
+an oblivious Turing machine computation of length , that
+is, they achieve an amortized  time and space
+overhead for this oblivious simulation.
+
+
+table*[ht]
+center
+Comparison of Oblivious RAM simulations.
+tabularc>m1.7cm>m1.89cmc>m3cm
+& User Memory & User State Size  & Server Storage & Amortized Access Overhead
+Goldreich and Ostrovsky go-spsor-96  && - & & 
+Williams and Sion DBLP:conf/ndss/WilliamsS08 &  &  &  & 
+Goodrich and Mitzenmacher gm-paodor-11 (1) &  &  - & & 
+Goodrich and Mitzenmacher gm-paodor-11 (2) &  &   & & 
+Boneh et al. bmp-rosmor-11 &  &   & & 
+Our result &   & - &  & 
+Our result (w/o random oracle) &   & - &  &
+tabular
+center
+tbl:summary
+table*
+
+
+More recently,
+Goldreich and Ostrovsky go-spsor-96 show that a
+RAM computation using space  can be simulated 
+with an oblivious RAM with an amortized time overhead of  
+per step of the original RAM algorithm and space
+overhead of .
+Goodrich and Mitzenmacher gm-paodor-11 improve this result
+by showing that any
+RAM algorithm, , can be simulated in a data-oblivious 
+fashion, with very high probability,
+in an outsourced memory
+so that each 
+memory access performed by  has a time overhead of
+, assuming Alice's private cache has size .
+Their scheme has a space overhead of .
+Incidentally,
+in the recent CRYPTO 2010 conference,
+Pinkas and Reinman pr-orr-20
+also claim an oblivious RAM simulation
+result having a time overhead of , but there is a flaw in
+this version of their 
+scheme(The scheme of Pinkas and Reinman allows the
+adversary, Bob, to distinguish with high probability an access sequence
+that reads the same memory location over and over from one that
+accesses each memory cell exactly once. This flaw is expected to 
+be repaired in the journal version of their paper.).
+
+In addition to these stateless oblivious RAM simulation schemes,
+Williams and Sion DBLP:conf/ndss/WilliamsS08
+show how to simulate a RAM computation with an
+oblivious RAM where the data
+owner, Alice, has a
+stateful private memory of size ,
+achieving an expected amortized time overhead of  using
+ memory at the data provider.
+In addition,
+Williams et al. wsc-bcomp-08 claim a
+  method that uses an -sized private cache
+  and has  amortized time overhead,
+but Pinkas and Reinman pr-orr-20
+  have raised concerns with the assumptions and analysis of
+  this result.
+
+Goodrich and Mitzenmacher gm-paodor-11 provide a stateful 
+RAM simulation scheme that
+achieves an overhead of  and is oblivious with very high
+probability.
+Their scheme assumes that Alice maintains state from one episode to
+the next in a private cache of size , for any given fixed constant
+.
+Boneh et al. bmp-rosmor-11 also propose a scheme
+that uses a state. They achieve an amortized overhead
+of  but using a state of size .
+However, this state is essential to the efficiency of both
+simulation schemes.
+Thus, these methods are not applicable to the problem of providing
+privacy-preserving group 
+access to an outsourced data repository.
+
+Returning to stateless oblivious RAM simulation, we note that
+Ajtai a-orwca-10 has a recent oblivious RAM simulation result
+that shows that a polylogarithmic
+factor overhead in time and space is possible
+without cryptographic assumptions about the existence of
+random hash functions, as is done in the previous oblivious RAM
+simulation cited above.
+Damgrd et al. dmn-psor-10 improve this result
+further, 
+showing that a time overhead of  is possible for
+oblivious RAM simulation without using random functions.
+
+In addition to the above-mentioned upper-bound results,
+Beame and Machmouchi bm-mrors-10 show that if the
+additional space utilized in the simulation (besides the space
+for the data itself) is sufficiently sublinear, then the overhead for
+oblivious RAM simulation has a superlogarithmic lower bound.
+Such bounds don't apply, of course, to a simulation that uses 
+additional memory, as is common in the efficient schemes mentioned
+above.
+
+We provide a summary of the Oblivious RAM simulation schemes and
+compare with ours in Table tbl:summary. Note that the schemes that
+maintain a state cannot be used to hide a pattern of access by a group of
+users which is one of the challenges we address in this paper.
+
+Our Results
+We give an efficient method for simulating
+any RAM algorithm, , in a stateless fashion
+with a time overhead of  
+and space overhead of , using an access sequence that is
+data-oblivious with very high probability, where  is the size of the RAM memory.
+Our methods assume that Alice has a private cache of of size
+, for any given fixed constant , but she uses this cache only as a
+private "scratch space" to support computations she performs during
+each episode.
+Alice is not allowed to maintain state in her private memory from one
+episode to the next.
+Thus, this simulation scheme is applicable to the problem of
+simulating access to a shared data repository by a group of
+cooperating users that all share a secret key.
+Moreover, the assumption about the size of Alice's scratch space is
+motivated by the fact that even handheld devices have a reasonable
+amount of local memory.
+For example, if we were to set , 
+then our simulation would allow a collection
+of devices having memories with sizes on the 
+order of one megabyte to support privacy-preserving access to
+an outsourced data repository whose size 
+is on the order of one yottabyte.
+
+Like the previous oblivious RAM simulation schemes 
+mentioned above, our
+scheme uses a hierarchy of hash tables, together with a small set of
+pseudorandom hash functions, to obfuscate the access
+pattern of the algorithm  (which need not be specified in
+advance).
+The main idea of our scheme is to maintain these hash tables
+as cuckoo hash tables that all share a single stash of size .
+While conceptually simple, this approach requires a new, non-trivial
+analysis for a set of cuckoo tables sharing a common stash.
+In addition, an important technical detail that
+simplifies our construction is that we make no use of so-called
+"dummy" elements, whereas the previous schemes used such elements.
+
+In practice, the set of pseudorandom hash functions could be implemented
+using, e.g., keyed SHA-256 functions dp-gboehf-08.
+Nevertheless,
+we also show that our construction can be used to simulate a RAM
+computation with an overhead of  without the use of
+pseudorandom functions, which may be of some theoretical interest.
+
+Finally, we provide experimental results for a simulation of our
+scheme, which show the practical effectiveness of the approach of using a
+shared stash.
+In particular,
+our experimental prototype simulates the dynamic evolution of the
+hierarchy of hash tables and
+our experimental analysis shows the 
+threshold values at which the shared stash becomes effective.
+
+
+
+
+
+Simulating a RAM Algorithm Obliviously
+sec:oram
+In this section, we describe and analyze two schemes for stateless
+oblivious RAM simulation.
+
+Simulation Using Pseudorandom Functions
+sec:simulator1
+
+We begin with a construction that uses pseudorandom functions and is secure
+against a polynomially bounded adversary.
+
+ 
+Given a RAM
+algorithm, , the main goal of our oblivious simulation of 
+is to hide the pattern of memory accesses that are made by .  As
+mentioned in Section sec:background, we follow the general
+framework introduced by Goldreich and Ostrovsky go-spsor-96, which
+uses a hierarchy of hash tables.
+ 
+Let  be the number of memory cells of the RAM. 
+We view each such cell as an
+item consisting of a pair
+, where  is the index and  is the
+corresponding value. Our data structure stored at the server has three
+components, illustrated in Figure fig:hierarchy.  The first component is a cache of size , denoted by .
+The second component is a hierarchy of cuckoo hash tables,
+, where the size of  is twice
+the size of , each table  is twice the size of table , 
+and  is the first table in the sequence of size greater than or equal to . 
+Thus,  is .
+The third component is a stash, , shared between all the above cuckoo tables.
+
+figure*[hbt!]
+    hierarchy
+   fig:hierarchy
+    Illustration of the data structure stored at the server for oblivious
+    RAM simulation using pseudorandom functions. In the access phase of the
+    simulation, all the items in the cache,  and the stash, , plus
+    two items for each cuckoo table  are read by the server. The
+    locations accessed by the server are visualized as gray-filled
+    rectangles.  
+figure*
+
+RAM items are stored in the data structure in encrypted form.  We use a
+semantically secure probabilistic encryption scheme, which results in a
+different ciphertext for the same item each time it is re-encrypted.  Also,
+the server is unable to determine whether two ciphertexts correspond to the
+same item.  
+
+The stash  is handled
+in a similar manner whenever we search in it for an item.
+
+We use
+a family of pseudorandom functions parameterized by a secret value,
+, for each table, , such that no value  is
+revealed to the server.
+In particular,  is stored in encrypted form for each table ,
+so that each user can read , decrypt it, and then use it to
+provide the two hash functions,  and
+, employed by the cuckoo table, ,
+to determine the location of items. 
+In particular, a memory item  is mapped
+to locations  and
+ in  by the cuckoo scheme (and stored in one of these two locations
+or in the common stash, ).
+
+The data structure is initialized by storing all the  RAM items into
+cuckoo table .  Each memory access defined by algorithm 
+corresponds to an episode in our simulation. An episode consists of
+two phases, an access phase and a rebuild phase.
+
+Suppose algorithm  calls for an access to memory item .
+The access phase consists of a search for  in the cache, , then in the stash, , and
+continues with a two-cell cuckoo lookup 
+in each of  to  until we find the first item
+with index .
+Once we have found this item, we have achieved the goal of our
+search, of course. 
+Nevertheless, for the sake of obliviousness,
+we simulate continuing the search throughout the entire data structure. Namely,
+we always traverse completely  and , and we
+perform two-cell cuckoo accesses in tables  through . However, 
+after the item is found, 
+we simply access two distinct, independent uniformly chosen random locations in each
+remaining cuckoo table.
+
+Once we have completed the access phase, which takes  time, we
+then switch to the rebuild phase.  We begin by adding or replacing a copy
+of the found item into cache , possibly changing its value in the case
+of a write operation.  
+To assure obliviousness, we exhaustively scan  in
+a sequential manner and re-encrypt and rewrite all its items.  Thus, the
+server cannot distinguish which item was accessed and whether it was
+modified.
+
+We note briefly that if the item is in the stash, we can obliviously
+remove it from the stash when placing it into , to help make sure
+the stash does not overflow.  One natural approach is to have stash
+cells have an associated "clean" or "dirty" bit, which is
+encrypted along with the rest of the item.  A clean cell can store
+an item;  a dirty cell is currently being utilized.  When an item is found
+and replaced into , we can set the cell to clean in the stash.      
+
+After adding enough items, cache  will eventually overflow. We remedy
+the overflow by moving all the elements of  to cuckoo table ,
+including those associated with empty locations. However, in order to
+maintain obliviousness, we do not wait for an overflow to occur and instead
+perform the move after a number of accesses equal to the size of . The
+moving down of elements cascades down through the hierarchy of cuckoo
+tables at a fixed schedule by periodically moving the elements of 
+into  at the earliest time  could have become full.
+Also, suppose that we are going to move elements into table 
+for the second time, then we instead move the elements
+into table .
+Moreover, we continue applying this rule for , until we
+are copying the elements into a table for the first time or we reach .
+Thus, the process of copying elements into a cuckoo table occurs at
+deterministic instances, depending only on the place we currently are
+at in the access sequence specified by algorithm .
+
+figure*[tb!]
+    tree
+   fig:tree
+    Illustration of the data structure stored at the server for oblivious
+    RAM simulation without using pseudorandom functions. 
+    The binary tree is shown conceptually on the right and in terms
+    of the storage locations of its nodes on the left.
+    The storage locations for the nodes of the binary tree, ,
+    are visualized as gray-filled
+    rectangles.  
+    In the access phase of the
+    simulation for a non-root node, 
+    all the items in the cache,  and the stash, , plus
+    two items for each cuckoo table  are read by the server. 
+    
+figure*
+
+In order to move  elements from a table 
+into a cuckoo hash table  obliviously, we
+use an algorithm of gm-paodor-11
+to obliviously sort the items using  accesses to the outsourced
+memory, assuming we have a private workspace of size ,
+for some constant , and , which is always true in
+our case.
+This allows us to remove duplicate items and
+use another algorithm of gm-paodor-11
+to obliviously construct a cuckoo table of size  and an 
+associated stash, ,
+of size  in  time, with very high
+probability, while utilizing the private workspace of size .
+Given this construction, we then read  and  into our private
+workspace, remove any duplicates and 
+merge them into a single stash  (which will succeed with
+very high probability, based on the analysis we have given above),
+and write  back out in a straightforward oblivious fashion.
+Note that in order to assure obliviousness in subsequent lookups, table 
+is rebuilt using two new pseudorandom hash functions
+selected by the client by replacing parameter  with a new
+secret value.
+
+Any access performed in our simulation will eventually
+lead to 
+table rebuilds, with each element in a rebuild being charged with a
+constant amount of work; hence, the total amortized overhead of all rebuild
+phases is .
+Therefore, the total amortized time overhead of the entire simulation
+is . Moreover, it is easy to see that the space used
+by the data structure stored at the server is .
+
+Let us therefore consider the obliviousness of this scheme.
+As we have already observed, the rebuild phase is clearly oblivious,
+so any potential dependencies on input values would have to come in
+the access phase.
+Recall that in the access phase, we search in , ,
+and do a two-table cuckoo access in .
+Moreover, because we move the found item into  after each
+access, and we switch to performing random table lookups once we have
+found the item, we are guaranteed never to repeat 
+a two-cell cuckoo lookup in any table, , for the same item .
+In addition, each such lookup is an independent uniformly random
+access to a table (either from our assumption about  and 
+being distinct random hash functions for each table
+or because we already found the item and are
+making random accesses explicitly).
+We perform  such lookups before we empty ; hence, 
+the obliviousness of our access sequence depends on the inability of
+the adversary, Bob, of telling if we are doing a search for an actual
+item or performing a random access for the sake of
+obliviousness.
+That is, with high probability, Bob should not be able to determine 
+whether the item was in , , or some  at the point we found it.
+Note that this ability depends solely on whether or not the
+ accesses we made to , together with 
+searches in the shared stash
+, would correspond to valid cuckoo lookups in  for some set
+of items.
+Of course, this is the same as the event that inserting all these
+elements into  would form a valid cuckoo table, with shared
+stash , which we have already observed (in
+Section sec:background) is an event that occurs
+with very high probability.
+Thus, our scheme is oblivious with very high probability.
+
+Simulation Without Pseudorandom Functions
+We can adapt our simulation to avoid the use of random functions by
+employing an elegant trick due to 
+Damgrd et al. dmn-psor-10, 
+albeit now further simplified to avoid the use of dummy nodes, which
+would add an extra level of complication that our scheme doesn't
+require.
+
+The main idea is to place a complete binary tree, , on top of all the
+memory cells used in the algorithm , and access 
+each memory cell 
+by performing a binary search from the root of  to the leaf node
+corresponding to .
+That is, we associate each memory cell item used
+by  with a leaf of , define  to have height 
+, and include information at each
+internal node  of  so that a search for  
+can determine in  time whether to proceed with the left child
+or right child of .
+In our case, we store
+each of the nodes of  in our hierarchy of tables, 
+similar to what is described above, with 
+the shared stash, , the cache, , and the set of cuckoo tables,
+ to .
+(See Figure fig:tree.)
+
+The main difference of this scheme with that given above is that in this
+case we no longer use random hash functions,  and , to
+determine the locations of each element  in a cuckoo table .
+Instead, we simply choose two distinct, independent uniformly random
+locations,  and , in the respective two sides of  and 
+associate these with  as a tuple , which now
+represents the element  in our table.
+
+Initially, all the nodes of  are stored in this way in , and
+for each such internal node , we include in 's record 
+pointers to the two random indices (and table index) for 
+'s left child and pointer to the two random indices 
+(and table index) for 's right child.
+Such pointers can be built obliviously by  calls to oblivious
+sorting once we have placed all the nodes into .
+Moreover, we will maintain such pointers throughout our simulation.
+In addition, we store the root  of  separately, as it is
+accessed in every step of our simulation.
+
+Let us consider, therefore, how an access now occurs.
+The critical property, which we maintain inductively, is that, for
+each node  in , which, say, is stored in  as its earliest (highest)
+location in our hierarchy, all the ancestors of  are stored
+in the tables , or in , , or .
+
+Our access for a memory cell  now occurs as a root-to-leaf search
+in .
+We begin by searching in  to identify the two random indices and
+the table index for each of 's children.
+Based on the value of , we need to search next for either the left
+or right child of , so let  and  be the two random indices 
+for this node, , and let  be the index of the highest
+table  storing  (with  if  and  if ).
+We next search in  and  for , and then proceed 
+in  through .
+Of course, we already know the table where we will find .
+So, for each table  with ,
+we simply access two random locations in  for the sake of
+obliviousness.
+For  itself, we look in locations 
+
+and 
+ to find the cell containing the record for .
+If  is not a leaf node, we repeat
+the above lookup search for the appropriate child of  that will
+lead us to the node storing .
+
+Once we have done our lookup for , and have accessed a
+root-to-leaf set of nodes, 
+
+W=w_1,w_2,,w_n,
+
+in the process, we perform a rebuild phase for , as
+in the above construction based on random hash functions, except that
+we use random locations for all the nodes we move rather than use
+random functions.
+Note that by our induction hypothesis, if we move a set of nodes into
+a table , then all the pointers for these nodes are either in
+ itself (hence, can be identified after  calls to
+oblivious sorting, which takes  memory accesses
+by the algorithm of gm-paodor-11)
+or at lower levels in the hierarchy (hence, these pointers don't
+change by our move into ).
+Moreover, all the nodes of  move as a group.
+Thus, any root-to-leaf path in  must be stored in the
+tables  to , plus the queue  and stash , in a way
+that satisfies our induction hypothesis.
+
+The lookup for an element  now requires searching for 
+nodes of  in our hierarchy, which costs an amortized overhead of
+ time each.
+Thus, each lookup costs us an amortized overhead of 
+time.
+The obliviousness of this simulation follows from an argument similar
+to that given above for the obliviousness for our method that uses
+random hash functions.
+Therefore, we can perform a stateless oblivious RAM simulation
+without using random hash functions with an amortized time overhead 
+of , assuming a private workspace of size  for
+some constant .
+
+
+
+
+
+
+0pt
+by -by -9in
+0pt
+0.5in
+6.5in
+
+
+
+
+
+
+[#1 #2:]
+      [#1 #2 #3:]
+
+theoremTheorem
+lemma[theorem]Lemma
+proposition[theorem]Proposition
+corollary[theorem]Corollary
+observation[theorem]Observation
+property[theorem]Property
+example[theorem]Example
+counterexample[theorem]Counterexample
+problem[theorem]Problem
+openproblem[theorem]Open Problem
+assumption[theorem]Assumption
+
+
+Privacy-Preserving Group Data Access 
+ 
+       via Stateless Oblivious RAM Simulation 
+
+
+Anonymous submission to IEEE Security  Privacy
+
+Michael T. Goodrich 
+
+Dept. of Computer Science 
+ 
+University of California, Irvine 
+
+
+http://www.ics.uci.edu/ goodrich/ 
+
+Michael Mitzenmacher 
+
+Dept. of Computer Science 
+ 
+Harvard University 
+
+http://www.eecs.harvard.edu/ michaelm/ 
+
+Olga Ohrimenko 
+
+Dept. of Computer Science 
+
+Brown University 
+
+
+http://www.cs.brown.edu/ olya/ 
+
+Roberto Tamassia 
+
+Dept. of Computer Science 
+
+Brown University 
+
+http://www.cs.brown.edu/ rt/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Acknowledgments
+This research was supported in part by the National Science
+Foundation under grants 0724806, 0713046, 0847968, 0953071, and 1012060.
+
+
+
+IEEEtranS
+
+
+Performance
+
+We have implemented a preliminary prototype of our method for
+oblivious RAM simulation based on pseudorandom functions
+(Section ) with the goal of estimating the size of
+the stash  needed to avoid failures during the rebuild phase.  A
+failure can happen when we move elements from table  to 
+and the stash overflows, in which case we need to rebuild
+table .  In this section we present experimental results and
+show that for a small constant , a stash of size  is
+enough to avoid failures.
+
+Our prototype simulates the dynamic evolution of the hierarchy of hash
+tables during the access and rebuild phases, omitting the steps that
+maintain obliviousness (e.g. copying the stash to the client's side).
+We maintain a stash , a cache  of size  and a hierarchy of 
+cuckoo hash tables  to , where  is the smallest 
+such that .
+ consists of two hash tables of size  with hash
+functions  and . 
+Every memory access is followed by the insertion of the corresponding
+element into . If the item was retrieved from stash ,
+it is first copied to  and then is removed from .
+We move all the elements of  to  when the number of performed accesses is a multiple
+of . 
+Similarly, we move all the elements of  to  when the number of performed accesses is
+a multiple of .  New hash functions are
+picked for both tables during this phase.  During the insertion, an
+item is placed into the stash if after  moves it has not
+found an empty cell in the table;  we experiment using .
+We insert an item into the stash only if it is not already present there.
+
+Our prototype is implemented in Java.
+To generate hash functions we use a variation of a method recommended in ,
+where , and similarly for .
+The seeds are 64-bit long and were obtained using a SHA256 hash chain starting from
+an initial seed.
+
+We emphasize that in any implementation of our method there are
+various tradeoffs.  For example, increasing the space (that is, using
+larger values of ) reduces the average time for an insertion
+and the failure probability, as it reduces the frequency with which
+items have to be put in the stash.  Increasing the stash size reduces
+the failure probability at the expense of additional time to examine
+the stash at each step.  Increasing the number of moves allowed before
+placing an item in the stash increases the time but lowers the failure
+probability.  Our purpose here is not to explore this broad range of
+tradeoffs, but to demonstrate the feasibility of this approach;  exploring
+finer tradeoffs is left as future work. 
+
+We ran our simulation for up to K () RAM items and a varying number of requests.
+Our experiments use a value of  of 0.1 and 0.2.
+For each experiment we recorded the lowest size of  that is needed to avoid a failure.
+In Figures  and  we show the fraction of trials out of 1000
+that result in the stash overflow.
+Comparing the two figures, we see that overflows happen substantially more frequently
+with  than with , as one would expect since smaller
+tables lead to more collisions.
+Indeed, for  we found a stash size
+of less than  was enough to avoid overflows completely in our limited experiments.
+Also, a higher number of requests requires a slightly bigger stash since rebuilding happens more
+often, leading to a larger maximum stash requirement.  
+While much more extensive experimentation would be needed to determine suitable
+stash sizes that would avoid stash overflow for numbers of trials many orders of magnitude larger, recall that the probability of an additional item needing to be placed in a stash in a standard cuckoo table falls very quickly.  We thus expect only slightly larger stash sizes for such improvements in robustness.    
+
+
+
+ Failure rate in 1000 trials for  items and  requests with , .
+
+
+
+ Failure rate in 1000 trials for  items and  requests with  , .
+
+
+
+
+
+Shared-Stash Cuckoo Hashing
+
+We claim that, given our recursive construction, we require a total
+stash size of only .  That is, if we consider the sum of
+the number of items placed in the stash at all possible levels in our
+construction, this will be at most  with high probability.  
+
+The key is the following argument.  As shown
+in, at a level of size  cells where 
+is , the probability that the stash for that level
+exceeds a total size  is .  Further, as long as the
+hashes for each level in our construction are independent, we can
+treat the required stash size at each level is independent, since the
+number of items placed in the stash at a level is then a random
+variable dependent only on the number of items appearing in that
+level.
+
+Now consider any point of our construction and let  be the
+number of items at the th level that need to be put in the stash.
+It is apparent that  has mean less than 1 and tails that can be
+dominated by a geometrically decreasing random variable.  This is
+sufficient to apply standard Chernoff bounds.  Formally, let 
+ be independent random variables with mean 1
+geometrically decreasing tails, so that  with probability
+ for .  Then the calculations
+of imply that the  stochastically
+dominate the , and we can now apply standard Chernoff bounds for
+these random variables.  Specifically, noting that  can be
+interpreted as the number of fair coin flips until the first heads, we
+can think of the sum of the  as being the number of coin flips
+until the th head, and this dominates the number of items that
+need to be placed in the stash at any point.  When ,
+as is the case here as there are only  levels of hash
+tables in our construction, then for any constant  there
+exists a corresponding constant  such that the th head
+occurs by the 'th flip with probability at least
+.  Hence we can handle any polynomial number of steps
+with high probability, using a stash of size only  that
+holds items from all levels of our construction.
+
+
+
+
+
+Theory Background
+
+For our results, we rely on general methods for data-oblivious
+simulation of a non-oblivious algorithm on a RAM.  
+As mentioned above, the seminal
+theoretical framework for such simulations was presented by Goldreich
+and Ostrovsky , who store keys in a hierarchy of
+hash tables of increasing size, each being twice the size of the
+previous one.  For  items there are  levels, each level
+being a standard hash table with  buckets for some , and each
+bucket containing up to  keys in order to cope with
+collisions within the hash table.  In this construction the total size
+of all the tables is .  To perform a lookup, the first level
+is scanned sequentially, and in each of the other levels, a bucket
+chosen by the hash function for that level acting on the key (or, if
+the item is found at an earlier level, a random dummy key) is scanned.
+The item is subsequently re-encrypted and re-inserted into the first
+level.  It is important to note that at all levels a bucket is scanned
+even if the key is found early, to maintain obliviousness.  As levels
+fill, keys must be shifted down to subsequent levels.  The details of
+the original scheme are rather complex; for further details see the
+original paper .
+
+Recently, a more efficient simulation approach for this problem was
+outlined by Goodrich and Mitzenmacher .  The primary
+difference in this new line of work is the use of cuckoo hash
+  tables in place the standard hash tables used originally in
+.  We therefore now present some background on   cuckoo hashing.
+
+As introduced by Pagh and Rodler, in standard cuckoo
+hashing we utilize two tables, each with  cells, with each cell
+capable of holding a single key.  We make use of two hash functions
+ and .  We assume that the hash functions can be modeled as
+completely random hash functions.  The tables store up to  items,
+where  for some constant , yielding a load of
+(just) less than ; keys can be inserted or deleted over time as
+long as this restriction is maintained.
+
+A key  (which we may also refer to as an "item" or "element")
+that is stored in the hash tables must be located at either 
+or .  As there are only two possible locations for a key,
+lookups take constant time.  To insert a new key , we place  in
+the cell .  If the cell had been empty, the operation is
+complete.  Otherwise, key  previously in the cell is moved to
+.  This may in turn require another key to be moved, and so
+on, until a key is placed in an empty cell.  We say that a failure
+occurs if, for an appropriate constant , after  steps
+this process has not successfully terminated.  Suppose we insert an th key into the system.
+It is known that:
+
+The expected time to insert a new key is bounded above by a constant (that depends on ).
+The probability that a new key causes a failure is  (where the notation hides
+a dependence on ).  
+See Figures  and  for examples.  
+
+
+  
+        The top of the figure represents a cuckoo hash table.  Keys are placed in one subtable;  the arrow
+for each key points to the alternate location for the key in the other subtable.  Key G is inserted, leading to the movement of several other keys for G to be placed, as shown in the bottom of the figure.
+  
+
+  
+        Key G is to be inserted, but it cannot be placed successfully.  (Seven keys have only six locations.)
+This leads to a failure, or if there is a stash, then G can be placed in a stash.
+  
+Before considering ways to reduce the probability of failures to
+something more suitable, we briefly mention that there are several
+natural variations of cuckoo hashing, many of which are described in
+a survey article by Mitzenmacher .  Variations include using more
+than two choices, using cells that hold more than one key, and so on.
+For our purposes, it suffices to understand standard cuckoo hashing,
+along with idea of a stash.  
+
+A stash
+represents additional memory where keys that would cause a failure can
+be placed in order to avoid the failure; with a stash, a failure
+occurs only if the stash itself overflows.  As shown in
+, the failure probability when inserting the th
+key into a cuckoo hash table can be reduced to  for any constant  by using a
+stash that can hold  keys.  Using this allows us to use cuckoo hash tables
+for any polynomially bounded number of inserts and deletions using only
+a constant-sized stash.  To search for an item, we must search both the two table
+locations and the  stash locations.  In the context of oblivious simulation,
+we can search the stash simply by reading each stash location.  
+
+
+
+
+
+As we have stated, however, in order to perform our oblivious
+simulation, we will make use of a hierarchy of cuckoo hash tables to
+hold  items.  The smallest of these hash tables may be much smaller
+than , which can lead to problems in our setting(This is
+  also at the heart of the flaw in the CRYPTO2010 version of the
+  Pinkas and Reinman paper .).  
+For example, if
+the smallest hash table is of size , then even using a stash of size 
+leads to a failure probability of .  If  is for
+example polylogarithmic in , then for any constant , the failure
+probability is , and therefore over the insertion of 
+items, we would expect failures to occur.  In order to deal with this
+problem, Goodrich
+and Mitzenmacher  extend the analysis ofto stashes of logarithmic size, showing that even for suitably large table sizes 
+that are only polylogarithmic in , and stashes of size , the
+failure probability is  for a suitable constant .  This 
+suffices to yield superpolynomially small failure rates.  
+
+In fact, we need to extend this result even further here.  In
+, Goodrich and Mitzenmacher use a logarithmic-sized
+stash at each level.  We explain here that it suffices to use a
+single logarithmic-sized stash for all levels.  That is, while
+there's a non-trivial probability of at least one layer in our
+hierarchy requiring a stash of size , over the logarithmic
+number of layers only a stash of logarithmic size is actually
+necessary.  We will use this in our construction in Section .
+We now briefly explain why, if we consider the sum of
+the number of items placed in the stash at all possible levels in our
+construction, this will be at most  with high probability.  
+
+The key is the following argument.  As shown
+in, at a level of size  cells (where 
+is ), the probability that the stash for that level
+exceeds a total size  is .  Further, as long as the
+hashes for each level in our construction are independent, we can
+treat the required stash size at each level is independent, since the
+number of items placed in the stash at a level is then a random
+variable dependent only on the number of items appearing in that
+level.
+
+Now consider any point of our construction and let  be the
+number of items at the th level that need to be put in the stash.
+It is apparent that  has mean less than 1 and tails that can be
+dominated by a geometrically decreasing random variable.  This is
+sufficient to apply standard Chernoff bounds.  Formally, let 
+ be independent random variables with mean 1
+geometrically decreasing tails, so that  with probability
+ for .  Then the calculations
+of imply that the  stochastically
+dominate the , and we can now apply standard Chernoff bounds for
+these random variables.  Specifically, noting that  can be
+interpreted as the number of fair coin flips until the first heads, we
+can think of the sum of the  as being the number of coin flips
+until the th head, and this dominates the number of items that
+need to be placed in the stash at any point.  When ,
+as is the case here as there are only  levels of hash
+tables in our construction, then for any constant  there
+exists a corresponding constant  such that the th head
+occurs by the 'th flip with probability at least
+.  (See, for example,.) 
+Hence we can handle any polynomial number of steps
+with high probability, using a stash of size only  that
+holds items from all levels of our construction.

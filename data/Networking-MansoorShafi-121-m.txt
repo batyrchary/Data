@@ -1,0 +1,1211 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Var
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+op-tical net-works semi-conduc-tor
+
+
+
+
+On the Convergence and Performance of MF Precoding in Distributed Massive MU-MIMO Systems
+Peter J. Smith1,
+	Callum T. Neil2,
+	Mansoor Shafi3,
+	Pawel A. Dmochowski2
+	
+
+
+1
+Department of Electrical and Computer Engineering, University of Canterbury, Christchurch, New Zealand 
+
+2
+School of Engineering and Computer Science, Victoria University of Wellington, Wellington, New Zealand 
+
+3
+Spark New Zealand, Wellington, New Zealand
+email: p.smith@elec.canterbury.ac.nz, pawel.dmochowski,callum.neil@ecs.vuw.ac.nz,
+ mansoor.shafi@spark.co.nz
+
+
+
+
+
+
+In this paper, we analyze both the rate of convergence and the performance of a matched-filter (MF) precoder in a massive multi-user (MU) multiple-input-multiple-output (MIMO) system, with the aim of determining the impact of distributing the transmit antennas into multiple clusters. We consider cases of transmit spatial correlation, unequal link gains and imperfect channel state information (CSI). Furthermore, we derive a MF signal-to-interference-plus-noise-ratio (SINR) limit as both the number of transmit antennas and the number of users tend to infinity. In our results, we show that both the rate of convergence and performance is strongly dependent on spatial correlation. In the presence of spatial correlation, distributing the antennas into multiple clusters renders significant gains over a co-located antenna array scenario. In uncorrelated scenarios, a co-located antenna cluster has a marginally better mean per-user SINR performance due to its superior single-user signal-to-noise-ratio (SNR) regime, i.e., when a user is close to the base station (BS), the links between the user and all transmit antennas becomes strong.
+
+
+
+Introduction
+
+It is well known that increasing the number of antennas at the base station (BS) can result in large increases in data rate, reliability, energy efficiency and reduced inter-user interference. Consequently, massive multiple-input-multiple-output (MIMO) is being investigated as an emerging technology, where the number of antennas is scaled up by many orders of magnitude relative to systems today. Performance benefits from such a large number of antennas include an improvement in radiated energy efficiency of 100 times relative to single-antenna, single-terminal systems. In, the authors demonstrate that using linear processing at the transmitter you can achieve a spectral efficiency improvement of up to two orders of magnitude while simultaneously improving energy efficiency by three orders of magnitude.
+
+
+
+The analysis of precoding techniques for massive MIMO has been the subject of a number of studies such as. Conjugate beamforming (BF) (matched filter (MF)) and pseudo inverse BF (zero forcing (ZF)) precoding methods were considered in, comparing spectrum efficiency with radiated efficiency. In, capacity expressions were derived for maximum ratio transmission (MRT) and ZF techniques, including scenarios with channel estimation imperfections. Channel state information (CSI) imperfections were also considered in. In, the authors propose a BF training scheme to acquire CSI by means of short pilot sequences while maintaining a low channel estimation overhead. The effects of channel aging on CSI in massive MIMO systems were looked at in, where the authors derive achievable rates for uplink (UL) and downlink (DL) when channel aging effects, modeled using a first order autoregressive process, were considered for MF precoders. The paper compares achievable rates of perfect CSI, aged CSI and predicted CSI.
+
+
+
+As the channel matrix dimension becomes large, the analysis of massive MIMO systems is aided by random matrix theory asymptotics. The effect of increasing array size has been the subject of a few studies, e.g.,. In, the authors conclude that effects of random matrix theory are observable even for arrays of 10 antennas, although the desirable properties of an "infinite" number of antennas are more prominent at 100 antennas and above. The convergence of random matrix theory asymptotics is shown via simulation in, as the number of BS antennas is increased. concludes that the number of antennas required to achieve equal singular values is well over . Practical simulations, in, provide measurements in residential areas with 128 BS antennas, which shows that orthogonality improves for an increasing number of antennas, but for a system with two single-antenna users, little improvement beyond a 20 antenna element array is seen.
+
+
+
+In adding more antennas to a fixed array size, distances between adjacent elements are reduced. In a massive MIMO system, the effects of inter-element spatial correlation are increased dramatically, due to the significant reduction in antenna spacing. However, this could be partially mitigated by dividing the antennas into multiple clusters whereby antenna spacings per cluster increase provided the overall form factor remains the same as the co-located BS case. The primary aim of this paper is to analyse the performance of a massive MIMO system by distributing the antenna elements into multiple clusters. Specifically, our motivation is analysing per-user MF signal-to-interference-plus-noise-ratio (SINR) as the number of antenna elements becomes large.
+
+
+
+In this paper we analyze the MF precoding technique in a distributed BS scenario. Our contributions can be summarized as follows: 
+
+	We provide a system model for a massive multi-user (MU)-MIMO system which accounts for: distributed transmit antennas, unequal link-gains between users and antenna clusters, CSI imperfections, and transmit spatial correlation, from which we analyze the MF precoding technique and derive analytical expressions for expected per-user MF SINR.
+	We analyse the impact of different numbers of antenna clusters on spatial correlation and expected per-user MF SINR.
+	We analytically derive a limiting expected per-user MF SINR and show via simulation the convergence of the instantaneous per-user MF SINR to this limit.
+
+
+
+
+The remainder of this paper is organized as follows. First, in Section , we describe the system model and assumptions. In Section , we derive the expected per-user MF SINR and the limit as the number of BS antennas and the number of single-antenna users increase without bound, at a constant ratio. Then, in Section , we present numerical simulations and show the impact of distributing the antennas into multiple clusters. The majority of the mathematical derivations are included in the Appendices.
+
+
+System Model
+
+
+
+
+Precoding
+
+
+We consider a massive MIMO DL system with a total of  transmit antennas divided equally among  BSs (antenna clusters), jointly serving a total of  single-antenna users. At each BS the  antennas are assumed to be arranged as  pairs of cross-polarized (x-pol) antennas. We assume time division duplex (TDD) operation with UL pilots enabling the transmitter to estimate the DL channel. On the DL, the  single antenna terminals collectively receive the  vector
+
+
+
+where  is the transmit signal-to-noise-ratio (SNR),   is an  precoded data vector and  is a  noise vector with independent and identically distributed (i.i.d.)  entries. The transmit power is normalized, , i.e., each antenna transmits at a power of . The  channel matrix, , is given by
+
+
+
+where , with i.i.d.  entries, is the channel vector between the th user and the th BS, corresponding to small-scale Rayleigh fading.  is the link gain coefficient, modeling large-scale effects for user  from BS , while  is the spatial correlation matrix at each antenna cluster, assumed equal for all BSs.
+
+
+
+In this paper, we consider the convergence scenario where  with a fixed ratio of , where cases of  and  are examined. Note that although we consider finite , the analysis can also be extended to the case where .
+
+Link Gain Model
+
+
+With distributed users and distributed antenna clusters the link gains, , in a real system will all be different due to variations in path-loss and shadowing. In this paper, we have two areas of interest: massive MIMO performance and convergence. Hence, we model the link gains in two different ways.
+
+Statistical Link Gain Model
+
+
+Here, we adopt the classical model where users are dropped at random locations in a circular coverage area served by the antenna clusters. The link gains are then generated assuming i.i.d. log-normal shadow fading and distance based path-loss. Since each drop generates substantially different link gains, this model is not ideal for investigating convergence as the link gain variations may confound the limiting effects. However, the model is useful for simple generation of arbitrary system sizes and can be used to investigate massive MIMO performance for a widely accepted link gain model. Finally, the limiting results can be compared to the SINR of an individual drop to evaluate the accuracy of the limit as an approximation to a particular massive MIMO system.
+
+Limiting Link Gain Model
+
+
+Here, we assume that the link gains between an antenna cluster and  users are drawn from a limiting link gain profile defined by  for . For any finite number of users, , the link gains are defined by  for . For the first antenna cluster, we use the model, , where  and  are the minimum and maximum link gains respectively. This simple model also appears in as a way of characterizing differing user link gains with a simple exponential profile and only two parameters. The resulting link gain profile is shown in Figure  under BS1. For simplicity, we also assume that the second cluster (BS2) has the same link gain profile. However, it is unrealistic to assume that the same users have the same link gains at both BSs. Hence, we consider three scenarios, labeled Profile 1, 2 and 3 in Figure . In Profile 1, both BSs have the same profile to all  users. In Profile 2 the profiles for BS1 and BS2 are reversed, so that a user with a strong gain at BS1 has a weak gain at BS2. Profile 3 is an intermediate scenario where strong users at BS1 are weak at BS2 and moderate users at BS1 are strongest at BS2. This approach gives a limiting link gain profile as  and allows us to investigate convergence. However, it is tightly constrained by the choice of  and the Profiles in Figure . Hence, it is awkward to construct reasonable scenarios for more than two antenna clusters due to the proliferation of potential profiles and this approach is only used to illustrate convergence for  and .
+
+
+[trim=1cm 8.5cm 21cm 1cm,clip,width=0.7]linkgain.eps
+Link gain profiles for a two BS scenario where  represent the users.
+
+
+
+
+
+
+
+
+
+Imperfect CSI Model
+
+The estimated channel matrix, , in an imperfect CSI scenario is given by
+
+
+
+where  is independent and statistically identical to  and  controls the accuracy of the CSI.
+
+Correlation Model
+
+
+As we increase the density of the antennas in a cluster, the correlation among antenna elements will usually increase. Here, the correlation between antenna elements in an antenna cluster is modeled using the simple exponential model, 
+
+
+
+where  is the distance between the th and th pair of x-pol antennas and . The  transmit correlation matrix, , for each antenna cluster is modeled by the Kronecker structure,
+
+
+
+where  is the  x-pol antenna matrix given by
+
+
+
+with  denoting the correlation between the two antenna elements in the x-pol pair. A fixed size  array is considered, where the x-pol antennas are positioned in a square shaped configuration.
+
+
+
+SINR Analysis
+
+
+Preliminaries
+
+We begin by outlining several mathematical results which will be used in the subsequent sections. 
+
+
+
+ Denote the th column of  as , where  contains independent  elements. Note that the  matrix  contains both the link gain coefficients and spatial correlation effects. Since, in impCSIG,  is statistically identitical to , we can write
+
+
+	E[ _i^_i^T] 
+	&= E[ _i^_i^T] 
+
+	&= E 
+	   
+  	   	_1i^12_t^12_1i^ 
+
+  	   	
+ 
+  	   	_Ni^12_t^12_Ni^
+	 	   
+	 	    
+  	   	_1i^12_1i^T_t^12 &
+  	   	&
+  	   	_Ni^12_Ni^T_t^12
+	 	   
+	 	     
+
+
+	&= 
+  	   	_1i_t & & 
+
+  	   	& & 
+ 
+  	   	& & _Ni_t
+	    
+	= _i, 
+
+
+where  is the th column of . 
+
+
+
+ Using the eigen-decomposition of the transmit correlation matrix, , we have from prelim1_end
+
+
+	_i &= 
+	 	 
+  	   	_1i^T^  & &	
+
+  	& &	
+
+  	& & _Ni^T^ 
+	 	      
+
+	 	&= 
+  	   	^T & &	
+
+  	& &	
+
+  	& & ^T 
+	 	   
+	 	   
+  	   	_1i& &	
+
+  	& &	
+
+  	& & _Ni
+	 	   
+	 	   
+  	   	^  & &	
+
+  	& &	
+
+  	& & ^ 
+	 	    
+
+	 	&= ^T _i ^, 
+
+
+where  is the diagonal matrix of eigenvalues of  and  is unitary. Similarly,  is a diagonal matrix containing the eigenvalues of  and  is unitary. Note that  is fixed for all , as it only depends on , which we assume to be the same at each antenna cluster. 
+
+
+
+ For  with independent  elements, and, for an arbitrary  we show in Appendix  that
+
+
+
+where  is the average of . 
+
+
+
+
+
+
+
+
+
+
+
+MF Precoding
+
+
+
+Having outlined the prerequisite mathematical results, we now derive the limiting SINR expressions for MF precoding with large distributed antenna arrays.
+
+
+
+The transmitted signal for a MF precoder, with CSI inaccuracy, is given by
+
+
+
+with , where  is the  data symbol vector, and the average power is normalized by
+
+
+
+The combined received signal for all users is thus given by
+
+
+
+with the th user receiving the th component of , given by
+
+
+
+The expected value of the power of the th users received signal in mf_xi can be shown to be (see Appendix )
+
+
+	E[ P_sig,i] 
+	&= E[  _f_i^T_i^q_i  ^2] 
+
+	&= _fK( ^2_i^T_i^^2 +(1-^2) _i^T_i_i^) ,
+
+
+where  is the th column of . Likewise, the expected value of the interference and noise power of the th user's received signal is (see Appendix )
+
+
+	E[ P_i+n,i] 
+	&= E[  _f_k=1,ki^K_i^T_k^q_k+w_i ^2] 
+
+	&= _fK _k=1,ki^K( ^2  _i^T_k^ ^2 +(1-^2) _k^T_i_k^ )  + ^2 .
+
+
+Combining Psig and Pin, the expected MF SINR for the th user is given by
+
+
+
+We wish to study the asymptotic behaviour of mf_sinr given by
+
+
+
+In the numerator, since  has the same statistics as , we can write  where the elements of  are i.i.d. . Hence, . Then, using prelim3, we have
+
+
+
+Similarly,  and a simple extension of prelim3 gives
+
+
+	_K1M_i^T_i_i^
+	&= _K( 1N_n=1^N_ni^2) _K( _i=1^M/N_ii^2M/N) 
+
+	&= _i^2 ^2, 
+
+
+where  is the average of  and  is the limiting average of 
+. Also,
+
+
+	_K M
+	&= _K1M tr(^T^)K 
+
+	&= _K1K_i=1^K1M_i^T_i^  
+
+	&= _K1NK_n=1^N_k=1^K_nk 
+
+	&= ,
+
+
+where  is the limiting average of the  values over  and . Since the limit in 28 is finite and  as , the final limit term in the numerator of mf_sinr_2 approaches zero. Therefore, the asymptotic limit of the numerator of mf_sinr_2 is given as
+
+
+
+Likewise, we examine the denominator of mf_sinr_2 as . It is shown in Appendix  that
+
+
+
+where  is the limiting average cross product of the th user's link gains with all the other users' link gains. Also in Appendix  it is shown that
+
+
+
+Therefore, the asymptotic limit of the denominator of mf_sinr_2 is given as
+
+
+	&^2 + _f_K ( M) _K_k=1,ki^K( ^2  _i^T_k^M ^2 + (1-^2)M _k^T_i_k^M ) 
+
+	&= ^2 + _f( ^21^2 _ik+(1-^2)1^2 _ik) 
+
+	&= ^2+_f^2 _ik. 
+
+
+Substituting asym_Psig and asym_Pin into mf_sinr_2 gives the limit of the expected per-user MF SINR expression mf_sinr as
+
+
+
+where the noise power is normalized to 1. 
+
+
+
+From mf_sinr_lim, we can examine the effects of each component on the SINR limit. The transmit SNR, , boosts the signal power but also the interference power leading to a ceiling on the SINR limit, as  as . The ratio, , increases the SINR due to increased diversity. The CSI factor, , decreases the signal power but the extra interference created by imperfect CSI disappears in the limit due to averaging.  reduces the SINR and implies that correlation reduces SINR. To see this, consider the extreme cases of an i.i.d. channel () and a fully correlated channel (, , ), where  is an  matrix of ones. These scenarios give  and , respectively. Clearly, the  term increases with correlation and reduces the SINR limit.  reduces performance as it is a measure of the total power of the received signals which includes the aggregate interference.  reduces performance as it is an inverse measure of orthogonality. If the desired user  has strong links on the antennas in a set of clusters  and all the interferers have weak link gains in  then the "cross product" term  is weak. Here, the channels are close to orthogonal (on average) and performance is enhanced.
+
+
+
+Note that in mf_sinr_lim, we have presented a per-user limiting value which can be evaluated for a particular link gain model. As an example, we evaluate the per-user SINR using the limiting link gain model described in Section . Without loss of generality, we consider the co-located () BS case where the link gain profile is decaying (exponentially). Thus, evaluating the terms in mf_sinr_lim, we have
+
+
+
+and
+
+
+	 &= _K1NK_n=1^N_k=1^K_nk 
+
+	&= _K1K_k=1^K_1k 
+
+	&= _0^1(x)dx 
+
+	&= _0^1_max(_min/_max)^xdx 
+
+	&= _max-_minlog_e(_max)-log_e(_min), 
+
+
+where tmp4 follows from standard methods. Also,
+
+
+	_ik &= _K1NK_n=1^N_k=1,ki^K_ni_nk 
+
+	&= _K1K_k=1,ki^K_1i_1k 
+
+	&= _1i 
+
+
+	&= _1i_max-_minlog_e(_max)-log_e(_min).
+
+
+Hence, for any limiting link gain model, the exact limit in mf_sinr_lim can be evaluated.
+
+
+
+Finally, we can consider several special cases of mf_sinr_lim:
+
+Perfect CSI
+
+
+
+No Spatial Correlation
+
+
+
+Equal Power Distribution with Spatial Correlation
+
+
+
+Here, the link gain for all users from all clusters is a constant, .
+
+No Spatial Correlation, Equal Power Distribution
+
+
+
+No Spatial Correlation, Equal Power Distribution, Perfect CSI
+
+
+
+Note that rusek1 and rusek2 agree with the results given in when . 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Numerical Results
+
+
+
+Simulation Parameters
+
+
+In Section , we illustrate the convergence of the mean per-user SINR to its limiting expression, for  and  BSs, using the limiting link gain model described in Section . In Sections  and , the uncorrelated and correlated performance of MF precoding is shown for  BSs, using the statistical link gain model described below.
+
+
+
+For the limiting link gain model, values of  and , where , are arbitrarily chosen. For all simulations after Section , the statistical link gain model is used. We calculate the path-loss between each user and the BSs using , where  is log-normal shadowing and  is the link distance. The shadow fading standard deviation is  dB, the path-loss exponent is  and the link distance is , unless otherwise stated.  is used as an offset, such that the maximum link gain generated from the statistical link gain model aligns with that of the maximum limiting link gain model value, i.e., . 
+
+
+
+For simulations involving a single, co-located, antenna cluster, we position the BS in the center of the coverage region, whereas, in simulations considering  BSs, the antenna clusters are positioned equidistant on the periphery of the coverage region. The exponential model correlation parameter in corr_rho is arbitrarily chosen to be  (another value could be chosen). The correlation matrix, given in CorrMatrix, is calculated using a carrier frequency of  and a  square antenna array, with the antenna correlation between two elements in the same x-pol configuration, . 
+
+All results are simulated with  and  dB.
+
+Convergence of  and  BSs
+
+
+
+[width=110mm]fig1.eps
+Instantaneous and limiting MF SINR as a function of the number of users, , for a co-located antenna cluster, , with no transmit spatial correlation, .
+
+
+
+
+[width=110mm]fig2.eps
+Instantaneous and limiting MF SINR as a function of the number of users, , for two antenna clusters, , each with no transmit spatial correlation, .
+
+
+
+We begin by illustrating the convergence of mean per-user SINR to the corresponding limiting value, for  and  BSs, where we use the limiting link gain model, outlined in Section .
+
+
+
+Figures  and  show the convergence of mean per-user SINR (i.e., averaged over all users), given in mf_sinr, to its mean per-user limiting value, mf_sinr_lim, for one and two BSs respectively. Note that the points are the instantaneous SINRs averaged across the  users and over the fast fading. The bars above and below the points represent the plus/minus one standard deviation limits of the instantaneous SINRs averaged over the users. As the width of the error bars decreases with , we see that the instantaneous SINRs converge to the limit in addition to the expected SINR (over fast fading). In comparing the two figures, we observe that the additional BS has almost no effect on both the rate of convergence and mean per-user SINR for large systems. This is due to the fact that  in the limiting SINR expression, mf_sinr_lim, tends to be small compared to . In both cases the mean per-user SINR has effectively reached its limiting value, of approximately  dB for perfect CSI, for a system of size  single antenna users, i.e., 1000 total BS antennas. The effect of BS numbers on both mean per-user SINR and rate of convergence is explored more thoroughly for a larger number of BSs in later results. It can also be seen that the reduction in CSI results in a decrease in the mean limiting per-user SINR of about 2 dB in both cases. This is due to the linear relationship between CSI imperfections and limiting per-user SINR, shown in mf_sinr_lim. 
+
+
+
+Given the results in Figure , we conclude that rate of convergence and performance of both the limiting and simulated mean per-user SINR is largely independent of the link gain profile used, outlined in Section , used to generate the users' link gains. 
+For larger numbers of antennas, the profiles have little effect and this is consistent with the fact that with MF, the aggregate interference is the dominant factor.
+
+Uncorrelated MF SINR Performance
+
+
+
+[width=110mm]fig3.eps
+Instantaneous MF SINR error  CDF as a function of the number of users, , and antenna clusters, . Here, we have perfect CSI, , and no transmit spatial correlation.
+
+
+
+We now illustrate the uncorrelated performance of MF precoders, where the statistical link gain model is used to generate users' link gains is used. In Figures - we compute the instantaneous SINRs averaged over the  users for many independent drops. Note that each drop has a different set of link gains and therefore a different limiting SINR. In Figure  we show how quickly the mean per-user SINR converges towards its mean per-user limiting value for different size systems in an uncorrelated scenario. The virtual limit is computed by simulating a system size of  BS antennas. We define: Error , where  is the mean per-user SINR limit and  is the mean per-user SINR. We plot the Error  cumulative distribution function (CDF) for small, medium and large sized systems, corresponding to  and  single antenna users respectively. In each case of an increasing step in system size, by , it can be seen that the change in Error  is reduced, e.g., for the median value for  BSs, the error decreases by  as we increase the system from small to medium size, whereas, the error decreases by  from increasing the system size from  to  users. This decaying rate of the rate of convergence effect is also seen in Figures  and .
+
+
+[width=110mm]shad_var.eps
+Instantaneous MF SINR CDF as a function of the shadowing variance, , for  and . Here, we have perfect CSI, , and no transmit spatial correlation.
+
+
+
+
+
+In Figure , we illustrate the impact of changing shadowing variance on the mean per-user SINR. A greater shadow variance is shown to produce larger SINR values and a greater SINR range, resulting from the increased variability in path-loss, as seen in the tails of each CDF. For example, the CDF with a shadowing variance of  has a range of SINRs from  dB, in comparison to  dB for .
+
+
+[width=110mm]fig4.eps
+Instantaneous MF SINR CDF as a function of CSI imperfections, , and antenna clusters numbers, . Here, we have , and no transmit spatial correlation.
+
+
+
+
+
+In Figure , we show how both CSI imperfections and BS numbers impact the CDF of mean per-user SINR in an uncorrelated scenario. The single antenna cluster case outperforms the five BS case at a median value of  dB and  dB for perfect and imperfect transmitter channel knowledge respectively. The reason behind the co-located antenna array dominance is due to the underlying cell configuration used in simulation, described in Section . For instance, for the  case, if a user is close to a BS then it is receiving a strong signal from 200 antennas. Whereas, if a user is close to the BS in the  scenario, it is receiving a strong signal from 1000 antennas, i.e., roughly speaking, the user is being served by an extra 800 degrees of freedom in the  scenario. This is exemplified in the shape of the CDFs, where there is a large tail, at high SNR, for the co-located BS CDF. 
+Furthermore, we notice that the larger BS cases do not perform better at low SNR, as we would expect. This is a result of the CDFs being a mean of SINR across all users, rather than a single users CDF. Thus, we present a single-user uncorrelated SINR CDF, in Figure , for comparison. 
+
+
+[width=110mm]su_uncorr_sinr.eps
+Single-user MF SINR CDF as a function of CSI imperfections, , and antenna clusters numbers, . Here, we have , and no transmit spatial correlation.
+
+
+
+
+
+In Figure  we illustrate the MF SINR CDF for the single-user case. It can be seen that for low SNR, a larger number of BSs provides much better coverage, increasing SINR significantly. Despite the significant differences in the  and  case, there are smaller gains seen in increasing BS numbers from  to .
+
+Correlated MF SINR Performance
+
+
+In this section, as with the uncorrelated MF SINR performance simulations in Section , the statistical link gain model is used to generate the link gains for a scenario with spatial correlation.
+
+
+[width=110mm]fig5.eps
+Spatially correlated instantaneous MF SINR error  CDF as a function of the number of users, , and antenna clusters, . Here, we have perfect CSI, .
+
+
+
+
+
+In Figure , we show the rate at which the mean per-user SINR approaches its limit in a correlated scenario, as a function of system size. As with the uncorrelated case, we consider three system sizes. It is clear that for a larger number of BSs, the mean SINR converges towards its limit much quicker than for a smaller number of BSs. The slower rate of convergence is due to the additional factor, , in the piecewise convergence of mf_sinr to mf_sinr_lim, arising due to spatial correlation. In contrast with the uncorrelated error CDF, in Figure , it is seen that correlation reduces the rate of convergence greatly for both cases for BS numbers. For example, the median Error  value for a medium sized system with a single antenna cluster is seen to increase by approximately  when spatial correlation is introduced. On the other hand, the same scenario for  antenna clusters, the impact of spatial correlation is shown to increase the Error  by approximately . Thus, we see a large improvement in mitigating the impact of spatial correlation, on the rate of convergence, by distributing the antennas.
+
+
+[width=110mm]fig6.eps
+Spatially correlated instantaneous MF SINR CDF as a function of CSI imperfections, , and antenna clusters numbers, . Here, we have .
+
+
+
+
+
+In Figure , we show the impact of CSI imperfections and BS numbers on mean per-user SINR for a scenario with spatial correlation at the transmitter. As with the rate of convergence, when spatial correlation is present, we see a vast improvement in performance as we distribute the BS antennas into multiple clusters. This is more clearly seen by comparing the correlated and uncorrelated mean per-user SINR performances, given in Figures  and  respectively. In an uncorrelated scenario with CSI imperfections of , the impact of increasing the BS numbers from  to  results in a loss of  dB mean per-user SINR. Whereas, in a correlated scenario, we instead see a gain of  dB. Again, this is a result of  in the denominator of mf_sinr_lim, which has a significantly negative effect when all antennas are co-located. To further quantify this effect, in Table  we tabulate  for different numbers of BSs, , and  values.
+
+
+
+
+
+ values as a function of  and 
+
+
+
+
+
+Table  shows that, for all values of , we see huge improvements in the reduction of  as we increase the number of BSs.
+
+
+Conclusion
+
+
+In this paper, we have analyzed both the rate of convergence and the performance of a MF precoder in a massive MIMO system. We have presented a method to derive MF SINR for scenarios including: unequal link gains, imperfect CSI, transmitter spatial correlation and distributed BSs. From this, we have derived limiting expressions, as the number of antennas grow without bound, while considering several special cases.
+
+
+
+Results have shown that both the rate of convergence and precoder performance is largely dependent on the spatial correlation.  In the presence of spatial correlation, distributing of the antennas into multiple clusters renders significant gains over a co-located scenario. In uncorrelated scenarios, a co-located antenna cluster has a better mean per-user SINR performance due to users being served by a greater number of antennas, when close to a BS.
+
+IEEEtran
+
+
+
+
+
+Derivation of Premliminary Result 3
+
+
+Using prelim2_start-prelim2_end, we have
+
+
+	_K 1M^T_i ^
+	&= _K1M^T^T_i ^^ 
+
+	&= _K1M^T_i ^ 
+
+	&= _K1M_m=1^MQ_i,mmv_m^2 
+
+	&= _K1Mtr(_i)  
+
+
+	&= _K1M_n=1^N_nitr()  
+
+	&= _K 1M_n=1^N_ni( MN)  
+
+	&= _i, 
+
+
+where  has i.i.d.  elements,  is the th element of ,  is the th element of , and  is the average of . Note that loln holds by a version of the law of large numbers for non-identical variables, using .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Derivation of MF Signal Power
+
+
+
+	E[ P_sig,i]  
+	&= E[  _f_i^T_i^q_i  ^2] 
+
+	&= _fE[  q_i  ^2] E[  (_i^T+1-^2_i^T)_i^ ^2] 
+
+	&= _fK( ^2 _i^T_i^^2 +(1-^2)_i^T_i^_i^T_i^) 
+
+	
+	&= _fK ( ^2 _i^T_i^^2 +(1-^2)tr(_i^T_i^_i^T_i^)) 
+
+	
+	&= _fK ( ^2 _i^T_i^^2 +(1-^2) _i^T_i_i^ ), 
+
+
+where tmp1a is obtained using prelim1_end.
+
+Derivation of MF Interference and Noise Power
+
+
+
+	E[ P_i+n,i] 
+	&= E[  _f_k=1,ki^K_i^T_k^q_k+w_i ^2] 
+
+	&= _fE[ ( _k=1,ki^K_i^T_k^q_k) ( _k'=1,k'i^K_k'^T_i^q^_k') ] + ^2 
+
+
+	
+	&= _fK_k=1,ki^KE[  _i^T_k^ ^2]  + ^2 
+
+	&= _fK_k=1,ki^KE[  (_i^T+1-^2_i^T)_k^ ^2]  + ^2 
+
+	
+	&= _fK_k=1,ki^K( ^2 _i^T_k^ ^2 +(1-^2)E[ _k^T_i^_i^T_k^] )  + ^2 
+
+	&= _fK_k=1,ki^K( ^2 _i^T_k^ ^2 +(1-^2) _k^T_i_k^ )  + ^2.
+
+
+
+
+
+Using ,  and  gives
+
+
+	 _K1M _i^T_k^ ^2
+	&= _K1M _i^T^H_i^12^H_k^12_k^ ^2 
+
+	&= _K1M _i^T_i^12_k^12_k^ ^2 
+
+	&= _K1M_i^T_i^12_k^12_k^_k_k^12_i^12_i^ 
+
+	&= _K1M_i^T_i_k_i^  
+
+	&= _K1Mtr(_i_k)  
+
+	&= _K1M_n=1^N_ni_nktr(^2).
+
+
+where tmp11 and tmp1 hold from the law of large numbers for non-identical variables. Hence,
+
+
+	_K1M^2_k=1,ki^KE[  _i^T_k^ ^2] 
+	&= _KK-1Ktr(^2)M/N_k=1,ki^K_n=1^N_ni_nkN(K-1) 
+
+	&= 1^2 _ik.
+
+
+
+
+
+Using ,  and  gives
+
+
+	_K_k=1,ki^K_k^T_i_k^M^2
+	&= _KK-1K_k=1,ki^K_k^T_i_k_k^(K-1)M 
+
+
+	&= _KK-1K_k=1,ki^K _k^T_i_k_k^(K-1)M 
+
+	&= _KK-1K_k=1,ki^Ktr(_i_k)(K-1)M  
+
+	&= _KK-1K_k=1,ki^K_n=1^N_ni_nktr(^2)(K-1)M 
+
+	&= _KK-1K( tr(^2)M/N) _k=1,ki^K_n=1^N_ni_nk(K-1)N 
+
+	&= 1^2 _ik.
+
+
+Note that tmp2 holds by the law of large numbers for non-identical variables and  is the limiting average of the diagonal elements of .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

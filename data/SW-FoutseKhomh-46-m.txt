@@ -1,0 +1,93 @@
+
+P[1]>p#1
+
+
+
+
+= 10000
+= 10000
+= 10000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Is It Safe to Uplift This Patch? 
+ An Empirical Study on Mozilla Firefox
+
+
+	Marco Castelluccio 
+
+	Mozilla Corporation, United Kingdom 
+
+	DIETI, Universita Federico II, Italy 
+
+	mcastelluccio@mozilla.com
+		Le An and Foutse Khomh 
+
+	SWAT Lab 
+
+	Polytechnique Montreal, QC, Canada
+
+	le.an, foutse.khomh@polymtl.ca 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+In rapid release development processes, patches that fix critical issues, or implement high-value features are often promoted directly from the development channel to a stabilization channel, potentially skipping one or more stabilization channels. This practice is called patch uplift. Patch uplift is risky, because patches that are rushed through the stabilization phase can end up introducing regressions in the code.
+
+This paper examines patch uplift operations at Mozilla, with the aim to identify the characteristics of uplifted patches that introduce regressions. Through statistical and manual analyses, we quantitatively and qualitatively investigate the reasons behind patch uplift decisions and the characteristics of uplifted patches that introduced regressions. Additionally, we interviewed three Mozilla release managers to understand organizational factors that affect patch uplift decisions and outcomes. Results show that most patches are uplifted because of a wrong functionality or a crash. Uplifted patches that lead to faults tend to have larger patch size, 
+
+and most of the faults are due to semantic or memory errors in the patches. Also, release managers are more inclined to accept patch uplift requests that concern certain specific components, and-or that are submitted by certain specific developers. 
+
+
+
+
+
+
+Patch uplift, Urgent update, Mining software repositories, Release engineering
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IEEEtran
+

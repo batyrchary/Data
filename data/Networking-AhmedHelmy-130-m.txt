@@ -1,0 +1,1131 @@
+
+
+
+0.97
+
+
+
+
+
+definitionDefinition
+
+
+
+
+thmTheorem[section]
+lem[thm]Lemma
+proposition[thm]Proposition
+cor[thm]Corollary
+
+
+
+
+
+
+
+op-tical net-works semi-conduc-tor IEEEtran
+
+Modeling Spatial and Temporal Dependencies of User Mobility in Wireless Mobile Networks
+
+Wei-Jen Hsu1,
+Thrasyvoulos Spyropoulos2,
+Konstantinos Psounis3 and
+Ahmed Helmy1 
+
+1Dept. of Computer and Information Science and Engineering,
+University of Florida,
+Gainesville, Florida 
+
+2Computer Engineering and Networks Lab, ETH Zurich
+
+3Dept. of Electrical Engineering,
+University of Southern California,
+Los Angeles, California
+
+
+Email: wjhsu@ufl.edu,   spyropoulos@tik.ee.ethz.ch,  kpsounis@usc.edu,  helmy@ufl.edu
+
+
+
+
+
+
+
+IEEEtran
+
+
+Realistic mobility models are fundamental to evaluate the performance of protocols in mobile ad hoc networks. Unfortunately, there are no mobility models that capture the non-homogeneous behaviors in both space and time commonly found in reality, while at the same time being easy to use and analyze. Motivated by this, we propose a time-variant community mobility model, referred to as the TVC model, which realistically captures spatial and temporal correlations. We devise the communities that lead to skewed location visiting preferences, and time periods that allow us to model time dependent behaviors and periodic re-appearances of nodes at specific locations.
+
+To demonstrate the power and flexibility of the TVC model, we use it to generate synthetic traces that match the characteristics of a number of qualitatively different mobility traces, including wireless LAN traces, vehicular mobility traces, and human encounter traces. More importantly, we show that, despite the high level of realism achieved, our TVC model is still theoretically tractable. To establish this, we derive a number of important quantities related to protocol performance, such as the average node degree, the hitting time, and the meeting time, and provide examples of how to utilize this theory to guide design decisions in routing protocols.
+
+Introduction
+
+
+
+Mobile ad hoc networks (MANETs) are self-organized, infrastructure-less networks that could potentially support many applications, such as vehicular networking (VANET) , wild-life tracking , and Internet provision to rural areas , to name a few. Mobility also enables message delivery in sparsely connected networks, generally known as delay tolerant networks (DTNs). As the devices are easily portable and the scenarios of deployment are inherently dynamic, mobility becomes one of the key characteristics in most of these networks. It has been shown that mobility impacts MANETs in multiple ways, such as network capacity , routing performance , and cluster maintenance . In short, the evaluation of protocols and services for MANETs seems to be inseparable from the underlying mobility models. It is, thus, of crucial importance to have suitable mobility models as the foundation for the study of ad hoc networks.
+
+Ideally, a good mobility model should achieve a number of goals: (i) it should first capture realistic mobility patterns of scenarios in which one wants to eventually operate the network; (ii) at the same time it is desirable that the model is mathematically tractable; this is very important to allow researchers to derive performance bounds and understand the limitations of various protocols under the given scenario, as in; (iii) finally, it should be flexible enough to provide qualitatively and quantitatively different mobility characteristics by changing some parameters of the model, yet in a repeatable and scalable manner; designing a new mobility model for each existing or new scenario is undesirable.
+
+Most existing mobility models excel in one or, less often, two aspects of the above requirements, but none satisfies all of them at the same time. Our goal in this paper is, on one hand, to improve the existing random mobility models (e.g., random walk, random direction, etc.) and synthetic mobility models (e.g.,) on the front of realism, by considering empirically observed mobility characteristics from the traces. On the other hand, the construction of the model should new model should be simple enough to allow in-depth theoretical analysis, and be flexible enough to have wider applicability than the mobility traces (which provide only a single snapshot of the underlying mobility process) and current trace-based mobility models which focus mainly on matching mobility characteristics with a specific class of traces.
+
+
+
+The main contribution of this paper is the proposal of a time-variant community mobility model, referred to as the TVC model, which is realistic, flexible, and mathematically tractable. One salient characteristic in the TVC model is location preference.  Another important characteristic is the time-dependent, periodical behavior of nodes. To our best knowledge, this is the first synthetic mobility model that captures non-homogeneous behavior in both space and time.
+
+
+
+To establish the flexibility of our TVC model we show that we can match its two prominent properties, location visiting preferences and periodical re-appearance, with multiple WLAN traces, collected from environments such as university campuses  and corporate buildings . More interestingly, although we motivate the TVC model with the observations made on WLAN traces, our model is generic enough to have wider applicability. We validate this claim by examples of matching our TVC model with two additional mobility traces: a vehicle mobility trace and a human encounter trace. In the latter case, we are even able to match our TVC model with some other mobility characteristics not explicitly incorporated in our model by its construction, namely the inter meeting time and encounter duration between different users/devices.
+
+Finally, in addition to the improved realism, the TVC model can be mathematically treated to derive analytical expressions for important quantities of interest, such as the average node degree, the hitting time and the meeting time. These quantities are often fundamental to theoretically study issues such as routing performance, capacity, connectivity, etc. We show that our theoretical derivations are accurate through simulation cases with a wide range of parameter sets, and additionally provide examples of how our theory could be utilized in actual protocol design. To our best knowledge, this is the first synthetic mobility model proposed that matches with traces from multiple scenarios, and has also been theoretically treated to the extent presented in this paper. We make the code of the TVC model available at .
+
+The the paper is organized as follows: In Section  we discuss related work. Our TVC model is then introduced in Section . In Section , we show how to generate realistic mobility scenarios matched with various traces. Then, in Section , we present our theoretical framework and derive generic expressions of various quantities. Simulation validates the accuracy of these expressions in Section . Additionally, in Section , we motivate our theoretical framework further, by applying our analysis to performance predictions in protocol design. Finally, we conclude the paper in Section .
+
+Related Work 
+Mobility models have been long recognized as one of the fundamental components that impacts the performance of wireless ad hoc networks. A wide variety of mobility models are available in the research community (see for a good survey). Among all mobility models, the popularity of random mobility models (e.g., random walk, random direction, and random waypoint) roots in its simplicity and mathematical tractability. A number of important properties for these models have been studied, such as the stationary nodal distribution , the hitting and meeting times , and the meeting duration . These quantities in turn enable routing protocol analysis to produce performance bounds . However, random mobility models are based on over-simplified assumptions, and as has been shown recently and we will also show in the paper, the resulting mobility characteristics are very different from real-life scenarios. Hence, it is debatable whether the findings under these models will directly translate into performance in real-world implementations of MANETs.
+
+More recently, an array of synthetic mobility models are proposed to improve the realism of the simple random mobility models. More complex rules are introduced to make the nodes follow a popularity distribution when selecting the next destination , stay on designated paths for movements , or move as a group . These rules enrich the scenarios covered by the synthetic mobility models, but at the same time make theoretical treatment of these models difficult. In addition, most synthetic mobility models are still limited to i.i.d. models, and the mobility decisions are also independent of the current location of nodes and time of simulation.
+
+A different approach to mobility modeling is by empirical mobility trace collection. Along this line, researchers have exploited existing wireless network infrastructure, such as wireless LANs (e.g.,) or cellular phone networks (e.g.,), to track user mobility by monitoring their locations. Such traces can be replayed as input mobility patterns for simulations of network protocols . More recently, DTN-specific testbeds  aim at collecting encounter events between mobile nodes instead of the mobility patterns. Some initial efforts to mathematically analyze these traces can be found in . Yet, the size of the traces and the environments in which the experiments are performed can not be adjusted at will by the researchers. To improve the flexibility of traces, the approach of trace-based mobility models have also been proposed . These models discover the underlying mobility rules that lead to the observed properties (such as the duration of stay at locations, the arrival patterns, etc.) in the traces. Statistical analysis is then used to determine proper parameters of the model to match it with the particular trace.
+
+The goal of this work is to combine the strengths of various approaches to mobility modeling and propose a realistic, flexible, and mathematically tractable synthetic mobility model. Our work is partly motivated by several prominent, common properties in multiple WLAN traces (e.g., traces available from public archives ) we observed in, based on which we construct the TVC model. This model extends the concept of communities proposed by us in  and also introduces time-dependent behavior. A preliminary version of the model has been presented in . In this work we highlight the flexibility of the TVC model by matching the synthetic traces with two additional, qualitatively different traces to WLAN traces (i.e., vehicular and human encounter traces, in section ). We also extend and present more generic theoretical results under the scenario with multiple communities (section ), and display its applications on protocol performance prediction (section ).
+
+We differentiate our work from other trace-based models  in several aspects. First, among all efforts of providing realistic mobility models, to our best knowledge, this is the first work to explicitly capture time-variant mobility characteristics. Although capturing time-dependent behavior is suggested in , it has not been incorporated in the particular paper. Second, while previous works emphasize the capability to truthfully recreate the mobility characteristics observed from the traces, we also strive to ensure at the same time the mathematical tractability of the model. Our motivation is to facilitate the application of our model for performance prediction of various communication protocols. Finally,
+most of the other trace-based models have not been shown as capable to match mobility characteristics of a diverse set of traces, since their focus is mostly on one particular trace or at most a single class of traces (e.g., WLAN trace). We go beyond that and re-produce matching mobility characteristics of several qualitatively different traces, including WLAN, vehicle, and human encounter traces.
+
+
+
+As a final note, in, the authors assume the attraction of a community (i.e., a geographical area) to a mobile node is derived from the number of friends of this node currently residing in the community. In our paper we assume that the nodes make movement decisions independently of the others (nonetheless, node sharing the same community will exhibit mobility correlation, capturing the social feature indirectly). Mobility models with inter-node dependency require a solid understanding of the social network structure, which is an important area under development. We plan to work further in this direction in the future.
+
+Time-variant Community Mobility Model 
+Mobility Characteristics Observed in WLAN Traces 
+The main objective of this paper is to propose a mobility model that captures the important mobility characteristics observed in daily life. To better understand this mobility, we have conducted extensive analysis of a number of wireless LAN traces collected by several research groups (e.g., traces available at or). The reason for this choice is that WLAN traces log information regarding large numbers of nodes, and thus are reliable for statistical analysis. After analyzing a large number of traces, we have observed two important properties that are common in all of them: (a)skewed location visiting preferences and (b)time-dependent mobility behavior .
+
+More specifically, the location visiting preference refers to the percentage of time a node spends at a given access point (AP). We refer to the coverage area of an access point as a location. In Fig. (a), we draw the probability density function of the percentages of online time an average user spends at each location, ranking the locations from the most favorite place to the least for various traces. The distribution appears highly skewed; more than  of user's online time is spent at only top five APs. The time-dependent mobility behavior refers to the observation that nodes visit different locations, depending the time of the day. In Fig. (b) we plot the probability of a node re-appearing at the same location at some time in the future, as a function of the elapsed time. It is clear that this probability displays some amount of periodicity, as the mobile nodes have stronger tendency to re-appear at a previously visited location after a time gap of integer multiples of days. A slightly higher peak on the 7th day, suggesting a stronger weekly correlation in location visiting preferences, could also be observed in some curves (e.g., MIT).
+
+Unfortunately, these two prominent realistic mobility characteristics are not captured by commonly used simple random models, as they do not possess any space or time dependent features in user mobility. This is demonstrated in Fig.  by a straight line (uniform distribution) for the Random Direction model. The same could be obtained from Random Waypoint, Random walk, etc., or even more sophisticated models without spatial-temporal preferences (e.g.,). There are some more recent models (e.g.,) that aim at capturing spatial preference explicitly. As shown in Fig. (a) using the simple community model , with appropriately assigned parameters this model is able to capture the skewed location visiting preference, to some extent. However, time-dependent behavior is not captured, and thus the periodical re-appearance property cannot be reproduced, as shown by the flat curve labeled community model in Fig. (b).
+
+
+It is our goal to design a mobility model that successfully captures the skewed location preference and time-dependency mobility properties observed in the traces in an analytically tractable fashion. We believe that although the above observations are made based on WLAN traces, the two properties in question are indeed prevalent in real-life mobility. This belief is supported by typical daily activities of humans: most of us tend to spend most time at a handful of frequently visited locations, and a recurrent daily or weekly schedule is an inseparable part of our lives. It is essential to design a model that captures such spatial-temporal preferences of human mobility in many contexts.
+
+
+
+
+
+
+
+(a) Skewed location visiting preferences.
+
+
+
+
+(b) Periodical re-appearance at the same location.
+
+Two important mobility features observed from WLAN traces. Labels of traces used: MIT: trace from, Dart: trace from, UCSD: trace from, USC: trace from.
+
+
+Construction of the Time-variant Community Model 
+
+Parameters of the time-variant community mobility model 
+
+
+
+
+
+
+In this section, we present the design of our time-variant community (TVC) mobility model. We illustrate the model with an example in Fig.  and use this example to introduce the notations we use (see Table ) in the rest of the paper. 
+
+
+
+
+First, to induce skewed location visiting preferences, we define some communities (or heavily-visited geographic areas). Take time period 1 (TP1) in Fig.  as an example, the communities are denoted as  and each of them is a square geographical area with edge length .(For all parameters used in the paper, we follow the convention that the subscript of a quantity represents its community index, and the superscript represents the time period index.) A node visits these communities with different probabilities (details are given later) to capture its spatial preference in mobility. In the TVC model, the mobility process of a node consists of epochs in these communities. When the node chooses to have an epoch in community  (we say that  the node is in state  during this epoch), it starts from the end point of the previous epoch within  and the epoch length (movement distance) is drawn from an exponential distribution with average , in the same order of the community edge length. The node then picks a random speed uniformly in , , and a direction (angle) uniformly in , and performs a random direction movement within the chosen community with the chosen epoch length(To avoid boundary effects, if the node hits the community boundary it is re-inserted from the other end of the area (i.e., "torus" boundaries). Note that we could also choose random waypoint or random walk models for the type of movement during each epoch.). The first difference between the TVC model and the standard Random Direction model is hence the spatial preference and location-dependent behavior. Note that, a node can still roam around the whole simulation area during some epochs, by assigning an additional community that corresponds to the whole simulation field (e.g. ). We refer to such epochs as roaming epochs.
+
+
+We next explain how a node selects the next community for a sequence of epochs. At the completion of an epoch, the node remains stationary for a pause time uniformly chosen in . Then, depending on its current state  and time period , the node chooses the next epoch to be in community  with probability . This community selection process is essentially a time-variant Markov chain that captures the spatial and temporal dependencies in nodal mobility and thus makes the community selection process in the TVC model non-i.i.d., an important feature absent in many synthetic mobility models even if they consider non-uniform mobility features. Now, if the end point of the previous epoch is in  (this can be the case when the node has two consecutive epochs in , or  contains ), the node starts the next epoch directly. If, on the other hand, the node is currently not in , a transitional epoch is inserted to bridge the two epochs in disjoint communities. The node selects a random coordinate point in the next community, moves directly towards this point on the shortest straight path with a random speed drawn from , , and then continues with an epoch in the next community. Hence the movement trajectory of a node is always continuous in space.
+
+
+We next introduce the structure in time. To capture time-dependent behavior, one creates multiple time periods with different community and parameter settings. As an example, there are  time periods with duration , , and   in Fig. . These time periods follow a periodic structure (e.g., a simple recurrent structure in Fig.  or the weekly schedule in Fig. ). This setup naturally captures the temporal preferences (e.g., go to work during the days and home during the nights) and periodicity in human mobility. On the time boundaries between time periods, each node continues with its ongoing epoch, and decides the next epoch according to the new parameter settings in the new time period when it finishes the current epoch.
+
+
+As a final note, we choose to construct the TVC model with simple building blocks introduced above due to its amenability to theoretical analysis  and flexibility. To further explain the flexibility of our TVC model, we note that the number of communities in each time period (denoted as ) can be different, and the communities can overlap (as in TP1 in Fig. ) or contain each other (as in TP2 in Fig. ). Finally, the time period structure, communities, and all other parameters could be assigned differently for each node to capture node-dependent mobility (e.g., people following different schedules, with different working places, etc.), while nodes can share some communities (i.e., the popular locations) as well. This construction allows for maximum flexibility when setting up the simulations for nodes with heterogeneous behaviors(When necessary, we use a pair of parentheses to include the node ID for a particular parameter, e.g.,  denotes the edge length of the -th community during time period  for node .).
+
+The benefit of using simple building blocks will become evident in Section . At the same time, we will show next that these choices do not compromise our model's ability to accurately capture real life mobility scenarios.
+
+
+Illustration of a generic scenario of time-variant mobility model, with three time periods and different numbers of communities in each time period.
+
+
+
+An illustration of a simple weekly schedule, where we use time period  (TP1) to capture weekday working hour, TP2 to capture night time, and TP3 to capture weekend day time.
+
+Generation of Mobility Scenarios 
+The TVC model described in the previous section provides a general framework to model a wide range of mobility scenarios. In this section, our aim is to demonstrate the model's flexibility and validate its realism by generating various synthetic traces from the model, with matching mobility characteristics to well-known, publicly-available traces (e.g., WLANs, VANET, and human encounter traces). However, it is important to note that the use of such a model is not merely to match it with any specific trace instance available; this is only done for validation and calibration purposes. Rather, the goal is to be able to reproduce a much larger range of realistic mobility instances than a single trace can provide(We have made our mobility trace generator available at. The tool provides mobility traces in both ns-2 compatible format and time-location (i.e., ) format.).
+
+
+
+We first outline a general 3-step systematic process to construct specific mobility scenarios. Then, we demonstrate our success to generate matching mobility characteristics with three qualitatively different traces. All the parameter values we use in this section are also available in(Due to space limitations, we cannot list all parameters in this paper.).
+
+STEP 1: Determine the Structure in Space and Time
+
+
+
+ (1.1 Number of communities) Each community in the TVC model corresponds to a location visited frequently by nodes (i.e., the most visited location in Fig. (a) corresponds to the most popular community in the model, and so on). The number of communities needed is thus determined by how closely one wants the mobility characteristics to match with the curves in Fig. (a). Due to the nature of skewed location visiting preference, in our experience, only two or three communities are needed to capture up to  of the user online time spent at the most popular locations. Such a simple spatial structure yields simple theoretical expressions. However, if one wants the model to capture more details (e.g., for detailed simulation), the user can instantiate as many communities as needed to explicitly represent the less visited locations.
+
+
+
+ (1.2 Location of communities) If the map of the target environment is available, one should observe the map and identify the points of attraction in the given environment to assign the communities accordingly. The methods described in could be applied to help choosing the "hot spots" on campus, by adding up the time users spend at each location on a 2-D map and identifying the peaks. Alternatively, if the map is not available, one can instantiate communities at random locations(Concerning matching with the two mobility properties shown in Fig. , the actual locations of the communities do not make a difference.). One way to do so is to simply divide the simulation area into equal-sized grid cells, and assign randomly chosen cells as communities.
+
+
+
+ (1.3 Time period structure) From the curves in Fig. (b), one observes the re-appearance periodicity and decides on the time period structure accordingly. Typically, human activities are bounded by daily and weekly schedules so a time period structure shown in Fig.  would suffice for most applications. If capturing finer behavior based on time-of-day is necessary, one could additionally split the day into time periods with different mobile node behavior. We illustrate this in our third case study, the human encounter trace.
+
+
+
+
+
+STEP 2: Assign Other Parameters
+After the space/time structure is determined, one has to determine the remaining parameters for each community and time period. This includes , , and  , which represent the stationary  probability (which is calculated after selecting proper 's that lead to a desired stationary distribution using simple Markov chain theory), average pause time, and average epoch length, respectively, at community  during time period . These parameters can be determined by referring to the curves in Fig. . We give some general rules of how the parameters change the curves in Fig.  below. The detailed adjustments we make for each specific case studies will be discussed later.
+
+ The average epoch length in each community, , should be at least in the same order as the edge length of the community, . This is to ensure that the end point of the epoch becomes almost independent of its starting point, since the mixing time of the corresponding process becomes quite small. (The motivation for this requirement is to keep the theoretical analysis tractable.)
+
+ The average duration the node stays in community  is given by . The ratio between the durations the node stays in each community shapes the location visiting preference curve in Fig. (a).
+
+ The highest peak of the re-appearance probability curve (on the -th day under the weekly schedule) in Fig. (b) is determined by the weighted average probability of the node appearing in the same community during the same type of time period. This value is , where  denotes the fraction of time the node spends in community .
+
+
+STEP 3: Adjust User On-off Pattern (Optional)
+The mobility trace generated by the TVC model is an "always-on" mobility trajectory (i.e., the mobile nodes are always present somewhere in the simulation field). However, in some situations some nodes might be absent occasionally. For example, in a WLAN setting, nodes (e.g. laptops) are often turned off when travelling from one location to another and the "off" time is often not negligible. Thus one may need to make optional adjustments to turn nodes off in the generated trace, depending on the actual environment to match with. To address this we assign a probability  as the probability for the node to be "on" in community . In two of the case studies we present (WLAN and vehicular trace), we utilize this feature as the nodes are not always-on in the actual traces.
+
+Note that it is possible to automate part of the above community and parameter selection. This can be done by feeding the curves in Fig.  and the desired level of matching to a program that executes the above steps. Automatic generation of proper synthetic traces is a direction of our future work.
+
+Next, we look into three specific case studies and apply the fore-mentioned procedure in each case, to display that the TVC model successfully produces synthetic mobility traces with matching characteristics observed in the real traces.
+
+WLAN Traces 
+In the first example, we show that the TVC model can re-create the location preferences and re-appearance probability curves observed in WLANs. We use the MIT WLAN trace (first presented in) as the main example here(We also achieve good matching with the USC or the Dartmouth traces, but do not show it here due to space limitations.). We split the MIT trace into two halves and generate a matching synthetic trace with observed mobility characteristics from the first half (the training data set). We then compare our synthetic trace with the mobility characteristics of the second half (the validation data set). Note that, the mobility characteristics are similar across the two halves (shown by the two very close thick black curves in Fig. ). We generate two synthetic traces with the TVC model, a simplified one and a complex one, to display its flexibility to have different levels of matching to the WLAN trace.
+
+The simplified model (shown by thin black curves) uses only one community and two time periods (for the day time and night time), with parameters listed as Model-1 in Table . The simple model captures the major trends but still shows several noticeable differences: (a) the tail in the model-simplified curve in Fig. (a) is "flat" as opposed to the exponentially diminishing tail of the MIT curve. (b) the peaks in the model-simplified curve in Fig. (b) are of equal heights. 
+
+We can improve the matching between the synthetic trace and the real trace by adding complexity in both space and time, with the following detailed procedure. (STEP1): We divide the simulation area into 10-by-10 grid cells. Since we want to have a close match with the curve in Fig. (a), we assign randomly  of the cells as communities to each node (Intuitively, this number corresponds to the number of distinct access points that a person may connect to on a university campus over a period of one month.). For the time period structure we use the simple weekly structure shown in Fig. , allocating  hours for day time (TP1, TP3) and  hours for night time (TP2), as this trace is collected from a corporate environment. (STEP2 and STEP3): In the actual WLAN trace the nodes are "on" only for a low percentage of time. We capture this phenomenon with an additional parameter, , the probability the node is "on" in state . In WLAN, the nodes are typically "on" (i.e., appear at the current location) when they are not moving. Under this on-off pattern,  . We then consider the on-off pattern and parameter assignment jointly. (1) We first assign the same  to all communities, then assign  with  a value equal to the fraction of time spent at the -th location in Fig. (a). This assignment strategy makes the node "on" for the same amount of time in each community during each visit, and the total time in each community (and hence the observed location visiting preference curve) is therefore determined by the value of . (2) Due to the on-off pattern, the peak value in the re-appearance probability curve becomes .  To shape the re-appearance probabilities, we adjust the  values, which, in turn, adjust the values of  and set the re-appearance probabilities to the desirable values to match with the curve in Fig. (b). Note that by adjusting the  values in a consistent manner among all communities we do not change the location visiting probability curve that has already been matched in the previous step.
+
+As it is evident from Fig. 4, this model, which is labeled Model-complex and corresponds to the red curves in the plot, yields synthetic traces whose characteristics match very closely with those of the MIT trace.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+(a) Skewed location visiting preferences.
+
+
+
+
+
+
+
+
+(b) Periodical re-appearance at the same location.
+
+
+
+
+Matching mobility characteristics of the synthetic traces to the MIT WLAN trace.
+
+
+Vehicle Mobility Traces 
+In this example we display that skewed location visiting preferences and periodical re-appearance are also prominent mobility properties in vehicle mobility traces. We obtain a vehicle movement trace from, a website that tracks participating taxis in the greater San Francisco area. We process a 40-day trace obtained between Sep. 22, 2006 and Nov. 1, 2006 for 549 taxis to obtain their mobility characteristics. The results are shown in Fig.  with the label Vehicle-trace. It is interesting to observe that the trend of vehicular movements is very similar to that of WLAN users in terms of these two properties.
+
+
+
+We use  communities and the weekly time schedule in (STEP1). We need more communities for this trace as the taxis are more mobile and visit more places than people on university campuses. From the actual trace, we discover that the taxis are offline (i.e., not reporting their locations) when not in operation. Hence we assume that the nodes are "on" only when they are moving. The pause times between epochs are considered as breaks in taxi operation. Therefore in (STEP3),  , and we adjust the parameters in a similar way as described in the previous section. The curves in Fig.  with label Model match with the curves with Vehicle-trace label well. As a final note, although vehicular movements are generally constrained by streets and our TVC model does not capture such microscopic behaviors, designated paths and other constraints could still be added in the model's map (for vehicular or human mobility) without losing its basic properties. We defer this for future work.
+
+
+
+
+
+
+
+(a) Location visiting preferences.
+
+
+
+
+(b) Periodical re-appearance.
+
+Matching mobility characteristics of the synthetic trace to the vehicle mobility trace.
+
+
+Human Encounter Traces 
+In this example, we show that the TVC model is generic enough to mimic the encounter properties of mobile human networks observed in an experiment performed at INFOCOM 2005 . In this experiment, wireless devices were distributed to  participants at the conference to log encounters between nodes (i.e., coming within Bluetooth communication range) as they moved around the premises of the conference area. The inter-meeting time and the encounter duration distributions of all  pairs of users obtained from this trace are shown in Fig.  with label Cambridge-INFOCOM-trace. 
+
+To mimic such behaviors using our TVC model, we observe the conference schedule at INFOCOM, and set up a daily recurrent schedule with five different types of time periods (STEP1): technical sessions, coffee breaks, breakfast/lunch time, evening, and late night (see for the detailed parameters). For each time period we set up communities as the conference rooms, the dining room, etc. We also generate a community that is far away from the rest of the communities for each node and make the node sometimes isolated in this community to capture the behavior of patrons skipping part of the conference. In (STEP2), we use the theory presented in section  to adjust the parameters and shape the inter-meeting time and encounter duration curves. For example, a stronger tendency for nodes to choose roaming epochs (setting larger ) would increase the meeting probability (see, e.g., Eq. ()), hence reducing inter-meeting times. Finally, since the devices used to collect the encounter traces are always-on, we do not apply any changes to the synthetic trace (STEP3). We randomly generate  pairs of users and show their corresponding distributions of the inter-meeting time and the encounter duration in Fig.  with label Model.  It is clear that our TVC model has the capability to reproduce the observed distributions, even if it is not constructed explicitly to do so. This displays its success in capturing the decisive factors of typical human mobility.
+
+
+
+It is clear from the cases studied here that the TVC model is flexible to capture mobility characteristics from various environments well. In addition, with the respective configuration, it is possible to generate synthetic traces with much larger scale (i.e., more nodes) than the empirical ones while maintaining the same mobility characteristics. It is also possible to generate multiple instances of the synthetic traces with the same mobility characteristics to complement the original, empirically collected trace.
+
+
+
+
+
+
+
+
+
+
+
+
+
+(a) Inter-meeting Time.
+
+
+(b) Encounter duration.
+
+Matching inter-meeting time and encounter duration distributions with the encounter trace.
+
+Theoretical Analysis of the TVC Model 
+So far, we have established the flexibility of the TVC
+model in terms of its ability to reproduce the properties observed
+in qualitatively different mobility traces.  Yet, one of the biggest
+advantages of our model is that, in addition to the realism, it is
+also analytically tractable with respect to some important
+quantities which determine protocol performance. In the rest of this
+paper, we focus on demonstrating this last point.
+
+
+
+
+We start here by deriving the theoretic expressions of various
+properties of the proposed mobility model assuming the nodes are
+always "on". The properties of interest are defined below.
+
+
+
+
+
+ The average node degree is the average number of nodes residing within the communication range of a given node. This is a quantity of interest due to its implication on the success rate of various tasks (e.g. geographic routing ) in mobile ad hoc networks.
+
+ The hitting time is the time it takes a node, starting from the stationary distribution, to move within transmission range of a fixed, randomly chosen target coordinate in the simulation field.
+
+ The meeting time is the time until two mobile nodes, both starting from the stationary distribution, move into the transmission range of each other. The hitting and meeting times are of interest due to their close relationship to the performance of DTN routing protocols.
+
+
+
+
+
+We note that a preliminary version of some of the theoretical
+derivations presented here appear under a special case of our TVC
+model in  (that model included one community
+and two time periods only). Here, we generalize all derivations for
+any community and time-period structure. We start with a useful
+lemma that calculates the probability of a node to reside in a
+particular state.
+
+
+
+
+The probability that a node moves, pauses (after the completion
+of an epoch) in state , or performs a transitional epoch at any
+given time instant during time period , respectively, is:
+
+
+
+
+
+
+
+
+
+
+
+where  and  is the average length of a transitional epoch from community  to community .
+
+
+
+
+The probability for a node to be in state  () can be
+easily derived with Markov chain theory from the state transition
+probabilities (). The above result follows from the ratio
+of the average durations of the moving part
+() and the pause part
+() of regular epochs, and the transitional epochs
+(), weighted by the
+probabilities of the states. The expected length of the transitional
+epochs, , can be calculated as follows. Note
+that if community  contains community , no transitional epoch
+is needed (i.e., ). The transitional epoch is thus
+needed for a roaming node to go back to a smaller community, and as
+the previous roaming epoch ends at a random location in the whole
+simulation field, by symmetry, the expected length of the
+transitional epoch is the average length to move to the center of
+the simulation field from a random point in the simulation field.
+Numerical analysis concludes  in this
+case.
+
+Note that the above stationary probabilities can be calculated for
+each time period and node separately. We use  to denote
+the probability that node  is in state  during time period 
+(i.e., ).
+
+Derivation of the Nodal Spatial Distribution 
+We start with the derivation of the nodal spatial distribution. This
+becomes relatively straight-forward after we observe that a node
+follows a basic random mobility model (i.e., random direction)
+in each community. Hence, when a given node is in state , it
+appears equally likely in any point within .
+
+ For a given area , the probability for a node to appear in  at any given time instant during time period  is
+ 
+ _A p(x,y)  dx dy,
+where the function  is the spatial density function,
+ 
+p(x,y) = _ j  (x,y) Comm_j^t  P_j^t / C_j^t^2 + P_tr^t / N^2.
+
+
+A node could appear at a given point in space when it is in state
+ if and only if the -th community includes the point. Within
+the community, the appearance probability of the node is uniformly
+distributed. Considering a given point , the probability for
+a node to appear at the point is the sum of the contributions from
+all of its communities that contain the point. The last term
+accounts for the transitional epochs. They contribute in the same
+way as the roaming epochs to the nodal spatial distribution: the
+node appears uniformly in the simulation field since the it moves
+from anywhere in the simulation field back to the local community
+during transitional epochs.
+
+Note that the nodal spatial distribution for each time period is independent, hence can be calculated separately with the above Theorem.
+Derivation of the Average Node Degree 
+The average node degree of a node is defined as the expected number
+of nodes falling within its communication range. Each node
+contributes to the average node degree independently, as nodes make
+independent movement decisions.
+ Consider a pair of nodes,  and . Assume further that, in
+time period , community  of node  and community  of node
+ overlap with each other for an area . Then, the
+contribution of node  to the average node degree of node ,
+when  resides in its -th community and  resides in its
+-th community, is given by
+
+
+ K^2C_j^t^2 (a) A(a_j^t, b_k^t)C_k^t^2 (b),
+where  is the communication range of the nodes.
+
+
+Since nodes follow random direction movement in each epoch,
+they are uniformly distributed within each community (i.e., they 
+are at any point within the community equally likely). The
+probability for node  to fall in the -th community of node 
+is simply the ratio of the overlapped area over the size of the
+-th community of node . Node  covers any given point in its
+community equal-likely, hence given node  is in the overlapped
+area, it is within the communication range of node  with
+probability .
+
+
+
+
+
+
+
+
+
+Following the same principle in Lemma , we include all community pairs and arrive at the following Theorem.
+ The average node degree of a given node  is
+ 
+_Comm_j^t (a)  P_j^t (a) _b  _ Comm_k^t (b)   P_j^t (b) K^2C_j^t^2 (a) A(a_j^t, b_k^t)C_k^t^2 (b).
+
+
+Eq. () is simply a weighted average of the node
+degree of node  conditioning on its states. For each state with
+probability , the expected node degree is a sum over all
+other nodes' probability of being within the communication range of
+node , again conditioning on all possible states. Transitional
+epochs are treated the same way as roaming epochs here. That
+is, when considering a node in the transitional state with
+probability , it has equivalent contribution to the node
+degree as when it is in the roaming state (i.e., the
+node appears uniformly in the simulation field during transitional epochs since the it moves
+from anywhere in the simulation field back to the local community.).
+ Hence, with probability
+(If the node has no roaming state in
+this time period, then we consider only .), the node has
+an effective community size of the simulation field, .
+
+ In the special case when all nodes choose their communities uniformly at random among the simulation field, Eq. () degenerates to .
+
+
+
+
+
+
+
+This result follows from the fact that a randomly chosen community is anywhere in the simulation field equally likely.
+
+
+
+Derivation of the Hitting Time 
+In the calculation of the average
+node degree, the dependence between consecutive epochs did not
+affect the derivation. In fact, only the stationary occupancy
+probabilities  and  (i.e. the probability of being
+found in community ) are needed, since we were looking only at a
+random snapshot of the model. In the case of hitting and
+meeting times, we are
+interested in counting the number of epochs until a given target
+coordinate is found ("hit"). Our approach is to try to calculate
+the "hit probability" for a given epoch, and then count the number
+of such epochs needed on average until the destination point is hit.
+If these probabilities were independent, then one could use a simple
+geometric distribution to derive the result. However, (1) consecutive
+epochs are strongly related, as the ending point of one epoch is,
+naturally, the beginning point of the next. This introduces a
+seeming dependency between the hit probabilities of
+consecutive epochs, complicating the derivation. What is more, (2) the
+transition between communities (and epochs performed in each)
+are governed by the TVC model's Markov chain and the respective
+community transition probabilities . Thus, looking only at
+the stationary probabilities for "choosing" the next community 
+(as in the previous section) no longer suffices. Finally,
+(3) the transitional epochs themselves introduce further
+complications, as they cannot, in this case, be handled as regular
+in-community or even roaming epochs.
+
+The above three observations introduce dependencies that, at first
+glance, complicate our task. Nevertheless, we will show how these
+dependencies can be "washed out" under a (minimally restricting)
+set of assumptions, and that stationary probabilities still suffice
+to derive a simple formula for the respective hitting time that
+holds in the limit. The basis of our argument is found in the
+proof of Lemma , upon which the rest of
+results in this section depend (In a nutshell, the fast mixing of the mobility process takes care of  (1), the large number of epochs required to hit a target takes care of (2) in the limit, and the dominance of local and roaming epochs over transitional epochs takes care of (3).). In Section ,
+we show that the accuracy of our theory is not compromised by these
+assumptions and that our derivations introduce little error in most
+practical scenarios considered.
+
+The sketch of the derivation of the hitting time is as follows: (i)
+We first condition on the relative location of the target coordinate
+with respect to a node's communities (Lemma ). We
+identify all possible sub-cases (i.e. whether the target is inside or
+outside one or more of the node's communities). A
+target inside a community is, naturally, expected to be found faster
+than a target outside all communities. Using simple
+geometric arguments, we calculate the probability of each of these
+sub-cases (Lemma ) 
+and take the weighted average of all sub-cases and
+the respective hitting time (to be calculated per sub-case). (ii) For a given sub-case,
+we derive the expected number of epochs (and the expected number of
+time units) until the target is found (Lemma 
+). (iii) Finally, we introduce the time-period factor, and
+account for the total number of time
+periods needed to hit the target
+(Theorem ).
+
+The most influential factor for the hitting time is whether the
+target coordinate is chosen inside the node's communities. We denote
+the possible relationships between the target location and the set
+up of communities during time period  as the set . Note
+that the cardinality of set  is at most  (i.e.
+for each of the  communities, the target coordinate is either
+in or out of it). 
+
+
+
+
+
+
+
+ By the law of total probability, the average hitting time can be written as
+
+where  denote one particular
+relationship (i.e. a combination of ) between the
+target coordinate and the community set up during time period 
+, respectively. Functions  and  denote
+the corresponding probability for this scenario and the conditional
+hitting time under this scenario, respectively. Note that each
+sub-case  is disjoint from all
+other sub-cases.
+
+To evaluate Eq. (), we need to calculate  and  for each possible sub-case .
+
+ If the target coordinate is chosen independent of the communities and the communities in each time period are chosen independently from other periods, then
+
+where , i.e., the probability of a
+sub-case  is proportional to the area  that corresponds
+to the specific scenario , which is a series of conditions of
+the following type: (
+
+).
+
+
+The result follows from simple geometric arguments.
+
+The first step for calculating  is to derive the
+unit-time hitting probability in time period  under target
+coordinate-community relationship , denoted as .
+
+ For a given time period  and a specific scenario ,
+
+where  is the indicator function.
+
+
+
+In order to calculate the expected hitting time, let us first count
+the total number of epochs needed. Let us assume that  epochs
+are needed in total, and let us denote as epoch  the
+-th epoch in sequence (that is occurring in community
+). Let further,  denote the
+probability of the specific sequence of epochs occurring. Then, the
+probability that the target has not been found after  epochs is
+
+
+In order to simplify the above equation, we need to deal with the
+inherent dependencies introduced by the transition of epochs. First,
+since node movement is continuous, the end of one epoch ,
+performed in community , is the beginning of the next,
+, if performed in the same community (For the
+moment, we will ignore transitional epochs, and assume that all
+epochs are performed inside some community; we deal with
+transitional epochs later.). Nevertheless, as explained in
+Section , the expected "length" of an epoch
+ performed in community  is in the order of the
+square root of the community size . This is sufficient for
+the node to "mix" in the community after just one
+epoch . Consequently, we can write
+
+
+An additional dependency arises from the transitions between
+communities and the calculation of term
+. If epoch  is performed
+in community  the next epoch  will be
+performed in community  with probability 
+(the transition probability in the Markov Chain governing the
+community transitions in the TVC model). Let us assume that 
+denotes again the total epochs needed (of any type) to hit the
+target. Further, let there be  epochs of type  (i.e.
+performed in community ) in the above mix of  total
+epochs. When , then 
+, that is, the total number of epochs in community 
+depends only on the stationary probability of community , .
+Thus,
+
+
+
+Consequently, Eq.() becomes
+
+
+
+This implies that, in the limit(In practice, the
+requirement is that a large number of epochs is needed on average
+until the target is hit. In the sparse networks we're interested in,
+this is a reasonable assumption, and as we shall show in
+Section  the achieved accuracy is indeed
+high.), the total number of epochs needed to hit the target can be
+approximated by a geometric distribution, where the "average"
+epoch has a hit probability of
+
+
+
+As the final step, we need to calculate the probability of a given
+epoch in community  to hit the target.  Instead of using this per
+epoch hit probability, we revert now to what we call the
+unit-step hit probabilities, . The unit-step probability
+is the probability of encountering the target exactly within the
+next time-unit (rather than within the duration of a whole epoch).
+This discrete approximation provides an equivalent formulation to
+the above continuous case (see ), however it is
+more convenient to manipulate in the case of time-period boundaries
+and meeting times calculated later. (Note that this approximation is
+again only possible when the average epoch length is in the order of
+the respective community size, ensuring mixing after one epoch.)
+
+Note that the hitting event can only occur when the node is
+physically moving inside the community where the target is located(We
+neglect the small probability that the target is chosen out of the
+community but close to it, and make the contributions from epochs in
+state  zero if the chosen target coordinate is not in community
+.). Whether the target is located inside community  is denoted
+using the indicator function . If the
+target is outside the community, then this probability of hit is
+zero. If the target lies within community , then when a node
+moves with average speed , on average it covers a
+new area of  in unit time. Since a node following
+random direction movements visits the area it moves about with equal
+probability, and the target coordinate is chosen at random, it falls
+in this newly covered area with probability
+ . Hence the
+contribution to the unit-time hitting probability by movements made
+in state  is .
+Thus, in Eq.(),  is replaced by 
+ in the unit-step case, and 
+ by .
+
+As a final remark, the contribution of transitional epochs to the
+unit-time hitting probability is not equivalent to other epochs (due
+to the dependency of end-points on local communities, which
+introduces bias after communities have been chosen). Nevertheless,
+in a normal mobility scenario, we expect a node to spend the
+majority of its time within one of the communities rather than in
+transitional epochs. Specifically, we will assume that community
+transition probabilities exhibit a strong positive
+correlation, that is, if a node resides in community , it has a
+higher probability of staying within this community for the next
+epoch, rather than leaving. In this case, the total contribution of
+transitional epochs is small, and can be safely ignored in order to
+not complicate our analysis. The above is a reasonable assumption
+for many target scenarios we can imagine; simulation results show further that 
+the time a node resides in transitional state
+is indeed less than  in the scenarios considered, not
+significantly affecting the accuracy of the above expression.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Given the fore-mentioned
+assumptions about unit-step hitting probabilities, the corollary below follows.
+
+ The probability for at least one hitting event to occur during time period  under scenario  is
+
+
+
+Finally, using the law of total probability, we derive the conditional hitting time under a specific target-community relationship, .
+
+  
+HT(w^1, ..., w^V) & = _t=1^V HT(w^1, ..., w^V  first  hit  in  period  t ) 
+
+& P(w^1, ..., w^V, first  hit  in  period  t ),
+
+where the probability for the first hitting event to happen in time period  is
+ 
+&P(w^1, ..., w^V, first  hit  in  period  t ) 
+
+=& _i=1^t-1 (1- P_H^i (w^i)) P_H^t (w^t)P,
+
+and the hitting time under this specific condition is
+ 
+& HT(w^1, ...,w^V  first  hit  in  period  t ) 
+
+ = & _i=1^V T^i (1P - 1) + _i=1^t-1 T^i + 1P_h^t (w^t),
+where  is the hitting probability for one full cycle of time periods.
+
+
+
+Eq. () holds as each cycle of time periods follows the same repetitive structure, and for the first hitting event to occur in time period  it must not occur in time period .
+The first term in Eq. () corresponds to the expected duration of full time period cycles until the hitting event occurs. Since for each cycle the success probability of hitting the target is , in expectation it takes  cycles to hit the target, and there are  full cycles. The second term in Eq. () is the sum of duration of time periods before the time period  in which the hitting event occurs in the last cycle. Finally, the third term is the fraction of the last time period before the hitting event occurs. Note that the last part is an approximation which holds if the time periods we consider are much longer than unit-time.
+
+Derivation of the Meeting Time 
+The procedures of the derivation of the meeting time is similar to
+that of the hitting time detailed in the last section. In short, we
+derive the unit-step (or unit-time) meeting probability, , and
+the meeting probability for each type of time period, , and put
+them together to get the overall meeting time in a similar fashion
+as in Theorem .
+
+Similar to Lemma , we add up the
+contributions to the meeting probability from all community pairs
+from node  and  in the following Lemma.
+
+
+Let community  of node  and community  of node  overlap with each other for an area  in time period . Then, the conditional unit-time meeting probability in time period  when node  and  are in its community  and , respectively, is
+
+ 
+& P_m^t (a_j^t, b_k^t) = 
+
+ & P_move,j^t (a) P_move,k^t (b) v 2K vA(a_j^t, b_k^t) A(a_j^t, b_k^t)C_j^t^2 (a) A(a_j^t, b_k^t)C_k^t^2 (b)
+
+      & + P_move,j^t (a) P_stop,k^t (b)  2K vA(a_j^t, b_k^t) A(a_j^t, b_k^t)C_j^t^2 (a) A(a_j^t, b_k^t)C_k^t^2 (b) 
+
+ & + P_stop,j^t (a) P_move,k^t (b)  2K vA(a_j^t, b_k^t) A(a_j^t, b_k^t)C_j^t^2 (a) A(a_j^t, b_k^t)C_k^t^2 (b).
+
+
+
+Equation () consists of two parts:
+
+(I) Both of the nodes are moving within the overlapped area. This adds the first term in Eq. ()
+to the meeting probability. The two ratios,  and , capture the probabilities that the nodes are in the overlapped area of the communities. The contribution to the unit-time meeting probability is the product of probabilities of both nodes moving within the overlapped area and the term , which reflects the covered area in unit time. We use the fact that when both nodes move according to the random direction model, one can calculate the effective (extra) area covered by assuming that one node is static, and the other is moving with the (higher) relative speed between the two. This difference is capture with the multiplicative factor  .
+
+
+
+
+
+(II) One node is moving in the overlapped area, and the other one pauses within the area. This adds the remaining two terms in Eq. ()
+to the unit-time meeting probability. These terms follow similar rationale as the previous one, with the difference that now only one node is moving. The second term corresponds to the case when node  moves (and  is static), and the third term corresponds to the case when node  moves (and  is static).
+
+
+
+
+
+
+
+
+The derivation of the unit-time meeting probability between nodes  and  for time period  includes all possible scenarios of community overlap. If node  has  communities and node  has  communities, there can be at most  community-overlapping scenarios in time period . For similar reason detailed in the proof of Lemma , we neglect the contribution of transitional epochs to the unit-time meeting probability.
+
+
+Note that () is the general form of Equation (13) and (14) in. If we assume perfect overlap and a single community from both nodes, we arrive at (14). If we assume no overlap, we result in (13). Also note in the general expressions presented in this paper, the whole simulation area is also considered as a community. Therefore we do not have to include a separate term to capture the roaming epochs.
+
+
+The probability for at least one meeting event to occur during time period  is
+ 
+P_M^t  = &1 - _ (j,k)   P_ov ( a_j^t , b_k^t)  ( 1 - P_m^t (a_j^t , b_k^t))^T^t ,
+where  is the probability that the community  of node  overlaps with community  of node . This quantity is simply  if the communities have fixed assignments and . If the communities are chosen randomly, this probability can be derived by Lemma 4.5 in. Due to space constraint, the Lemma is not reproduced here.
+
+Finally, similarly to Theorem , the expected meeting time can be calculated using the results in the Lemmas in this section.
+
+
+The expected meeting time is
+
+Where the quantities in the above equation are calculated by
+
+
+where  is the meeting probability for one full cycle of time periods.
+
+
+The proof is parallel to that of Theorem  and is omitted due to space limitations (see for details).
+
+
+As a final note, we can easily modify the above theory to account
+for potential "off" periods (e.g. by introducing a per step or per
+epoch "off" probability, and a respective multiplicative factor).
+Due to space limitations, we do not include here these
+modifications.
+
+Modification of Theory under On-off Pattern 
+Also, note that we can have another "off" state to absorb the time
+periods when nodes are considered "off", and adjust the
+probabilities for other states accordingly(For example, if
+the nodes are turned "off" randomly  of time, then one
+should have  and all the probabilities for the other
+states are reduced by half.). The following theory derivations would
+apply the same way after this adjustment.
+
+The theory derivations presented above consider always-on nodes. In
+this section, we briefly outline how one can incorporate the on-off
+pattern into the theory derivation.
+
+1. If the nodal on-off pattern is random (i.e., a node can
+choose to be "off" with a certain probability at random), then it
+is easy to incorporate this behavior in the above theories, by
+"thinning" the probabilities in Eq. (),
+(), (), and
+() proportionally to the
+probability a node is "off".
+
+2. One can make nodes turn off at the end of an epoch to
+move towards the starting point of the next epoch to avoid jumping
+between communities. Assuming this "off" time follows a certain
+distribution, the expected "off" time/probability can be
+subsequently calculated and used to thin the spatial
+distribution and node degree. For the hitting and meeting times, this period of "off" time would reduce the
+ and  in Lemma slightly, adding another state when the node is considered "off".
+This factor would later modify the probabilities in Eq.
+() and
+(). *
+Parameters for the scenarios in the simulation
+
+We use the same movement speed for all node:  and  in all scenarios. In all cases we use two time periods and they are named as time period  and  for consistency. We only list the parameters for the simple models () here.  Please refer to for the details of the generic models ().
+
+
+
+
+
+
+
+
+
+
+(b) The generic model.
+
+
+
+
+
+
+
+Validation of the Theory with Simulations 
+In this section, we compare the theoretical derivations of the previous section against the corresponding simulation results, for various parameter settings. Through extensive simulations with multiple scenarios and parameter settings, we establish the accuracy of the theoretical framework. Due to space limitations, we can only show some examples of the simulation results we have. More complete results can be found at.
+
+We summarize the parameters for the tested scenarios in Table . We use two different setup of the TVC model for the simulation cases. The parameters listed in Table  are for the simple models (), where we have two time periods with two communities in each time period (one of the communities is the whole simulation field). We also simulate for more generic setup of the TVC model (, refer to for its parameters), where we have three communities (one of them is the simulation field) in each time period. For the generic models, we have experimented with two ways of community placement: in a tiered fashion (as drawn in TP2 in Fig. ), or in a random fashion. Our discrete-time simulator is written in C++.  More details about the simulator, as well as the source code, can be found at.
+
+
+
+
+The Average Node Degree 
+For the average node degree, we create simulation scenarios with  nodes in the simulation area, and calculate the average node degree of each node by taking the time average across snapshots taken every second during the simulation, and then average across all nodes. All the simulation runs last for  seconds in this subsection.
+
+As we show in Corollary , when the communities are randomly chosen, the average node degree turns out to be the average number of nodes falling in the communication range of a given node, as if all nodes are uniformly distributed. Hence the average node degree does not depend on the exact choices of community setup (i.e. single, multiple, or multi-tier communities) or other parameters. In Fig.  (a), we see the simulation curves follow the prediction of the theory well. 
+
+
+
+To make the scenario a bit more realistic, we simulate some more scenarios when the communities are fixed. Among the  nodes, we make  of them pick the community centered at  and the other  pick the community centered at . We simulate scenarios for all seven sets of parameters, and show some example results in Fig.  (b). In the simulations, when the communication ranges are small as compared to the edge of the communities, the relative errors are low, indicating a good match between the theory and the simulation. However, as the communication range increases, the area covered by the communication disk becomes comparable to the size of the community and Eq. () is no longer accurate since the communication disk extends out of the overlapped area in most cases. That is the reason for the discrepancies between the theory and simulation. Besides Model-3, we observe at most  of error when the communication disk is less than  the size of the inner-most community, indicating that our theory is valid when the communication range is relatively small.
+
+
+
+
+
+
+
+
+(a) Randomly placed community.
+
+
+
+
+(b) Fixed communities.
+Examples of simulation results (the average node degree).
+
+
+The Hitting Time and the Meeting Time 
+We perform simulations for the hitting and the meeting times for  independent iterations for each scenario, and compare the average results with the theoretical values derived from the corresponding equations (i.e. () and ()). To find out the hitting or the meeting time, we move the nodes in the simulator indefinitely until they hit the target or meet with each other, respectively.
+
+
+Again we show some example results in Fig. . For all the scenarios (including the ones not listed here), the relative errors are within acceptable range. The absolute values for the error are within  for the hitting time and within  for the meeting time. For more than  of the tested scenarios, the error is below  (refer to for other figures). These results display the accuracy of our theory under a wide range of parameter settings. The errors between the theoretical and simulation results are mainly due to some of the approximations we made in the various derivations. For example, the approximation of the hitting and meeting processes with discrete, unit-time Bernoulli trials is valid only for the epochs that are long enough (in the order of community size) and if there are a lot of epochs. Furthermore, there exist some border effects - when a node is close to the border of a community, it could also "see" some other nodes outside of the community if its transmission range is large enough. However, we have chosen to ignore such occurrences to keep our analysis simpler. Nevertheless, as shown in the figures, the errors are always within acceptable ranges, justifying our simplifying assumptions.
+
+
+
+
+(a) Hitting Time.
+
+
+(b) Meeting Time.
+Examples of simulation results.
+
+
+Using Theory for Performance Prediction 
+Although the various theoretical quantities derived for the TVC model in Section  are interesting in their own merit, they are particularly useful in predicting protocol performance, which in turn can guide the decisions of system operation. We illustrate this point with two examples in this section.
+
+Estimation of the Number of Nodes Needed for Geographic Routing 
+It has been shown in geographic routing that the average node degree determines the success rate of messages delivered . Thus, using the results of Section  we can estimate the number of nodes (as a function of the average node degree) needed to achieve a target performance for geographic routing, for a given scenario.
+
+We consider the same setup as in Section , where half of the nodes are assigned to a community centered at 
+and the other half are assigned to another community centered at . We are interested in routing messages across one of the communities, from coordinate  to coordinate  with simple geographic routing (i.e., greedy forwarding only, without face routing). Using simulations we obtain the success rate of geographic routing under various communication ranges when  nodes move according to the mobility parameters of Model-1 (Table ). Results are shown in Fig.  (each point is the percentage of success out of  trials). If we assume the mobility model is different, say Model-3, we would like to know how many nodes we need to achieve similar performance. Using Eq. () we find that  nodes are needed to create a similar average node degree for Model-3. To validate this, we also simulate geographic routing for a scenario where  nodes follow Model-3. Comparing the resulting message delivery ratio for this scenario to the original scenario ( nodes with Model-1) in Fig. , we see that similar success rates are achieved under the same transmission range, which confirms the accuracy of our analysis.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Geographic routing success rate under different mobility parameter sets and node numbers.
+
+
+Packet propagation with epidemic routing with two node groups with different communities.
+
+
+
+
+Predicting Message Delivery Delay with Epidemic Routing 
+Epidemic routing is a simple and popular protocol that has been proposed for networks where nodal connectivity is intermittent (i.e., in  Delay Tolerant Networks) . It has been shown that message propagation under epidemic routing can be modeled with sufficient accuracy using a simple fluid-based model . (Note that its performance has also been analyzed using Markov Chain  and Random Walk  models.) This fluid model has been borrowed from the Mathematical Biology community, and is usually referred to as the SI (Susceptible-Infected) epidemic model. The gist of the SI model is that the rate by which the number of "infected" nodes increases ("infected" nodes here are nodes who have received a copy of the message) can be approximated by the product of three quantities: the number of already infected nodes, the number of susceptible (not yet infected) nodes, and the pair-wise contact rate,  (assuming nodes meet independently - this contact rate is equivalent to the unit-step meeting probabilities calculated in ()). Thus, one could plug-in these meeting probabilities into the SI model equations and calculate the delay for epidemic routing. Yet, in the TVC model (and often in real life) there are multiple groups of nodes with different communities, and thus different pair-wise contact rates that depend on the community setup. For example, nodes with the same or overlapping communities tend to meet much more often than nodes in far away communities. For this reason, we extend the basic SI model to a more general scenario.
+
+We consider the following setup in the case study: We use Model-3 (Table ) for the mobility parameters. A total of  nodes are divided into two groups of  nodes each. One group has its community centered at  and the other at . One packet starts from a randomly picked source node and spreads to all other nodes in the network. The propagation of the message can be described by the following equations:
+
+
+
+where  and  denote the number of susceptible and infected nodes at time  in group , respectively. Parameters  and  represent the pair-wise unit-time meeting probability when the communities are overlapped (i.e., for nodes in the same group) and not overlapped (i.e., nodes in different groups), respectively. We use Eq. () to obtain these quantities. This model is an extension from the standard SI model  and similar extensions can be made for more than two groups . The first equation governs the change of infected nodes in the first group. Notice that the infection to susceptible nodes in the group () can come from the infected nodes in the same group () or the other group (). We can solve the system of equations in () to get the evolution of the total infected nodes in the network. As can be seen in Fig. , the theory curve closely follows the trend in the simulation curve. This indicates first that scenarios generated by our mobility model are still amenable to fluid model based mathematical analysis (SI), despite the increased complexity introduced by the concept of communities. It also shows that results produced thus can be used by a system designer to predict how fast messages propagate in a given network environment. This might, for example, determine if extra nodes are needed in a wireless content distribution network to speed up message dissemination.
+
+As a final note, in addition to epidemic routing, the theoretical results for the hitting and meeting times could be applied to predict the delay of various other DTN routing protocols (see e.g.), for a large range of mobility scenarios that can be captured by the TVC model.
+
+
+
+
+
+
+
+
+
+
+
+Conclusion and future work 
+We have proposed a time-variant community mobility model for wireless mobile networks. Our model preserves common mobility characteristics, namely skewed location visiting preferences and periodical re-appearance observed in empirical mobility traces. We have tuned the TVC model to match with the mobility characteristics of various traces (WLAN traces, a vehicle mobility trace, and an encounter trace of moving human beings), displaying its flexibility and generality. A mobility trace generator of our model is available at. In addition to providing realistic mobility patterns, the TVC model can be mathematically analyzed to derive several quantities of interest: the average node degree, the hitting time and the meeting time. Through extensive simulations, we have verified the accuracy of our theory.
+
+
+
+In the future we would like to further analyze the performance of various routing protocols (e.g.,) under the time-variant community mobility model. We also would like to construct a systematic way to automatically generate the configuration files, such that the communities and time periods of nodes are set to capture the inter-node encounter properties we observe in various traces (for example, the Small World encounter patterns observed in WLAN traces ).
+
+
+
+
+
+
+
+
+
+1
+
+
+
+ F. Bai, N. Sadagopan, A. Helmy, "The IMPORTANT Framework for Analyzing the Impact of Mobility on Performance of Routing for Ad Hoc Networks", AdHoc Networks Journal - Elsevier, Vol. 1, Issue 4, pp. 383-403, November 2003.
+
+ M. Balazinska and P. Castro, "Characterizing Mobility and Network Usage in a Corporate Wireless Local-Area Network," In Proceedings of MOBISYS 2003, May 2003.
+
+ C. Bettstetter, G. Resta, P. Santi, "The Node Distribution of the random waypoint mobility model for wireless ad hoc networks," in IEEE Trans. on Mobile Computing, vol. 2, issue 3, pp. 257-269, Jul. 2003.
+
+ J. Burgess, B. Gallagher, D. Jensen, and B. Levine, "MaxProp: Routing for Vehicle-Based Disruption-Tolerant Networks," In Proceedings of IEEE INFOCOM, Apr. 2006.
+
+ T. Camp, J. Boleng, and V. Davies, "A Survey of Mobility Models for Ad Hoc Network Research," Wireless Communication  Mobile Computing (WCMC): Special issue on Mobile Ad Hoc Networking: Research, Trends and Applications, vol. 2, no. 5, pp. 483-502, 2002.
+
+ A. Chaintreau, P. Hui, J. Crowcroft, C. Diot, R. Gass, and J. Scott, "Impact of Human Mobility on the Design of Opportunistic Forwarding Algorithms," In Proceedings of IEEE INFOCOM, Apr. 2006.
+
+ N. Eagle and A. Pentland, "Reality mining: sensing complex social systems," in Journal of Personal and Ubiquitous Computing, vol.10, no. 4, May 2006.
+
+ R. Groenevelt, P. Nain, and G. Koole, "The Message Delay in Mobile Ad Hoc Networks," In Proceedings of PERFORMANCE, Oct. 2005.
+
+ M. Grossglauser and D. Tse, "Mobility increases the capacity of ad hoc wireless networks," IEEE/ACM Transactions on Networking, 10(4), 2002.
+
+ T. Henderson, D. Kotz and I. Abyzov, "The Changing Usage of a Mature Campus-wide Wireless Network," In Proceedings of ACM MOBICOM, Sep. 2004.
+
+ X. Hong, M. Gerla, G. Pei, C. and Chiang, "A group mobility model for ad hoc wireless networks," in Proceedings of the 2nd ACM international workshop on modeling, analysis and simulation of wireless and mobile systems, August, 1999.
+
+ W. Hsu, K. Merchant, H. Shu, C. Hsu, and A. Helmy, "Weighted Waypoint Mobility Model and its Impact on Ad Hoc Networks - Mobicom 2004 Poster Abstract," Mobile Computing and Communication Review, Jan 2005.
+
+ W. Hsu and A. Helmy, "On Nodal Encounter Patterns in Wireless LAN Traces," the Second International Workshop On Wireless Network Measurement (WiNMee 2006), April 2006.
+
+ W. Hsu and A. Helmy, "On Important Aspects of Modeling User Associations in Wireless LAN Traces," In Proceedings of the Second International Workshop On Wireless Network Measurement, Apr. 2006.
+
+  W. Hsu, T. Spyropoulos, K. Psounis, A. Helmy, "Modeling Time-variant User Mobility in Wireless Mobile Networks," In Proceedings of IEEE INFOCOM, May 2007.
+
+ S. Jain, K. Fall, and R. Patra, "Routing in a delay tolerant network," In Proceedings of ACM SIGCOMM, Aug. 2004.
+
+ A. Jardosh, E. Belfding-Royer, K. Almeroth, S. Suri. "Towards Realistic Mobility Models for Mobile Ad hoc Networks." in Proceedings of ACM MobiCom, Sep. 2003.
+
+ A. Jindal and K. Psounis, "Fundamental Mobility Properties for Realistic Performance Analysis of Intermittently Connected Mobile Networks," In Proceedings of IEEE PerCom Workshop on Intermittently Connected Mobile Ad Hoc Networks (ICMAN), 2007.
+
+ P. Juang, H. Oki, Y. Wang, M. Martonosi, L-S. Peh, and D. Rubenstein, "Energy-Efficient Computing for Wildlife Tracking: Design Tradeoffs and Early Experience with ZebraNet," In ASPLOS-X conference, Oct. 2002.
+
+ T. Karagiannis, J-Y Le Boudec, M. Vojnovic, "Power Law and Exponential Decay of Inter Contact Times between Mobile Devices," In Proceedings of ACM MobiCom, Sep. 2007.
+
+ B. Karp and H. Kung, "GPSR: greedy perimeter stateless routing for wireless networks," In Proceedings of ACM MobiCom, Aug. 2000.
+
+  M. Kim, D. Kotz, and S. Kim, "Extracting a mobility model from real user traces," In Proceedings of IEEE INFOCOM, Apr. 2006.
+
+ D. Lelescu, U. C. Kozat, R. Jain, and M. Balakrishnan, "Model T++: An Empirical Joint Space-Time Registration Model," In Proceedings of ACM MOBIHOC, May 2006.
+
+ A.B. McDonald and T.F. Znati, "A Mobility-based Framework for Adaptive Clustering in Wireless Ad Hoc Networks," In IEEE Journal on Selected Areas in Communications, vol. 17, issue 8, pp. 1466-1487, Aug. 1999.
+
+ M. McNett and G. Voelker, "Access and mobility of wireless PDA users," ACM SIGMOBILE Mobile Computing and Communications Review, v.7 n.4, Oct. 2003.
+
+ M. Musolesi and C. Mascolo, "A Community Based Mobility Model for Ad Hoc Network Research," In Proceedings of the Second International Workshop on Multi-hop Ad Hoc Networks (REALMAN), May 2006.
+
+
+
+ S. Ross, "Introduction to Probability Models," 8th edition, Academic Press, published Dec. 2002.
+
+ K. Seada, M. Zuniga, A. Helmy, B. Krishnamachari, "Energy-Efficient Forwarding Strategies for Geographic Routing in Lossy Wireless Sensor Networks," In Proceedings of ACM Sensys, Nov, 2004.
+
+ T. Spyropoulos, K. Psounis, and C.S. Raghavendra, "Performance Analysis of Mobility-assisted Routing," In Proceedings of ACM MOBIHOC, May 2006.
+
+ T. Spyropoulos, K. Psounis, and C. S. Raghavendra, "Efficient Routing in Intermittently Connected Mobile Networks: The Single-copy Case," to appear in ACM/IEEE Transactions on Networking, Feb. 2008.
+
+ T. Spyropoulos, K. Psounis, and C. S. Raghavendra, "Efficient Routing in Intermittently Connected Mobile Networks: The Multi-copy Case," to appear in ACM/IEEE Transactions on Networking, Feb. 2008.
+
+ S.Tanachaiwiwat and A. Helmy, "Encounter-based Worms: Analysis and Defense", IEEE Conference on Sensor and Ad Hoc Communications and Networks (SECON) 2006 Poster/Demo Session, September 2006.
+
+ C. Tuduce and  T. Gross, "A Mobility Model Based on WLAN Traces and its Validation," In Proceedings of IEEE INFOCOM, Mar. 2005.
+
+ A. Vahdat and D. Becker, "Epidemic Routing for Partially Connected Ad Hoc Networks," Technical Report CS-200006, Duke University, April 2000.
+
+ X. Zhang, G. Neglia, J. Kurose, and D. Towsley, "Performance Modeling of Epidemic Routing," in Proceedings of IFIP Networking 2006.
+
+ Cab Spotting, a project that tracks taxi mobility in the San Francisco Bay Area. Trace available at http://cabspotting.org/api.
+
+ CRAWDAD: A Community Resource for Archiving Wireless Data At Dartmouth. http://crawdad.cs.dartmouth.edu/index.php.
+
+
+
+ MobiLib: Community-wide Library of Mobility and Wireless Networks Measurements. http://nile.usc.edu/MobiLib.
+
+ The Network Simulator - NS-2. http://www.isi.edu/nsnam/ns/
+
+ Simulation codes used in this work and its detailed description are available at http://nile.cise.ufl.edu/weijenhs/TVCmodel
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[]Wei-jen Hsu
+was born in Taipei, Taiwan, in March 1977. He received the B.S. degree in Electrical Engineering and the M.S. degree in Communication Engineering, respectively, from National Taiwan University, in June 1999 and June 2001. He received the Engineer degree in Electrical Engineering from University of Southern California, in August 2006. He is currently a Ph.D. student in the CISE Department, University of Florida. 
+His main research interest involves the utilization of realistic measurement data in various tasks in computer networks, including user modeling and behavior-aware protocol design.
+
+[]Thrasyvoulos Spyropoulos
+was born in Athens, Greece, in July 1976. He received the Diploma in
+Electrical and Computer Engineering from the National Technical
+University of Athens, Greece, in February 2000. In May 2006, he
+received the Ph.D degree in Electrical Engineering from the
+University of Southern California. In 2006-07, he was a post-doctoral
+researcher at INRIA, Sophia-Antipolis. He is currently a senior researcher
+with the Swiss Federal Institute of Technology (ETH), Zurich.
+
+[]Konstantinos Psounis
+Konstantinos Psounis is an assistant professor of EE and CS at the University of Southern California. He received his 
+first degree from National Technical University of Athens, Greece,
+in 1997, and the M.S. and Ph.D. degrees from Stanford University in 1999 and 2002 respectively.
+Konstantinos models and analyzes the performance of a variety of networks,
+and designs methods and algorithms to solve problems related to
+such systems. He is the author of more than 40 research papers, 
+has received faculty awards from NSF and the Zumberge
+foundation, and has been a Stanford graduate fellow throughout his graduate
+studies.
+
+
+[]Ahmed Helmy
+Dr. Ahmed Helmy received his Ph.D. in Computer Science (1999), M.S. in Electrical Engineering (EE) (1995) from the University of Southern California (USC). He is Associate Professor and director of the wireless networking lab at the CISE Dept, University of Florida. From 1999 to 2006, he was faculty with EE-USC. He was a key researcher in the network simulator (NS-2) and the protocol independent multicast (PIM-SM) projects at USC/ISI. In 2002, he received the NSF CAREER Award. His interests include network protocol design and analysis for mobile ad hoc and sensor networks, and mobility modeling.
+
+
+

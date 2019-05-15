@@ -1,0 +1,1573 @@
+comment
+
+	itemize
+	Design Goals
+	 Design Model
+	itemize
+	Description of the new model (node = system call, edge = list of admissible actions)
+	 Sink
+	 List of actions
+	itemize
+	 Design Challenges
+	itemize
+	 Loop without syscalls
+	 Loop with syscalls
+	 Loop with indirect jumps
+	 Recursions
+	itemize
+itemize
+comment
+
+Execution Path Representation Model
+sec:model
+
+The model introduced by SCARR is designed to deal with basic blocks at assembly level,
+in the following examples and pictures we depict basic blocks as nodes, therefore the two terms will be interchangeable.
+
+
+In order to describe our model, we will present an example that is described in Figure fig:trace-paths, which is an expanded version of the CFG illustrated in Figure fig:problem-setting-graph.
+As for the example in Figure fig:problem-setting-graph, we consider each node as a basic block (BBL), as well as for all the new nodes introduced.
+In Figure fig:trace-paths, the nodes , , , and  are respectively associated to a function that contains a syscall:  to the input() function for gathering user inputs;
+ to the getprivilegedinfo() function for retrieving a privileged information from a file;  to the getunprivilegedinfo() function for reading an unprivileged information from a file;
+ to the output() function for printing out the input previously acquired.
+Each function encompasses three nodes (basic blocks): a preamble, a syscall, and an exit point.
+Therefore, the nodes , ,  and  call a sequence of three nodes. The meaning of an edge connecting two nodes is unchanged (it is the program's flow from one node towards the following one), while the roles of  and  will be explained later. 
+
+
+
+
+
+
+
+
+figure[t]
+		fig/trace-paths.pdf
+	A static CFG used to generate the execution path representation model of SCARR
+	fig:trace-paths
+figure
+
+Looking at Figure fig:trace-paths, one might perceive at a glance the complexity that the CFG of a real program might have, as well as the one of the consequent CFI applied on that CFG. For this reason, our first challenge has been to design a model that, starting from a CFG, can keep all the relevant information to complete an efficient CFI at runtime. Intuitively, the safest solution would be to identify all the possible paths that connect two consecutive nodes. However, it is clear that this would immediately result in a huge data structure, that can become even bigger if we consider all the combinations introduced by decision nodes, loops, and recursions. Moreover, some of those ones depend on the user input, which can not be inferred a priori. 
+
+Given the previous considerations, we decided to build our model relying on the following observation, which has been previously stated in the literature
+van2015practical,gu2017pt: a control-flow attack becomes a real threat when the compromised software interacts with the underlying system (a syscall or an API).
+
+Considering that, we moved from a fine-grained representation of the CFG, based on single BBLs, towards a different one, built on a sequence of actions which are validated at certain program points.
+Intuitively, an action represents a transition between to BBLs.
+Therefore, our  SCARR model has been designed to involve only two components that we can briefly define as (more thorough presentation in the rest of the section):
+itemize
+    Checkpoints, which are CFG significant points containing, for example, a syscall or an API call.
+    List of Actions (LoA), which represents a set of actions connecting two consecutive check points.
+itemize
+
+Recalling our system overview, a CFG, statically generated from the application code together with its libraries, is processed by the Measurements Generator to identify all the checkpoints and the LoA that connect them. The final output returned by the Measurements Generator, at the end of the first phase, is a set of measurements as follows:
+
+
+
+Each measurement contains three different elements: the , to save the previous checkpoint; the , to save the current checkpoint; the H(LoA), to keep the hash of LoA connecting  and .
+Since the number of BBLs in a LoA is unknown a priori, it is represented through a fixed-with hash value. 
+
+
+Checkpoints.
+Checkpoints are special nodes belonging to the CFG considered both by the Measurements Generator, for the generation of measurements during the Offline Program Analysis, and by the Prover, for the computation of a measurement sent to the Verifier during the runtime execution.
+Checkpoints are associated with syscalls, but we also expanded the model to include the following types of nodes:
+itemize
+    Thread beginning, to identify the beginning of a thread ().
+    Thread end, to identify the end of a thread ().
+    Syscall, to identify an exit point (an  node).
+    Virtual-checkpoint, used to manage loops and recursions (see Section ssec:challenges).
+itemize
+Since we aim at modelling multi-threaded programs, we designed the communication protocol between Prover and Verifier to represent each single thread life-cycle (see Section ssec:communication-protocol).
+In Figure fig:trace-paths checkpoints are identified as black filled circles.
+As we will discuss in Section ssec:challenges and Section sec:implementation, we model a signal as a new thread that must contain the execution paths from the relative handler (if any).
+
+
+List of Actions.
+A LoA is a sequence of actions that a program follows to move from a checkpoint to a different one.
+We define an action as a triplet as follow:
+equation*
+	tbl:an-action
+	split
+	(type, BBL_A, BBL_B),
+	split
+equation*
+where type is the type of action taken (a relative jump),  is the source basic block (where the jump is performed) and  is the target basic block (the jump destination).
+This representation allows SCARR to model the semantics of interconnections between two BBLs.
+
+The LoAs computed during the Offline Program Analysis contain only valid paths between two different checkpoints, while the paths calculated at runtime by the Prover might have been compromised by an attacker and, therefore, are checked by the Verifier.
+More specifically, the attacker's purpose is to modify the original CFG of the program (changing the target address of a call instruction).
+Among all the possible instructions that might be manipulated, attackers choose the ones involved in indirect jumps since those are computed at runtime.
+Differently, direct jumps performed through an if condition or a while loop are built on conditional branches and are not addressed by these attacks.
+For those reasons, the instructions considered to build actions are the following ones: 
+itemize
+    indirect jumps, such as jmp eax.
+	indirect calls, such as call qword ptr [ebp+8].
+	returns, such as ret.
+itemize
+Since each BBL ends with an instruction to the next BBL, we use that instruction to define the type of the action that connects two consecutive BBLs as follow:
+
+equation*
+	tbl:type-definition
+	split
+	type = jmp, call, ret.
+	split
+equation*
+
+Referring once again to Figure fig:trace-paths, the indirect jumps (call and ret) considered by the model of SCARR are represented by red thick arrows. The complete LoA associated to the example, together with the relative checkpoints, is shown below. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+equation*
+tbl:list-of-actions
+split
+P_B - S_I &: [(call, N_1, I_1)] 
+
+S_I - S_U &: [(ret, I_2, N_2), (call, N_4, U_1)] 
+
+S_U - S_O &: [(ret, U_2, N_5), (call, N_5, O_1)] 
+
+S_I - S_P &: [(ret, I_2, N_2), (call, N_3, P_1)] 
+
+S_P - S_O &: [(ret, P_2, N_5), (call, N_5, O_1)] 
+
+S_O - P_E &: [(ret, O_2, N_6)].
+split
+equation*
+As an example, after entering in , the control returns to the main program by the action . From there, it is possible to reach either  or  based on the control in . If we invoke the function getunprivilegedinfo(), the action  will be generated. 
+
+The Prover-Verfier Communication Protocol
+ssec:communication-protocol
+In SCARR, the remote attestation phase relies on the interaction between the Prover and the Verifier, both adhering to a communication protocol.
+In this section, we first claim which security guarantees the protocol must provide, then, we describe the communication protocol itself, and we illustrate the messages exchanged.
+Finally, we explain the messages validation phase and the reactions against an attack.
+For sake of simplicity, we do not describe the interaction between the final user and the Prover, which is already discussed in Section sec:system-overview.
+Moreover, we assume that: 
+enumerate*[label=(*)]
+	the Prover and the Verifier have already shared the secret keys, and
+	that the communication between the Prover and the Verifier happens over a reliable channel (TCP).
+enumerate*
+
+The communication protocol between the Prover and the Verifier must provide the following security guarantees:
+itemize
+	integrity.
+	resistance against replay attacks and forged packets.
+	authentication.
+itemize
+
+Figure fig:scarr-protocol shows the communication protocol.
+While the Prover is processing the input (see Section sec:system-overview), it sends a list of packets (from  to ) to the Verifier, which validates the Prover runtime status (its execution path).
+Since the communication between the Prover and the Verifier runs over a reliable channel, the Verifier receives all reports in order.
+This mechanism can be implemented through a set of worker thread on the Prover side.
+
+The Prover sends packets in the following format:
+equation*
+	split
+	P &= (R, F_K(R)) 
+
+	R &= (sessionid, threadid, measurementid, M),
+	split
+equation*
+where  is the packet sent by the Prover, which contains the report  along with its digital fingerprint ,
+The digital fingerprint is generated by using the secret key , which is shared between the Prover and the Verifier.
+The report  contains the measurement  (which is described in Section sec:model), along with other fields described later.
+To achieve both integrity and authentication, we adopted a symmetric encryption schema where each pair of Prover and Verifier share a unique symmetric key .
+It is also possible to adopt asymmetric encryption schemes (public-private keys) to exchange symmetric secret, but this is beyond the purpose of this study.
+
+The report  is composed by four elements:
+description
+	[sessionid:] an incremental number identifying a single session and referring to the complete processing of an input (from its acquisition to the generation of an output).
+	[threadid:] an identifier aimed at distinguishing a single thread among the set of threads belonging to a multi-threaded program.
+	As we introduced in Section sec:model, signals are modelled as new threads. That is, when a signal occurs, the Prover uses a new threadid.
+	From this point hereafter, we consider signals as special cases of threads (further details in Section ssec:challenges).
+	[measurementid:] an incremental number associated with each thread and increased every time a new measurement is sent to the Verifier. The measurementid allows us to avoid reply attacks.
+	[measurament :] this component refers to the current measurement that needs to be checked by the Verifier.
+description
+
+comment
+FLAVIO: I think this part is confusing
+As already mentioned, the activation of the remote attestation procedure starts with an input received by the Prover (see Section sec:system-overview).
+As soon as the input is acquired, the Prover starts a new session, within which the input will be processed.
+While running, the Prover keeps track of the different actions it performs until a checkpoint is reached.
+When this happens, the Prover computes the hash of the LoA undertaken so far, makes a report , the relative signature , and it craft the packet  that is shipped to the Verifier.
+comment
+
+Once the Verifier receives a packet , it performs four checks:
+enumerate*[label=(*)]
+	the validity of the packet;
+	the validity of the report;
+	the comparison of the runtime measurement with the ones saved in the Measurements DB;
+	the consistency of the measurement under evaluation.
+enumerate*
+The first check is performed by validating the digital fingerprint  according to the encryption schema used.
+The second check is performed by analyzing the three counters contained in the report, to see if they are consistent with the current sessionid, threadid and the latest received measurementid, respectively.
+The third check relies on a comparison between the new measurement and the one identified during the Offline Program Analysis. 
+More specifically, we expect that the triplet formed by the two checkpoints and the hash of the LoA calculated at runtime is already in the Measurements DB.
+For the last check, the Verifier considers the new measurement to be checked and the previous one has received, both associated with the current session and to a specific thread.
+The comparison is done according to this consideration: if the new measurement is consistent and the thread has not been compromised, then the target checkpoint of the latest measurement has to be equal to the source checkpoint of the current one. 
+
+During those four checks, the Verifier can, at any point,
+notify an inconsistent the original CFG.
+Since we design SCARR for cloud computing scenarios,
+we intend both the Verifier and the Prover to be Virtual Machines, moreover, the Verifier should have enough privileges to react to the attack (isolating the Prover).
+The isolation can happen in different ways, switching the Prover off, or isolating the network.
+
+
+
+
+figure[t]
+tikzpicture[node distance=2cm,auto,>=stealth']
+
+[] (verifier) Verifier;
+[right = of verifier] (prover) Prover;
+[below of=verifier, node distance=5cm] (verifier_ground) ;
+[below of=prover, node distance=5cm] (prover_ground) ;
+
+(verifier) - (verifier_ground);
+(prover) - (prover_ground);
+
+[->] () - node[above,scale=1,midway] ();
+
+[->] () - node[above,scale=1,midway] ();
+
+[->] () - node[above,scale=1,midway] ();
+
+[->] () - node[above,scale=1,midway] ();
+
+[->] () - node[above,scale=1,midway] ();
+tikzpicture
+The communication protocol between the Verifier and the Prover
+fig:scarr-protocol
+figure
+
+
+Key Challenges
+ssec:challenges
+The design of SCARR model is based on this idea: 
+to make a runtime remote attestation scalable,
+we need an efficient technique to count all the possible execution paths of a software.
+This is generally not possible due to the unpredictable nature of these structures: 
+loops, recursions, and signals.
+As a matter of fact, loops and recursions can generate an uncountable number of possible combinations of LoAs, in particular, we describe three different cases for loops.
+Instead, signals can introduce an unpredictable execution path at any time. In this section, we illustrate the techniques we use to extract a finite number of LoA from these structures.
+
+
+
+
+
+
+
+
+
+
+
+Loop without syscalls.
+The simplest case we analyzed is illustrated in Figure fig:challenge-I: a loop without syscalls or indirect jumps in the body. Our solution is to consider only the relevant actions around the loop, ignoring this last one. The resulting LoA is as follows:
+equation*
+split
+(S_A-S_B) &: [(ret, S_A, N_1), (call, N_3, S_B)].
+split
+equation*
+figure[t]
+		fig/challenge-I.pdf
+	Loop without syscalls in the loop body
+    fig:challenge-I
+figure
+Loop with syscalls.
+The second challenge we considered is depicted in Figure fig:challenge-II.
+Here, the loop body contains a node () which is contemporaneously targeted by a call action (from node ) and it is the source for a ret action (to node ).
+Our proposed solution is to consider a LoA for each pair of checkpoints and consider the syscall node within the loop body () as a self-linked one, we consider  as both source and target checkpoint.
+The resulting set of LoA for this example is as follows:
+equation*
+split
+(S_A-S_C) &: [(ret, S_A, N_1), (call, N_3, S_C)] 
+
+(S_B-S_B) &: [(ret, S_B, N_1), (call, N_1, S_B)] 
+
+(S_A-S_B) &: [(ret, S_A, N_1), (call, N_1, S_B)] 
+
+(S_B-S_C) &: [(ret, S_B, N_1), (call, N_3, S_C)].
+split
+equation*
+If no indirect jumps are used to invoke the syscall, we simply use an empty list.
+figure[b]
+		fig/challenge-II.pdf
+	Loop with syscalls in the loop body
+	fig:challenge-II
+figure
+
+Loop with indirect jumps.
+The third challenge, shown in Figure fig:challenge-III, regards a loop whose body contains indirect jumps to a simple node, a node that does not perform a syscall. 
+figure
+		fig/challenge-III.pdf
+	Loop with actions in the loop body
+	fig:challenge-III
+figure
+Since these edges might be manipulated by the attacker, we need to model a LoA for them. The inherent complexity of this case is given by the number of possible loop iterations, which can generate an intractable amount of paths.
+To overcome the problem, we consider the conditional node of the loop () as a virtual-checkpoint and define the following LoA: 
+equation*
+split
+(S_A-N_1) &: [(ret, S_A, N_1)] 
+    
+(N_1-N_1) &: [(call, N_1, N_2), (ret, N_2, N_1)] 
+ 
+(N_1-S_B) &: [(call, N_3, S_B)].
+split
+equation*
+
+Recursions.
+In Figure fig:challenge-IV, we illustrate the last challenge regarding recursions: a function which invokes itself. 
+
+Intuitively, the LoA connecting  and  should contain all the possible invocations made by
+a() towards itself. However, as well as the previous challenge, the number of invocations cannot be precisely identified. We, then, consider the node performing the recursion as a virtual-checkpoint and model only the path that could be chosen, without referring to the number of times it is really undertaken. 
+Below, we report the associated LoA:
+equation*
+split
+(P_B-N_2) &: [(call, P_B, N_1)] 
+    
+(N_2-N_2) &: [(call, N_2, N_1)] 
+ 
+(N_2-P_E) &: [(ret, N_3, S_B)] 
+ 
+(N_2-N_2) &: [(ret, N_3, N_2)].
+split
+equation*
+Finally, the virtual-checkpoint can be used as a general approach to solving every situation in which an indirect jump targets a node which is already present in the LoA.
+
+figure[b]
+		fig/challenge-IV.pdf
+	Example of recursive function
+	fig:challenge-IV
+figure
+
+Signals.
+When a thread receives a signal, its execution is stopped and, after a context-switch, it is diverted to a dedicated handler (a function). 
+This scenario makes the control-flow unpredictable since an interruption can occur at any point during the execution. 
+
+To manage this case, SCARR requires that, after the interception of a signal, the ongoing program tracing is temporarily paused and the LoA is separately traced in a report associated to the same threadid of the one executing the handler. Once this terminates, the measurement is sent to the Verifier, being associated to thread beginning and thread end checkpoints.
+
+If no handler is available for the signal that interrupted the program, the entire process ends immediately, producing a wrong LoA. Background
+
+FT: probably to move, or to remove
+
+Control Flow Integrity approaches
+
+Traditional FT: those approaches whose check before jumping such as CFGuard, ShadowStack, etc.
+
+Contextual FT: those approaches whose check the execution before they reach a syscall (by using LBR for instance)Conclusion
+sec:conclusion
+
+Runtime remote attestation is an ambitious goal, combining knowledge from different research fields such as static attestation, trusted computing, offensive security, and control-flow integrity mechanisms.
+All these techniques still have to face some open problems.
+More specifically, runtime remote attestation on complex software requires to find all the valid execution paths, which leads to a non-deterministic and explosive count.
+
+In this work, we proposed SCARR, the first runtime remote attestation designed for complex software that is commonly used in cloud environments.
+As discussed throughout the paper, SCARR can detect control-flow attacks generated at user-space either from outside or within the machine, as long as the kernel is trusted.
+Our solution allows to remotely monitor a software during runtime thanks to a communication established between a Prover, containing the running application to be validated, and a Verifier, receiving reports to be checked from the Prover.
+Our approach is novel with respect to previous solutions because we can model all the valid paths of a program as a finite number of measurements, regardless of the intrinsic complexity of the application.
+We developed and deployed a proof-of-concept architecture, tested over complex software used in cloud environments. 
+Our experiments demonstrated that SCARR monitors remote software execution with an overhead comparable to other runtime remote attestation schemes.
+
+Even though SCARR requires further effort to be completely used out-of-the-box with a minimal configuration, we believe it represents a significant improvement compared to the current state-of-art runtime remote attestations.
+
+Future works will include making SCARR more efficient, being able to self-extract the CFG from an application, and tackle physical attacks.
+Discussion
+sec:discussion
+In this section we discuss critical aspects of SCARR and we propose possible solutions.
+
+Control-flow graph.
+The runtime remote attestation schema designed in SCARR is based on a comparison between the program's measurements identified offline and the ones obtained at runtime. The extraction of a complete static CFG is not a trivial problem, especially when it involves the interaction with shared libraries.
+Moreover, it is undecidable in the general case due to pointer aliasing ramalingam1994undecidability.
+Currently, all the possible strategies that are used for generating a static CFG have some limitations.
+Abstract interpretation cousot1977abstract might lead to false negatives due to over-approximations required for soundness.
+Symbolic execution king1976symbolic could generate more precise CFGs, but it requires significant computational effort.
+Dynamic analysis can be used to generate a CFG faster, but the result might be under-approximated if the analysis does not span all the valid paths. 
+An over-approximated CFG can let the attacker execute apparently valid, but unintended paths, while an under-approximated CFG could generate false alarms.
+In SCARR we chose a dynamic approach, but we know this is still an open problem. 
+A different solution might be to perform a fuzzy analysis to extract the static CFG.
+
+Reducing switch-context overhead.
+Another limitation of our approach is the continuous context-switch between user-space and kernel-space. 
+We first evaluated the adoption of SGX as a trusted platform, but we found out that the overhead was even higher due to SGX clearing the translation-lookaside buffer stravers2013translation (TLB) at each enclave exit. This caused frequent page walks after each enclave call.
+A similar problem was related to the Page-Table Isolation watson2018capability (PTI) mechanism in the Linux kernel, which protects against the Meltdown vulnerability.
+With PTI enabled, TLB is partially flushed at every context switch, significantly increasing the overhead of syscalls.
+New trusted platforms have been designed to overcome this problem, but, since they mainly address embedded software, they are not suitable for our study.
+
+
+Physical attacks.
+Physical attacks are aimed at diverting normal control-flow such that the program is compromised, but the computed measurements are still valid. 
+Trusted computing and remote attestation usually provide protection against physical attacks.
+In our work, we mainly focused on runtime exploitation, considering that SCARR has been designed to be deployed on virtual machines.
+Therefore, we assumed that an adversary can perform an attack from a remote location or from the user-space, but the physical hosts cannot be physically compromised.  
+As a future work, we will investigate new solutions to prevent physical attacks.
+
+Data-flow attestation.
+SCARR has been designed to perform runtime remote attestation over a program's CFG.
+Therefore, pure data-oriented attacks might force the program to execute valid but undesired paths without injecting new edges.
+To improve our solution, we will investigate possible strategies to mitigate this type of attack, considering the availability of recent tools which are able to automatically run these exploitations hu2016data. 
+
+
+
+
+
+
+
+
+sec:evaluation
+
+In this section we evaluate our approach, first describing the test cases we employed (Section ssec:use-cases), and then presenting and discussing results on performance (Section ssec:performance) and size of measurements generated (Section ssec:model-size).
+Finally, we discuss the security guarantees introduced by SCARR (Section ssec:security+privacy+consideration).
+Our goal is to demonstrate that SCARR can scale while maintaining acceptable overheads.
+
+Use Cases
+ssec:use-cases
+
+To evaluate our approach, we tested our implementation on three common Internet services: Apache apache2 2.4.25, nginx nginx 1.10.3, and MariaDB mariadb 10.1.26, which are widely used also in cloud environments.
+In the following, we define the use cases we selected to assess both performance and measurements size.
+The criterion used to identify the use cases was to provide a considerable workload on the server to obtain significant results.
+All tests were executed against servers running locally to remove network latency.
+
+Apache and nginx.
+To evaluate these two web servers, we employ wrk wrk, an HTTP benchmarking tool.
+We run a 30s burst of sequential GET requests to an 11KiB static page, and measure the average number of requests handled per second.
+
+MariaDB.
+For the MariaDB evaluation we use mysqlslap mysqlslap, a MySQL bechmarking tool.
+We test against a table with two INT columns and three VARCHAR columns, pre-filled with 1000 random records.
+We measure the average time required to complete a run consisting of a mix of 1000 random insertions and 1000 selections.
+
+Performance
+ssec:performance
+
+We ran each service in three configurations, to produce a detailed breakdown of the overhead introduced.
+The three configurations are:
+itemize
+	Vanilla: normal execution, without any instrumentation;
+	Instrumented: control flow transfers are instrumented with DynamoRIO, but actions are not reported to the kernel;
+	Tracing: control flow transfers are instrumented with DynamoRIO and actions are reported to the kernel.
+itemize
+
+The raw results are shown in Table table:performance.
+We recall that, for Apache and nginx, we measure the average number of requests handled per second for our use case, while for MariaDB we measure the average time to run our use case.
+From this data, we calculated the relative overheads presented in Table table:overhead, which compares instrumented against vanilla, and tracing against both vanilla and instrumented.
+
+The instrumented measurements provide an important baseline, as they take into account the overhead caused by the instrumentation tool.
+Therefore, we are able to evaluate the actual impact of the frequent context-switches required for our approach.
+These context-switch represents an important cost, as the kernel implementation that tracks the LoAs is very lightweight.
+From Table table:overhead we observe that, on average, the tracing run is 2.2x slower than the instrumented one.
+The overhead is also dependent on the number of indirect calls and jumps.
+Software that makes heavy use of abstractions such as function pointers and polymorphism will suffer a higher performance penalty because more indirect transfers have to be recorded.
+
+table[h]
+		tabularlccc
+		& Vanilla & Instrumented & Tracing 
+
+		Apache & 14.21k req/s & 8.23k req/s & 3.17k req/s 
+
+	nginx & 37.38k req/s & 22.69k req/s & 12.07k req/s 
+
+	MariaDB & 12.14 s & 15.39 s & 34.40 s 
+
+		tabular
+	Performance evaluation results
+	table:performance
+table
+
+table[h]
+		tabularlccc
+		& Instrumented & 2cTracing 
+
+	(l)2-2 (l)3-4
+	& vs Vanilla & vs Vanilla & vs Instr. 
+
+		Apache & 1.7x & 4.5x & 2.6x 
+
+	nginx & 1.6x & 3.1x & 1.9x 
+
+	MariaDB & 1.3x & 2.8x & 2.2x 
+
+		Average & 1.5x & 3.5x & 2.2x 
+
+		tabular
+	Relative performance overheads
+	table:overhead
+table
+
+
+
+
+
+
+
+
+
+
+
+
+
+Size of Measurements Generated
+ssec:model-size
+
+We evaluated the size of the LoAs produced in our tests.
+The results are reported in Table table:model-size, describing the unique LoAs found per program and the size in actions and memory of the LoAs.
+
+table[h]
+		tabularlcccc
+		& & 3cLoA size 
+
+	(l)3-5
+	& Unique LoAs & Avg & Max & Std 
+
+		Apache & 3296 & 140 & 14387 & 274 
+
+	& & & (337.2KiB) & 
+
+	nginx & 1198 & 60 & 29324 & 366 
+
+	& & & (687.3KiB) & 
+
+	MariaDB & 5282 & 3466 & 102400 & 2695 
+
+	& & & (2.34MiB) & 
+
+		tabular
+	Model size evaluation results
+	table:model-size
+table
+
+The size of the LoAs produced by SCARR is kept small because once attestation is performed, the previous LoA can be forgotten.
+Therefore, the maximum size is bounded by the longest sequence of actions between checkpoints.
+Moreover, we only record indirect control flow transfers, such as indirect jump, calls, and returns.
+Ignoring all the direct control flow transfers produces significant savings with respect to the LoA size.
+
+With the current implementation, each action occupies 24 bytes of memory.
+The LoA memory size, thus, scales linearly with the number of LoAs.
+The maximum sizes of the LoA are acceptable, with MariaDB totalling the highest at 2.34MiB.
+Even in kernel space, this is not a significant amount of memory in well-equipped machines, such as servers.
+Therefore, SCARR's memory consumption can scale to complex applications.
+
+Security  Privacy Consideration
+ssec:security+privacy+consideration
+
+
+We describe the security  privacy guarantees introduced by SCARR. We remind that the threat model considered here is the same described in Section sec:threat-model.
+
+Code Injection.
+In this scenario, an attacker attempts to load a malicious code, referred as Shellcode, into memory and execute it by exploiting a memory corruption error smith1997stack.
+A typical way to inject code is to store it in some attacker-controlled input buffer.
+The adversary can, then, exploit vulnerabilities such as buffer overflows to hijack the program's control flow towards the shellcode (by corrupting a function's return address).
+Assuming a WX protection is in place, this attempt will generate a memory protection error, since the injected code is not executable as it is placed in a writable memory area.
+Even if WX were not in place and an attacker could execute data, this would result in a wrong LoA, that would later be detected by the Verifier.
+
+Another strategy might be to overwrite a node (a BBL) already present in memory.
+This is again mitigated by WX, as executable memory regions are not writable.
+One way to bypass this countermeasure is by changing the code's memory protection attributes through the operating system interface (the mprotect system call in Linux), thus making it writable.
+To reach this goal, the attacker can choose between two different strategies: code reuse attacks, which we later describe in more detail, or pure data-oriented attacks.
+By exploiting the latter technique, an adversary can change the parameters of an existing mprotect call without tampering the control-flow.
+As a result, the code can be overwritten by further attacks.
+The threat model we defined in Section sec:threat-model does not include pure data-oriented attacks.
+
+Unlike previous approaches abera2016c, that send measurements only at the end of the computation, SCARR generates and asks for a validation of a measurement for each checkpoint. Therefore, it is able to detect an attack before the process finishes its execution.
+
+Return-oriented Programming.
+
+Comparing to previous attacks, the code-reuse ones are more challenging since they do not inject new nodes, but they simply reorder legitimate BBLs.
+Among those, the ROP attack is considered to be the most popular one shacham2007geometry.
+
+Recalling the example in Figure fig:problem-setting, this strategy allows an attacker to redirect the program flow from  to , eventually obtaining privileged information by using only already available code.
+
+Generally, ROP attacks exploit small sequences of code, called gadgets, which contain few instructions ending with a ret instruction.
+Those gadgets already exist in the programs' or libraries' code, therefore, no code is injected.
+As other researches have outlined, ROP attacks are Turing-complete in nontrivial programs carlini2014rop, and common defence mechanisms are still not strong enough to definitely stop this threat.
+
+To perform a ROP attack, an adversary has to link together a set of gadgets through a so-called ROP chain, which is a list of gadget addresses.
+A ROP chain is typically injected through a stack overflow vulnerability, by writing the chain so that the first gadget address overlaps a function's return address.
+Once the function returns, the ROP chain will be triggered and will execute the gadget in sequence.
+Through more advanced techniques such as stack pivoting PracticalROP, ROP can also be applied to other classes of vulnerabilities, heap corruption.
+
+Intuitively, a ROP attack produces a lot of new edges to concatenate all gadgets, which produce an invalid LoA that will be detected by SCARR at the first syscall. 
+
+If the ROP chain interacts with a syscall before the end of the program, then the attack will be identified.
+
+Moreover, even if the thread ends its execution, the Verifier will be aware of the attack due to the wrong LoA generated.
+
+Since ROP chains and injected codes aim at interacting with the kernel by introducing new edges, SCARR can generally identify the attack before the end of the program execution due to the checkpoints.
+
+Jump-oriented Programming.
+
+An alternative to ROP attacks are JOP ones yao2013jop,bletsch2011jump, which exploit special gadgets based on indirect jump and call instruction instead of ret.
+
+As discussed in the previous case, SCARR can also detect those attacks because they deviate from the original control-flow.
+
+Function Reuse Attacks.
+
+Those attacks rely on a sequence of subroutines, that are called in an unexpected order, through virtual functions calls in C++ objects.
+SCARR can detect these attacks, since the model considers both the calling and target addresses for each call function.
+Therefore, an unexpected invocation will result in a wrong LoA.
+
+For instance, in COOP attacks schuster2015counterfeit, an attacker uses a loop to invoke a set of functions by overwriting a vtable.
+As stated before, invoking functions from different calling addresses will generate unexpected LoAs, which means the attack will be detected by the Verifier.
+
+
+
+
+Concatenation of List of Actions.
+We considered whether it is possible to perform an attack by consecutively executing legitimate LoAs.
+
+
+
+
+
+
+
+
+SCARR can also prevent these attacks due to the nature of LoAs themselves.
+From an adversarial point of view, the attack faces two challenge:
+enumerate*[label=(*)]
+	it has to deviate the flow of the program, such that the alternative LoA is completely performed until the next checkpoint, and
+	the attack cannot introduce new edges, otherwise the system will trigger an alarm.
+enumerate*
+Therefore, the best approach is to change the first or last action of a LoA to point to a valid target address of another LoA.
+This is achievable by changing the target address of one of those instructions: jmp, call, ret.
+In case of ret operation, the alternative return address has to point to a BBL within a different function, which generally requires a different stack status for working properly.
+However, this is not possible without using further gadgets and therefore violating the property of a LoA.
+The same consideration is valid also for the jmp and call instructions. In both cases, the target function requires a context, which cannot be prepared without using further gadgets.
+Thus, it is practically impossible to change the flow of a program without using gadgets, and thus be detected.
+Implementation
+sec:implementation
+
+comment
+
+itemize
+    Illustration of the architecture (Figure 10)
+    Static analysis: 
+    itemize
+        Generation of the initial CFG: tool used, limitation of the tool, dynamic loading, final model, etc
+        Identification of the system calls inside the initial CFG
+        Identification of the list of actions for the initial CFG
+        Generation of Flavio's CFG model
+    itemize
+    Dynamic analysis
+itemize
+comment
+
+The goal of SCARR is to make runtime remote attestation feasible not just for small embedded systems, but also for complex systems.
+In order to validate our approach, we developed a proof-of-concept architecture and evaluated its performance on web servers (nginx nginx and Apache apache2) and a DBMS (MariaDB mariadb). In this section, we first present the architecture of our proof-of-concept implementation. Then, we describe its runtime operation.
+
+As shown in Figure fig:architecture, our architecture encompasses a set of different components, belonging either to the user-space or to the kernel-space. We now describe the complete workflow of the system.
+While running inside the SCARR Runtime monitor component, the monitored program receives an input and starts processing it. As soon as the program encounters a checkpoint, either a syscall or a virtual-checkpoint, SCARR Runtime monitor invokes  the SCARR sysreport.
+
+In case the monitored program calls a syscall, the SCARR syshook component in the kernel-space intercepts the request and invokes the SCARR sysreport. 
+In case of a virtual-checkpoint, the SCARR Runtime monitor invokes SCARR sysreport directly. 
+In both cases, the SCARR sysreport component will create a new report, initially containing an identifier of the syscall or of the virtual-checkpoint. Meanwhile, the program continues its execution, performing several indirect jumps. For each one of them, the SCARR Libraries in the user-space intercept the call and forward the request to the kernel-space modules. Then, the SCARR sysaddaction, the SCARR Module and the SCARR sysreport keep trace of the indirect jump performed and of the associated action in the report.
+This procedure is repeated for every indirect jump, until the program reaches a new syscall or finds a new virtual-checkpoint.
+Then, in case of a syscall, SCARR syshook intercepts again the request, while in case of a virtual-checkpoint, the SCARR Runtime monitor invokes SCARR sysreport directly.
+In both cases, SCARR marks the final checkpoint and ends the current LoA. Therefore, the report is complete and a new measurement has been just generated. This workflow is repeated for each pair of checkpoints until the program reaches the end of its execution. 
+
+figure[t]
+		fig/architecture.pdf
+	Proof-Of-Concept Architecture
+	fig:architecture
+figure
+
+As already mentioned, SCARR involves an Offline Program Analysis and an Online Program Verification.
+For the Offline Program Analysis, we chose a dynamic approach. We simply generate a set of inputs in a fuzzy fashion and we traced the jumps traversed to build the CFG.
+Then, we generated the measurements by inspecting the CFG.
+This approach does not guarantee to obtain all possible measurements, however, it is enough for our purposes.
+
+
+
+On the other hand, for the Online Program Verification we replicated the same approach by involving the Verifier for checking the measurements at runtime. 
+
+
+
+In the remaining part of this section, we provide technical details about the SCARR implementation. 
+
+The Runtime monitor component is responsible for tracing every indirect control-flow transfer in the program. This has been achieved combining two approaches: 
+enumerate*[label=(*)]
+	the instrumentation of both application compiled code and libraries through a DynamoRIO client ginsbach2018automatic, and
+	the customization of the Linux kernel.
+enumerate*
+
+The program's binary code is instrumented by DynamioRIO at the booting phase.
+Indirect branches (jmp, call, and ret) and syscalls are automatically found in the binary code, while virtual-checkpoints are loaded from a table generated during the Offline Program Analysis.
+
+The customization of the Linux kernel involved: 
+enumerate*[label=(*)]
+	a new syscall for updating the LoA (SCARR sysaddaction)
+	a new syscall for generating the report (SCARR sysreport),  
+	a hook before each syscall to automatically generate reports (SCARR syshook), and
+	a kernel module for storing SCARR sensitive information (SCARR Module).
+enumerate*
+The adoption of a kernel as a trusted anchor was chosen because we found it is more efficient in comparison with other commercial trusted platforms, such as SGX and TrustZone.
+However, we discuss other approaches in Section sec:discussion.
+
+In our implementation, we assume that: the kernel is safely bootstrapped; the attack is performed by following the threat-model described in Section sec:threat-model (adversary in user-space, targeting software interfaces or through user-space rootkits);
+the monitored software in user-space is trusted due to static authentication and secure booting.
+An attacker might target the Runtime monitor to trick the runtime measurement, but it will generate never-seen-before actions that will be immediately detected, as we discuss in Section ssec:security+privacy+consideration.
+Syscalls, thread startup, and thread exit are all handled at kernel level to avoid tampering, while virtual-checkpoints are checked during runtime through DynamoRIO instrumentation.
+Runtime measurements (the LoA) are stored in a trusted module, and, therefore, cannot be directly tampered.
+Finally, since the software is executed with the ASLR protection enabled, BBL addresses are randomized at runtime and can not be directly used for labelling.
+We cope with this problem by using a triplet of values: the relative address of the BBL, its length, and the module where it is contained.
+At runtime, we obtain the current memory map of the process, and then we adjust BBL addresses accordingly.Introduction
+sec:introduction
+
+
+In cybersecurity, making sure that a software is following
+the correct execution path is an important problem that has
+been largely studied for many years  Abadi:2005:CI:1102120.1102165,cooper2002building,dessouky2017fat,8269390,carlini2015control.
+
+We define control-flow attacks all those techniques that aim
+at modifying the legitimate execution path of a software Abadi:2005:CI:1102120.1102165.
+
+This class of attacks is quite powerful since it may give the control of the victim software or even the entire machine to the attacker. According to CVE database cvereport, 
+there were more than 2000 vulnerabilities related to control-flow attacks in 2017, and this number has exceeded 2000 in just the first quarter of 2018.
+
+
+Control-flow attacks are used in different scenarios,
+for instance, by a malware to spread over a network, for achieving privilege escalation, and in manual intrusions.
+
+The main origin of control-flow attacks is memory corruption errors (buffer overflows cowan1998stackguard), that affect programs written in languages such as C or C++.
+To mitigate memory corruption errors, different approaches (e.g., Stack Canary baratloo2000transparent) have been proposed.
+One of the first attacks based on control-flow is the so-called ShellCode smith1997stack, which was tackled by techniques such as WX in Linux and Data Execution Prevention (DEP) in Windows.
+However, adversaries managed to bypass these defences by introducing the Code-Reuse Attacks - Return Oriented Programming (ROP) schuster2015counterfeit and Jump Oriented Programming (JOP) bletsch2011jump.
+
+To mitigate Code-Reuse Attacks, new solutions were introduced, such as Address Layout Space Randomization (ASLR) kil2006address, and Control-Flow Integrity checks (CFI) burow2017control.
+CFIs are advanced techniques that constraint the software execution path into a valid range.
+However, as stated before, the game between adversaries and researchers is still an open field:
+for each defense mechanism proposed, a new evasion is found 184481,evans2015control,goktas2014out.
+
+
+A new and promising alternative to classic CFIs are runtime remote attestation.
+
+Generally speaking, a remote attestation is a technique which allows an entity, namely Verifier, to validate the integrity of a remote device, namely Prover anati2013innovative.
+
+
+
+
+In the literature, we can consider two types of remote attestations: static remote attestation and dynamic remote attestation.
+While the static remote attestation aims at validating static components (a software/hardware signature), the runtime remote attestation measures running properties (code execution path).
+For the static remote attestation, researchers and companies have already proposed some hardware-based modules, Software Guard Extensions (SGX) costan2016intel and TrustZone winter2008trusted.
+On the other hand, runtime remote attestations are relatively new, and reliable products for this attestation do not exist yet on the market.
+
+
+
+One of the available approaches in this direction is to measure some runtime properties of the Prover (a specific execution path), and compare it with a set of pre-computed values (all the possible execution paths) abera2016c,dessouky2017fat.
+
+
+Even though all these solutions are robust, they are not scalable over software such as web-servers, or database management systems (DBMS) due to their complexity.
+
+First of all, this type of software contains a significant amount of compiled code (around 70MB for Apache server vs some KB for embedded software) and requires an interaction with shared libraries, which inevitably increases their complexity.
+Moreover, they are usually multi-threaded programs equipped with ASLR and custom signal handlers.
+All these features make the task even more challenging.
+
+The philosophy of remote attestation mechanisms, and in particular of runtime ones, is quite different from classic defence like CFI.
+While CFIs aim at avoiding control-flow hijacking, runtime attestations are designed as reliable mechanisms for monitoring the status of the Prover, and for reacting in case there is an attack.
+
+
+After considering the current state-of-the-art (refer to Section sec:related-works for a deeper description), we propose SCARR: a novel SCAlable Runtime Remote attestation schema for complex systems.
+With respect to previous control-flow remote attestations gu2008remote,abera2016c,zeitouni2017atrium,dessouky2017fat, SCARR can be applied to any software thanks to the model used for representing the execution paths.
+Unlike classic CFI checks that attempt to block control-flow hijacking, SCARR introduces a novel
+approach that provides a reliable mechanism to measure the software execution (its execution flow), and then validate it at runtime.
+SCARR is designed such that the Verifier can detect a control-flow attack and then react accordingly.
+
+Another difference is provided by the authentication schema.
+Unlike previous approaches, where the Verifier sends challenges to the Prover, in SCARR the Verifier is passive and waits for the measurements sent by the Prover.
+Once an input is received, the Prover initiates a session with the Verifier, within which it sends a set of reports according to a specific protocol.
+This way, the Verifier can monitor the Prover without stopping its services.
+
+
+As we describe in Section sec:threat-model, we designed SCARR to tackle user-space threats (user-space rootkit, runtime exploitation).
+
+SCARR attestation schema is suitable for cloud environments that need to guarantee high availability, such as Amazon Elastic Load Balancing guide2010amazon or Azure Load Balancer wilder2012cloud.
+The idea is based on running a set of virtual machines which are dynamically generated (and destroyed) to balance the incoming requests.
+Unfortunately, there are no control mechanisms to check whether one of those machines has been attacked or not.
+This issue can be tackled with SCARR by attesting their runtime behaviours.
+
+Goals and Contributions. In this work, we propose a new remote control-flow attestation scheme for complex systems to detect runtime attacks performed through memory errors in user-space. 
+
+
+
+Our approach requires the program's full code, together with the required libraries, already available for the static analysis before the program execution.
+This is a reasonable assumption considering, for instance, a software house which wants to adopt this technique for their products.
+
+We deployed our approach over some popular services, such as nginx nginx, Apache2 apache2, and MariaDB mariadb.
+Based on our experiments, 
+the execution time overhead introduced by SCARR is comparable with other state-of-the-art runtime remote attestation schemes abera2016c, 
+and the size of valid measurements generated by SCARR ranges between 330KiB and 2MiB.
+
+
+To sum up, the main contributions of this work are as follows.
+itemize
+	A runtime remote attestation scheme that is designed for modern systems, which make use of multi-threading programming, ASLR, and signals.
+	A fine-grained detection mechanism for runtime errors, with a reference to the invalid path of the monitored program.
+	A new and scalable model for representing valid execution paths in a complex program.
+	A proof-of-concept implementation that works on real commercial software, which is based on DynamoRIO ginsbach2018automatic and a custom Linux kernel.
+itemize
+
+The source code of our proof-of-concept implementation will be available at the link(We are willing to share the source code with the community upon acceptance or to provide it to the reviewers upon request via conference chairs.).
+
+
+Organization.
+The paper is organized in the following way: 
+we first provide the background knowledge of control-flow exploitation in Section sec:problem-setting, 
+and define the threat model in Section sec:threat-model.
+Then, we describe SCARR, together with its components in Section sec:proposal, 
+and some implementation details in Section sec:implementation.
+We discuss the goals and limitations of our approach in Section sec:discussion,
+and the related works in Section sec:related-works.
+We conclude the paper and summarize our contributions in Section sec:conclusion.
+
+
+
+
+
+
+
+
+
+
+Introduction
+
+mabe start by declaring a problem (some numbers?)
+Remote attestation is a technique which allows an entity, namely Verifier, to validate the integrity of a remote device, namely Prover anati2013innovative.
+This approach is commonly used to validate software and hardware properties on embedded devices.
+The Verifier engages a challenge with the Prover, then, the latter makes a measurement of its properties (software/hardware signature)
+and reports it back to the Verifier.
+We can split remote attestation approaches in two categories: static remote attestation and dynamic remote attestation.
+Static remote attestation aims at validating static components, the Verifier is talking with the right Prover, the software installed has not been changed.
+Researchers and companies have already proposed some hardware modules for performing these attestations, Software Guard Extensions (SGX) costan2016intel and TrustZone winter2008trusted.
+Unfortunately, these solutions cannot identify runtime attacks that modify the program behavior.
+To cope with these problems, static remote attestation was combined with the so-called runtime remote attestation to validate runtime properties, the software in the Prover is running as expected.
+
+One of the available approaches in this direction is to validate some runtime properties of the Prover (a specific execution path), with a set of precomputed values (all the possible execution paths) abera2016c,dessouky2017fat.
+
+Other strategies, instead, focus on physical attacks that allow an adversary to change the control-flow and 	simultaneously produce legitimate measurements zeitouni2017atrium.
+Even though all these solutions are robust, they are not scalable over software such as web-servers, or database management systems (DBMS) due to their complexity.
+
+First of all, this type of software contains a significant amount of compiled code (around 70MB for Apache server vs some KB for embedded software) and requires an interaction with shared libraries, which inevitably increases their complexity.
+Moreover, they are usually multi-threading programs equipped with ASLR and intercepting signals.
+All these features make the task even more challenging.
+
+
+review this paragraph, it looks too long for me (FLAVIO)
+Runtime remote attestation techniques, and more precisely the ones based on control-flow properties, usually address control-flow attacks.
+Identifying a control-flow attack is a big challenge, largely faced in the cybersecurity community, but still open.
+According to CVE database cvereport, the number of vulnerabilities related to these attacks were more than 2000 in 2017, and overcame 2000 in just the first quarter of 2018.
+
+
+Due to control-flow hijacking attacks, programs can be compromised and their expected runtime flows can be redirected to execute malicious code. 
+The main origin of this type of attacks is memory corruption errors (Buffer overflows cowan1998stackguard), that affect programs written in languages such as C or C++.
+
+
+To mitigate memory corruption errors, researches proposed different approaches (Stack Canary baratloo2000transparent).
+
+One of the first attack based on control-flow is the so-called ShellCode smith1997stack, which was tackled by techniques such as WX in Linux and Data Execution Prevention (DEP) in Windows.
+
+
+
+
+However, adversaries managed to bypass these defenses by introducing the Code-Reuse Attacks - Return Oriented Programming (ROP) and Jump Oriented Programming (JOP). 
+
+
+To mitigate the Code-Reuse Attacks researches introduced new solutions (ASLR kil2006address).
+
+
+Regardless of the defenses adopted so far, attackers developed mechanisms to bypass all of them litchfield2003defeating,athanasakis2015devil.
+
+Nowadays, the most promising defense mechanism is Control-Flow Integrity (CFI), which aims at validating the executed paths at runtime.
+Usually, these approaches use information from the static Control-Flow Graph (CFG) to map all valid possible branches.
+
+
+In this work, we propose SCARR: a novel SCAlable Runtime Remote attestation schema for enterprise systems.
+With respect to previous control-flow remote attestations gu2008remote,abera2016c,zeitouni2017atrium,dessouky2017fat, SCARR can be applied to any software thanks to the model used for representing the execution paths.
+Differently to classic Control-flow integrity checks (CFI), SCARR introduces a different approach, instead of attending at blocking control-flow hijacking, we leave the software executing its flow, and we validate it at runtime.
+perhaps stress that SCARR != CFI + further security guarantees
+Another difference is provided by the authentication schema.
+Unlike previous approaches, where the Verifier sends challenges to the Prover, in SCARR the Verifier is passive and waits for the measurements sent by the Prover.
+Once an input is received, the Prover initiates a session with the Verifier, within which it sends a set of reports according to a specific protocol.
+This way, the Verifier can monitor the Prover without making it stop exposing its services.
+
+maybe say that attacker model can be from outside and from within the machine it-self, as long as the trusted anchor is safe
+SCARR attestation schema is designed for cloud environments that need to guarantee high availability, such as Amazon Elastic Load Balancing guide2010amazon or Azure Load Balancer wilder2012cloud.
+The idea is based on running a set of virtual machines which are dynamically generated (and destroyed) to balance the incoming requests.
+Unfortunately, there are no control mechanisms to check whether one of those machines has been attacked or not.
+This issue can be tackled by SCARR, that can attest their runtime behavior.
+
+Goals and Contributions. In this work, we propose a new remote control-flow attestation scheme for complex systems to detect runtime attacks performed through memory errors in user-space. 
+
+
+Our approach requires the program's full code, together with the required libraries, already available for the static analysis before the program execution.
+
+We deployed our approach over some popular services, such as nginx nginx, Apache2 apache2, and MariaDB mariadb.
+Considering our experiments, we manage to execute the software only doubling the execution time with respect to the original program.
+We also measured the size of valid measurements generated by SCARR and they range between 330KiB and 2MiB.
+
+
+Tu sum up, the main contributions of this work are as follows.
+itemize
+    A runtime remote attestation scheme for complex server programs that use multi-threading programming, are equipped with ASLR, and handle signals.
+    A fine-grained detection mechanism for runtime errors, with a reference to the invalid path of the monitored program.
+    A new and scalable model for representing valid execution paths in a complex program.
+    A proof-of-concept implementation that works on real commercial software, which is based on DynamoRIO ginsbach2018automatic and a custom Linux kernel.
+itemize
+
+The source code of our proof-of-concept implementation will be available at this link(We are willing to share the source code with the community upon acceptance or to provide it to the reviewers in case it is needed).
+
+
+Organization.
+The paper is organized in the following way: at the beginning, we provide a background knowledge of the  control-flow exploitation (Section sec:problem-setting), and we claim the features of the threat model (Section sec:threat-model).
+Then, we describe SCARR, together with its components (Section sec:proposal), the solutions adopted in our implementation (Section sec:implementation), and the goals and shortcomings of our approach (Section sec:discussion).
+We conclude the paper illustrating the related works (Section sec:related-works) and summarizing our contributions (Section sec:conclusion).
+
+comment
+What to sell: I want to sell a CF model which is sound and scalable compared with other sound mechanisms. This can be used for remote attestation of complex softwares.
+
+FT: proto introduction + justification
+Among CFI techniques, those which are sound, are also heavy and not practical.
+Those approaches continuously validate the (entire) program state at each point, at each branch point.
+The first approach proposed is the ShadowStack cite, where the system maintains a copy of the stack for each process/thread.
+ShadowStack is mantained in memory region which is out of the attacker control.
+Every time an indirect branch is taken (return), the system checks whether the target address is congruent with to the ShadowStack.
+FT: maybe discuss Shadowstack shortcomings here?
+Other approaches are recently suggested, like C-FLAT cite C-Flat.
+In this work, each CFG node has associated a set of status which represent all possible branches that cross that node.
+Employing this approach, authors describe a remote attestation schema that validate not only the software loaded, but also its state at each execution point.
+Even though this approach results sound, it is hard to deploy on real programs due to the all possible combinations.
+
+FT: consider a paragraph about time-to-check before jump (like CF Guard)
+
+On the other hand, previous authors realized cite that any Control Flow attack (ROP attack) requires it to interact with underline the OS to perform a damage.
+Hence, a good strategy to reduce overhead is to validate the control flow once it is interacting with the system, instead of checking it at each branch taken.
+This principle was applied, for instance, by instrumenting Windows APIs in cite.
+However, those approaches are still prone to errors since they employ heuristics to validate the program status at a specific point.
+
+Our approach aims at analyzing shortcomings of both strategies, and overcome them by introducing a CF model which results scalable and usable in real programs.
+This is achieved through these key points:
+itemize
+	By introducing a program status which is quickly updated at each (indirect) branch, as in C-FLAT cite.
+	By performing a status check only when the control reaches the OS (syscalls is invoked) as described in Section X.
+itemize
+
+This strategy brings the following advantages:
+enumerate
+	It not required a copy of the stack, which is here represented by a token (a string of byte with fixed length).
+	As we describe in Section X, our model drastically reduces program status making them suitable for real programs.	
+	This approach results sound because or model enables us to trace of all possible paths in an efficient way.
+enumerate
+comment
+Miscellaneous
+
+THIS IS A DUMMY SECTION FOR DUMPING STUFFS
+
+Current control flow integrity checkers spend efforts in adding checkers within the application code. This is achieved by using instrumentation at compilation time, at system level, or at hardware level. The main point of these approaches is that the program checks whether its next jump (or call) location is valid or not. In this setting, all attacks are aimed to corrupt the program and the checking system because both lean in the same memory region.
+With this approach, we aim to change this paradigm (need to check how much innovative is) by moving the control flow verification inside external libraries. In this way, even if an attacker can perform memory corruption attacks into the program, the library can recognize an unforeseen behavior at the caller side.
+
+Approach 1) We want to identify anomalous CFG without generating all possible combinations. 
+2) An attack against CFG is acceptable as long as it does not reach te OS through some shared library.
+
+Contributions
+itemize
+	Make a scalable graph model for large program
+	Deal with ASLR
+	Shared library
+	Handing exception (probably)
+itemize
+
+Challenges
+This setting implies a set of challenges to overcome:
+itemize
+	We have to define the list of valid application status.
+	We have to update application status at runtime without editing the original program.
+	The entire system should be more efficient than classic shadow stack solutions. And maybe more robust, or more light, or more something.
+itemize
+
+Solutions
+itemize
+	Static analysis of the code. using angr
+	Instrumentation, pin tool will do.
+	Cumulative hash, at this purpose we should find a way for reducing call graph space in a cool manner. Maybe getting inspiration from CFG. We can use BLAKE-2, a fast-cumulative hash function. TODO: find a good modeling of call graph
+itemize
+
+Interesting points
+Without any sorting
+itemize
+	I am interested to CALL and RET instructions, not to the entire control-flow graph.
+	As "node" labels, we can use relative address of instructions + all possible destinations of that call.
+	I don’t care if the program is messed up internally by some rop attack or memory corruption attack. I need only to verify that its status is correct once the control leaves the application.
+	ROP chains, return address override, and function pointers override are based on CALL and RET instruction, which look called strangely during the attack. Therefore, from my point of view, it is enough to trace them.
+	Data oriented attacks are different, maybe we can include them too.
+	Security checks are performed at library level because I want to check the program status once it tries to communicate with the rest of the system.
+	This system can be seen as an attestation among entities within the same machine (dynamic local attestation?) IMPORTANT: discuss with Mauro, this work looks very similar to this paper “C-FLAT: Control-Flow Attestation for Embedded Systems Software”@ccs2016
+	I have to identify the entry points of external libraries. Then for each entry point I list its "valid application status". It is not just a general list of valid status like in C-FLAT.
+itemize
+
+Strong points
+itemize
+	First propose of local dynamic attestation (maybe Microsoft did something similar, but less good)
+	We propose a better analysis, and a better status modeling. Recursions, do you remember them?
+	Better performances, we check only once control lease program
+itemize
+
+Some consideration
+
+Stuff to discuss somewhere
+
+itemize
+	Load the library with a signature, the process has to be sure the library is trusted as well - you can use a static signature from SGX
+	How to make a full control flow graph: find a better analyzer (this is not the case), try a combination of dynamic analysis and static (I prefer this), develop an our technique (this is out of cope I guess)
+	WHY DO YOU NEED SGX FOR THIS?!
+itemize
+
+The overview of the system is formed by 3 entities:
+description
+	[Application] it is the program we intend to protect.
+	[External libraries] system libraries which allow an application to communicate with the rest of the system.
+	[Verification system] a verification system, implemented with trusted computing techniques, which validates the interaction between application and libraries.
+description
+
+In the above picture, it is possible to see how the 3 entities work together. The application still updates its status, which is stored in a dedicated memory region (tc). Once the application calls a library function, the latter queries the verifier in order to compare the application status with all valid application status.
+
+Control Flow Graph Model
+
+How do we model a control flow graph? And why in this way?
+
+MAIN IDEA every edge which enters in a function, must return in the same function of before, link call to a function with the respective return
+
+figure[t]
+		fig/time-evolving
+	Example of time evolution of a programFT: make a better image!
+	fig:time-evolving
+figure
+
+Figure fig:time-evolving descries a function calls and return operations in a general application.
+
+algorithm
+	My algorithmeuclid
+	algorithmic[1]
+	main
+	a()
+		a
+	fn1()
+	b()
+		b
+	fn2()
+		algorithmic
+algorithm
+
+figure*[t]
+		fig/cfg-not-optimized
+	Example of CFG not optimizedFT: make a better image!
+	fig:cfg-not-optimized
+figure*
+
+Figure fig:cfg-not-optimized shows an example of a CFG not optimized, each external function (red nodes) is linked by each possible path. This might bring to an explosion of combinations.
+
+figure*[t]
+		fig/cfg-optimized
+	Example of CFG optimizedFT: make a better image!
+	fig:cfg-optimized
+figure*
+
+Figure fig:cfg-optimized shows an example of a CFG optimized, each external function (red nodes) is linked an abstract edge which contains the properties required to validate paths between two nodes. This limits path explosion.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+calc,positioning,arrows
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+op-tical net-works semi-conduc-tor
+
+
+
+
+
+
+SCARR: A Novel Scalable
+Runtime Remote Attestation
+
+
+Flavio Toffalini ,
+	Andrea Biondo , Eleonora Losiouk , Jianying Zhou  and
+	Mauro Conti  
+
+	 Singapore University of Technology and Design,
+	 University of Padua
+
+	Email: flaviotoffalini@mymail.sutd.edu.sg, andrea.biondo.1@studenti.unipd.it, 
+ elosiouk@math.unipd.it, jianyingzhou@sutd.edu.sg, conti@unipd.it
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+9
+Permission to freely reproduce all or part
+    of this paper for noncommercial purposes is granted provided that
+    copies bear this notice and the full citation on the first
+    page. Reproduction for commercial purposes is strictly prohibited
+    without the prior written consent of the Internet Society, the
+    first-named author (for reproduction of an entire paper only), and
+    the author's employer if the paper was prepared within the scope
+    of employment.  
+
+    NDSS '16, 21-24 February 2016, San Diego, CA, USA
+
+    Copyright 2016 Internet Society, ISBN 1-891562-41-X
+
+    http://dx.doi.org/10.14722/ndss.2016.23xxx
+
+[]
+
+
+
+
+
+
+
+
+
+A large number of cybersecurity threats, like malware, are based on
+control-flow attacks to subdue legitimate programs.
+To mitigate these threats, current defence
+strategies rely on Control-Flow Integrity checks (CFI) or on Address
+Space Layout Randomization (ASLR) for hardening the system.
+Unfortunately, even if these techniques make adversary's life harder, there are techniques to bypass them.
+Recently, runtime remote attestation schemes have been proposed to mitigate control-flow attacks.
+These techniques allow validating the correct execution path of a program running on a remote device.
+However, the current state-of-the-art
+solutions only work for small programs or for embedded systems,
+and they are not suitable for complex software like web-servers.
+
+In this work, we present SCARR: the first SCAlable Runtime
+Remote attestation that is designed for complex software,
+which might involve multi-threading programming, ASLR, and
+operating system signals. Unlike previous approaches, SCARR
+can model valid program execution paths in a scalable way,
+and it is also suitable for monitoring virtual machines in cloud
+environments. We developed a proof-of-concept of our idea and deployed it over a set of popular software.
+Based on our experiments, SCARR monitors remote software execution with
+an overhead comparable to other runtime remote attestation schemes.
+Moreover, it can efficiently deal with large applications by using a small number of measurements. Ultimately, SCARR provides a more robust protection against control-flow attacks with regard to classic CFIs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IEEEtranS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Background
+
+
+
+
+    Illustration of Figure 1
+    High level description of possible attacks and defences introduced by CFI
+
+
+The purpose of this section is to illustrate how an attacker could perform a memory corruption attack to change the CFG of a program. 
+
+As a reference example, we will use the snippet of a simple program, which is shown in Figure .
+The program starts with the acquisition of an input from the user (line ). This is evaluated (line ) in order to redirect the program execution towards the retrieval of a privileged information (line ) or an unprivileged one (line ).
+Each information is, then, stored in a variable (), which is returned as an output (line ), before the program exits properly (line ). 
+
+
+
+
+
+
+
+
+0.4
+			Pseudo-code of the runtime example.
+	0.4
+			Control-flow graph of the runtime example.
+	Scenario of a runtime attack.
+
+The CFG associated to the program in Figure  is depicted in Figure .
+In this case, each node of the graph represents a basic block of the program and an edge connecting two nodes is the standard flow through which the program moves from a basic block towards a different one.
+A basic block (BBL) is considered as a linear sequence of instructions with a single entry point (no incoming branches to instructions other than the first), and a single exit point (no outgoing branches from instructions other than the last).
+
+
+We assume that an attacker is able to run the program (from the node ), but that he is not authorized to retrieve the privileged information. Thus, when he is asked to input a value, he is redirected to the node .
+At this point, the attacker cat try to exploit a memory corruption error inside the getunprivilegedinfo() procedure through two different approaches:
+*[label=(*)]
+    code injection (edge labeled as ),
+    code-reuse (edge labeled as ).
+
+
+The first attempt is represented by the edge labelled as , which forces the program normal flow to execute an injected malicious code.
+To achieve his aim, the attacker has first to inject new malicious code into a writable memory area, and then redirect a pointer to that area.
+The malicious code can be injected, for instance, by overflowing a function's local buffer allocated on the stack (node ), while for jumping to the new code the attacker can overwrite the function return address and create a new possible path (edge from  to ).
+
+This type of attack is commonly known as shellcode attack. 
+However, if the program is equipped with WX or DEP mechanisms, the attacker is not able to inject new malicious code. Therefore, he has to switch to a different strategy, which might involve a Code-Reuse Attack, depicted by the edge .
+In this case, the attacker could overwrite the return address of the getunprivilegedinfo() procedure with the getprivilegedinfo() one, creating a new edge from  to , and acquiring the privileged information he was originally not allowed to.
+Even if this attack can be mitigated by several defences, such as ASLR, it has been already proved that runtime attacks can still be performed . 
+
+A more reliable defence, which can address the above-mentioned attack, is instead given by CFI.
+As a matter of fact, systematically checking whether a traversed path between two nodes is the expected one.
+CFIs allow to detect an ongoing attack and notify that the original program's CFG has been modified.
+Therefore, both attempts made by the attacker would lead to two invalid paths, respectively:  between  and , and  between  and .
+However, recent studies have shown the limitations of current CFIs approaches .
+
+The control-flow attacks shown in this example are usually basic tools that are used in different contexts;
+for instance; in an external intrusion outside the perimeter, inside an infected system, or by an installed rootkit.
+In the next section, we will define the threat model that we expect to mitigate with SCARR.
+
+
+
+Despite its reliability, the adoption of CFI as a defense technique is challenging due to the following reasons: 
+
+    The definition of the most appropriate model to represent a CFG (e.g., whether a node should represent an entire function, a BBL ending in an indirect branch or in any branch instruction).
+    The amount of memory required for saving a CFG and all the additional data structures to perform the runtime checks.
+    The open problem regarding the generation of a complete program's CFG. 
+    The inherent overhead introduced during the runtime execution of a monitored program.
+
+Even considering those challenges, we decided to design a new runtime attestation schema based on CFI.
+We believe that our solution pushes forward the current state of the art, by addressing more sophisticated programs, and also significantly improves some of the limitations presently affecting the CFI technique. 
+
+Related Works
+The purpose of our solution is to perform remote attestation on real programs through CFI checks. Therefore, in this section, we illustrate the current state of the art regarding both topics: remote attestation and control flow integrity.
+
+Remote Attestation
+Existing remote attestation schemes are designed to verify whether the components of a remote machine have been tampered with by an attack. Usually, this check is performed before the runtime execution and relies on the generation of a cryptographic signature obtained from different remote components (e.g., hardware or software modules, BIOS, operating system, etc.). 
+Commercial solutions, built on top of trusted computing platforms and designed to defend physical attacks, are already available: TPM , SGX , and AMD TrustZone .
+Even though these technologies have gathered a lot of attention over the past few years and are able to provide high-security guarantees, they focus on static properties (signatures of components) and cannot offer any defence against runtime attacks. 
+
+A step forward has been recently provided by Liangmin et al.  and Haihe et al. , that have deployed the static attestation approach over cloud systems. More specifically, their solutions involve a static attestation schema for infrastructures as a service and JVM cloud computing, respectively. Even though these works are one of the most recent examples of remote attestation over complex systems, they still focus on static attestation without considering runtime properties. 
+
+Considering embedded systems, several new attestation schemes have been designed aimed at developing scalable solutions. Among those, we mention, as research works, the solutions proposed by Ambrosin et al. , Eldefrawy et al. , and Asokan et al. , while Samsung Knox , as a commercial product. 
+Regardless of the security properties guaranteed by these solutions, they all address remote attestation for embedded systems, while SCARR targets different systems.
+
+Even though solutions for runtime remote attestation have been introduced to overcome the design limitations of the previous static ones, they still work only on embedded systems.
+For example, Kil et al.  analyze base pointers of software components, such as stack and heap, and then compare them with the measurements acquired offline. 
+Davi et al.  proposed a runtime attestation based on policies, such as the number of instructions executed between two consecutive returns. 
+Bailey et al.  proposed a coarse-grained level that attested the order in which applications modules were executed.
+A very interesting solution is C-FLAT, proposed by Abera et al. , which is an attestation schema measuring the valid execution paths undertaken by embedded systems. Even though the main approach is similar to the one adopted in SCARR (comparison between runtime measurements and previous ones statically computed), the main difference resides in the model designed to represent all the possible valid paths of a program: while C-FLAT can be applied only on small software, SCARR is a scalable solution, that works both on simple and complex programs. 
+A further extension of C-FLAT is LO-FAT, proposed by Dessouky et al. , which consists of a hardware implementation aimed at improving runtime performances for embedded systems. However, both C-FLAT and LO-FAT only work on simple programs. 
+Finally, Zeitouni et al. designed ATRIUM , a technique to improve runtime remote attestation schemes and through which they managed to solve typical physical attacks targeting embedded devices. Even though the authors address different use cases, this solution might be combined with SCARR. 
+
+Control-Flow Integrity
+Recently, runtime memory exploitation attacks have been largely studied by both academia and industry  , that have identified two possible strategies: CFI protections  and fine-grained memory randomization .
+
+Even considering an increased precision of the CFI solutions, it has been already proved that attackers can still overcome those mechanisms through the adoption of more complex ROP attacks .
+Unlike the above-mentioned approaches, SCARR has not been designed to block these attacks, but it helps with detecting never-seen-before attacks and rebuilding, even partially, the exploits used by attackers. 
+
+Finally, memory randomization techniques are not efficient protections  as well, since vulnerabilities are not patched and they do not provide any control-flow protection. 
+
+With respect to those solutions, SCARR is an orthogonal approach that can work with the other ones running in parallel because, as discussed in Section , SCARR and remote attestations are designed to just monitor program properties remotely.
+
+Our Proposal: SCARR
+
+
+
+
+In this section we describe SCARR, providing a general overview of the system first (Section ), then illustrating the representation model of the executed paths (Section ) as well as the communication protocol engaged among the system components and the verification steps performed (Section ).
+We also discuss the key challenges faced (Section ).
+
+
+: the Measurements Generator, to create the set of measurements after the analysis of the program's CFG; the Measurements DB, to permanently save the identified measurements; the Prover, to trace the measurements generated by the program at runtime; the Verifier, to check the validity and consistency of the measurements received by the Prover. 
+
+
+System Overview
+
+
+
+
+	hight level description of how everything works
+	introduce concept of Prover and Verifier
+	describe high level steps required by our system (an offline analysis and then an online verification)
+	question: should I mention a real use case of this technology now?
+	not code loaded at runtime like in PhP or Javascript
+
+
+SCARR consists of four different components as shown in Figure :
+
+    A Measurements Generator, responsible for the program's CFG generation and identification of all the valid measurements. 
+    A Measurements DB, for saving all the program's valid measurements previously obtained.
+    A Prover, which is the machine running the monitored program.
+    A Verifier, which is the machine performing the program's runtime check.
+
+
+			System overview.
+	
+
+
+
+As a whole, our system encompasses two distinct phases, in which the components are differently involved: an Offline Program Analysis and an Online Program Verification.
+The first phase requires the Measurements Generator to create the CFG and to "measure" the valid execution paths (more details in Section ), while the Measurements DB permanently saves that information.
+During the second phase the Prover is supposed to run the program, the Verifier to check the program's runtime measurements, and the Measurements DB to extract the previously saved valid measurements.
+Each phase will be described in more detail in the rest of the section. 
+
+In the first block of the Offline Program Analysis, we assume to have an application  running in the Measurements Generator.
+This application, or a subset of it (a function), is analyzed so that its CFG  is extracted and processed to identify all the valid measurements  then permanently saved in the Measurements DB.
+The generation of the CFG is performed only once over the whole code of the application , assuming to have its full code and all the associated libraries.
+In our work, we do not deal with dynamically generated code - JIT - because it introduces unforeseen branches in the CFG.
+
+
+We are aware that generating a complete CFG from a complex program is a well-known open research problem, still unsolved.
+However, we consider that a static graph obtained by combining the compiled code together with the dynamic analysis is complete enough for our study (we discuss again this problem in Section ).
+
+
+
+As already mentioned, the purpose of the Online Program Verification is to attest  at runtime. To achieve this goal, both a Prover and a Verifier are involved.
+More specifically, the Verifier targets two purposes: validating whether the running application is still the same and checking whether the graph generated at runtime is coherent with the one computed offline.
+
+The first objective can be completed through a static attestation of the Prover software stack.
+For the sake of simplicity, we avoid describing it because it is a problem already covered by other researchers and implemented in commercial products .
+The second one, instead, relies on a continuous information exchange between the Prover and the Verifier.
+Usually, in a remote attestation setting the Verifier starts the communication by sending the Prover a challenge to be solved. Then, the Prover provides a report, which is returned back to the Verifier for a check. In our study, we assume the application  is running and waiting for an input from a user.
+
+When an input arrives, the Prover begins two parallel operations:
+*[label=(*)]
+	it processes the input, and
+	it generates a set of measurements.
+The measurements are sent to the Verifier, that first evaluates their validity and, then, compares them with the ones stored in the Measurements DB.
+As we will discuss in Section , this schema provides two advantages: 
+*[label=(*)]
+	it allows the Verifier to detect an attack before the Prover ends its execution, 
+	it provides clues about the attack mounted.
+
+To guarantee a secure communication between Prover and Verifier, our design requires the definition of a session for each input received by the Prover.
+This session is identified by a session ID, which is sent to the Verifier together with the measurement to be checked and an incremental counter that prevents replay attacks.
+Moreover, each message is protected with a cryptographic key , which is shared only between the two components.
+We carefully describe the communication protocol in Section .
+Considering the operating system as trusted, the Prover maintains the sensitive information (shared keys) in the kernel-space which is not directly accessible from the user-space.
+Moreover, all critical computation (cryptographic functions) are performed in the kernel.
+
+Threat Model
+
+
+
+
+    Adversary performs memory errors to invalidate the CFG through code injection
+    Data oriented attacks are not addressed
+    Attacks against the control flow, not on bytecode
+    User-space
+    The attacker uses the standard sw interfaces
+
+
+The threat model considered in this work aims at modifying the original CFG of a program by introducing new malicious edges. 
+The attack is assumed to be performed by adopting different techniques such as memory corruption errors or function hooks.
+We consider user-space attacks, while we assume the kernel as a trusted anchor.
+However, we can move the trusted anchor to an external module as we discuss in Section .
+
+In addition, the software addressed by our defence mechanism is already equipped with modern mitigation techniques (i.e., WX/DEP, ASLR, and Stack Canary).
+These assumptions are in line with other remote attestation schemes .
+
+The kernel-space is considered trusted, which is a reasonable assumption if the machine is equipped with trusted modules such as a Trusted Platform Module .
+
+Under this threat model, the attacks can be from ROP/JOP
+attacks , code injection attacks , or function
+hooks .
+SCARR does not cover data-oriented attacks, program’s bytecode modifications and dynamic loading of code at runtime such as with just-in-time compilers (JIT) .

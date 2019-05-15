@@ -1,0 +1,352 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+op-tical net-works semi-conduc-tor
+
+
+[4]
+
+cases.
+theoremTheorem
+propositionProposition
+lemmaLemma
+corollaryCorollary
+resultResult
+claimClaim
+definationDefination
+
+Mobile Conductance and Gossip-based Information Spreading in Mobile Networks
+
+Huazi Zhang, Zhaoyang Zhang, Huaiyu Dai
+
+. Dept.of Information Science and Electronic Engineering, Zhejiang University, China.
+
+. Department of Electrical and Computer Engineering, North Carolina State University, USA
+
+Email: hzhang17@ncsu.edu, ningming@zju.edu.cn, huaiyudai@ncsu.edu
+This work was supported in part by the National Key Basic Research Program of China (No. 2012CB316104), the National Hi-Tech RD Programm of China (No. 2012AA121605), the Zhejiang Provincial Natural Science Foundation of China (No. LR12F01002), the Supporting Program for New Century Excellent Talents in University (NCET-09-0701), and the US National Science Foundation under Grants ECCS-1002258 and CNS-1016260.
+
+In this paper, we propose a general analytical framework for information spreading in mobile networks based on a new performance metric, mobile conductance, which allows us to separate the details of mobility models from the study of mobile spreading time. We derive a general result for the information spreading time in mobile networks in terms of  this new metric, and instantiate it through several popular mobility models. Large scale network simulation is conducted to verify our analysis.
+
+
+
+Introduction
+Information spreading and sharing becomes an increasingly important application in current and emerging networks, more and more through mobile devices and often in large scales. Recently some interesting analytical results for information spreading in dynamic wireless networks have started to emerge (see and references therein). An observation is that, most existing analytical works focus on specific mobility models, in particular random-walk like mobility models. It is thus desirable to develop a more general analytical framework for information dissemination in mobile networks which can address different types of mobility patterns in a unified manner.
+
+Information dissemination in static networks has been well studied in literature (see and references therein), where an important result is that the spreading time is essentially determined by a graph expansion property, conductance, of the underlying network topology.
+Conductance represents the bottleneck for information exchange in a static network, and this motivates us to explore its counterpart in mobile networks.
+The main contributions of this paper are summarized below.
+
+
+Based on a "move-and-gossip" information spreading model (Section ), we propose a new metric, mobile conductance, to represent the capability of a mobile network to conduct information flows (Section ). Mobile conductance is dependent not only on the network structure, but also on the mobility patterns. Facilitated by the definition of mobile conductance, a general result on the mobile spreading time is derived for a class of mobile networks modeled as a stationary Markovian evolving graph (Section ).
+
+We evaluate the mobile conductance for several widely adopted mobility models, as summarized in Table.  (We follow the standard notations. Given non-negative functions  and :  if there exists a positive constant  and an integer  such that  for all ;
+ if there exists a positive constant  and an integer  such that  for all ;
+ if both  and  hold.). In particular, the study on the fully random mobility model reveals that the potential improvement in information spreading time due to mobility is dramatic: from  to  (Section ). We have also carried out large scale simulations to verify our analysis (Section ).
+
+[!t]
+
+
+
+Conductance of Different Mobility Models  
+
+
+
+Problem Formulation
+System Model
+
+We consider an -node mobile network on a unit square , modeled as a time-varying graph  evolving over discrete time steps. The set of nodes  are identified by the first  positive integers . One key difference between a mobile network and its static counterpart is that, the locations of nodes change over time according to certain mobility models, and so do the connections between the nodes represented by the edge set . The classic broadcast problem is investigated: one arbitrary node  holds a message at the beginning, which is spread to the whole network through a randomized gossip algorithm. During the gossip process, it is assumed that each node independently contacts one of its neighbors uniformly at random, and during each meaningful contact (where at least one node has the piece of information), the message is successfully delivered in either direction (through the "push" or "pull" operation).
+
+
+ Move-and-Gossip Spreading Model
+
+
+In contrast to the static case, there is an additional moving process mixed with the gossip process. In this study, we adopt a move-and-gossip model
+as shown in Fig.  to describe information spreading in a mobile network and facilitate our analysis. Specifically, each time slot is decomposed into two phases: each node first moves independently according to some mobility model, and then gossips with one of its new neighbors.  denotes the position of node , while  denotes the set of informed nodes (with ), at the beginning of time slot . Note that  changes at the middle of each time slot (after the move step), while  is not updated till the end (after the gossip step).  is used to denote the probability that node  contacts one of its new neighbors  in the gossip step of slot ; for a natural randomized gossip, it is set as  for , and  otherwise.
+
+It is assumed that the moving processes of all nodes , , are independent stationary Markov chains, each starting from its stationary distribution with the transition distribution , and collectively denoted by  with the joint transition distribution . While not necessary, we assume the celebrated random geometric graph (RGG) model for the initial node distributions for concreteness (particularly in Section ), i.e., , where  is the common transmission range, and all nodes are uniformly distributed. Under most existing random mobility models, nodes will maintain the uniform distribution on the state space  over the time. The speed of node  at time  is defined by , assumed upper bounded by  for all  and . We also assume that the network graph remains connected under mobility; for RGG this implies (This requirement is already a relaxation as compared to  demanded for static networks. Actually our result only requires ; see ().).
+
+
+Mobility ModelThe following mobility models are considered in this study:
+
+Fully Random Mobility:   is uniformly distributed on  and i.i.d. over time. In this case, . This idealistic model is often adopted to explore the largest possible improvement brought about by mobility.
+
+Partially Random Mobility:  randomly chosen nodes are mobile, following the fully random mobility
+model, while the rest  nodes stay static. This is one generalization of the fully random mobility model.
+
+Velocity Constrained Mobility: This is another generalization of the fully random mobility model, with an arbitrary . In this case,  is uniformly distributed in the circle centered at  with radius .
+
+One-dimensional Area Constrained Mobility: In this model among the  nodes,  nodes only move vertically (V-nodes) and  nodes only move horizontally (H-nodes). It is assumed that both V-nodes and H-nodes are uniformly and randomly distributed on , and the the mobility pattern of each node is "fully random" on the corresponding one-dimensional path.
+
+Two-dimensional Area Constrained Mobility: In this model, each node  has a unique home point , and moves around the home point within a disk of radius  uniformly and randomly. The home points are fixed, independently and uniformly distributed on .
+
+Mobile Conductance
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Conductance essentially determines the static network bottleneck in information spreading. Node movement introduces dynamics into the network structure, thus can facilitate the information flows. In this work we define a new metric, mobile conductance, to measure and quantify such improvement.
+
+
+
+
+Definition:
+The mobile conductance of a stationary Markovian evolving graph with transition distribution  is defined as:
+
+
+ _m( Q )
+&_  S'( t )  n/2    E_Q ( _ i S'( t ), j S'( t )  P_ij( t + 1)  S'( t )  )  
+ &(uniform) _  S'( t )  n/2   P(n, r ) S'( t ) E_Q [ N_S'( t + 1 ) ] ,
+where  is an arbitrary node set with size no larger than ,  is the common contact probability (in the order sense) for a RGG, and  is the number of connecting edges between  and  after the move.
+
+
+
+
+
+
+
+Remarks:
+1) Some explanations for this concept are in order. Similar to its static counterpart, we examine the cut-volume ratio for an arbitrary node set  at the beginning of time slot . Different from the static case, due to the node motion ( in Fig. ), the cut structure (and the corresponding contact probabilities ) changes. Thanks to the stationary Markovian assumption, its expected value (conditioned on ) is well defined with respect to the transition distribution . Minimization over the choice of  essentially determines the bottleneck of information flow in the mobile setting.
+
+2)
+For a RGG , the stochastic matrix  changes over time (in terms of connections) governed by the transition distribution  of the stationary Markovian moving process,  but the values of non-zero 's remain on the same order given that nodes are uniformly distributed, denoted as . This allows us to focus on evaluating the number of connecting edges between  and  after the move: .( is the indicator function for the event that node  and  become neighbors after the move and before the gossip step in slot .) Therefore for network graphs where nodes keep uniform  distribution over the time, mobile conductance admits a simpler expression ().
+
+3) This definition may naturally be extended to the counterpart of -conductance in, with the set size constraint of  in () replaced by , to facilitate the study of multi-piece information spreading in mobile networks.
+
+
+Mobile Spreading Time
+The metric of interest for information dissemination is the -spreading time, defined as:
+
+Based on the definition of mobile conductance, we have been able to obtain a general result for information spreading time in mobile networks.
+
+For a mobile network with mobile conductance ,
+the mobile spreading time scales as
+
+
+[Sketch of Proof]
+We follow the standard procedure of the static counterpart (e.g. in), with suitable modifications to account for the difference between static and mobile networks. Starting with , the message set  monotonically grows through the information spreading process, till the time  which we want to determine. The main idea is to find a good lower bound on the expected increment  at each slot. It turns out that such a lower bound is well determined by the conductance of the network. Since the conductance is defined with respect to sets of size no larger than , a two-phase strategy is adopted, where the first phase stops at . In the first phase, only the "push" operation is considered for nodes in  (thus the upper bound on the spreading time is safe); while in the second phase, the emphasis is switched to the "pull" operation of the nodes in  (whose size is no larger than ). Since these two phases are symmetric, we will only focus on the first one.
+
+
+In the first phase, for each node , define a random variable . If at least one node with the message moves to the 's neighboring area in slot  and "pushes" the message to  in the gossip step, one new member is added to the message set. We let  in this case, and  otherwise. In the following, we will evaluate the expected increment  conditioned on . The key difference between the static and mobile case is that, there is an additional move step in each slot; therefore, the expectation is evaluated with respect to both the moving and gossip process. This is where our newly defined metric, mobile conductance, enters the scene and takes place of the static conductance. Specifically, due to the independent actions of nodes in  after the move, we have
+
+
+*
+E[ _j( t + 1 ) S( t ) . ]
+=& E_Q [ 1 - _i S( t ) ( 1 - P_ij( t + 1 ) )  ] 
+
+&E_Q [ 1 - _i S( t ) (  - P_ij( t + 1 ) )  ] 
+
+& 12E_Q [ _i S( t ) P_ij( t + 1 )  ],
+
+where the first and the second inequalities are due to the facts of  for  and  for , respectively. Then
+
+
+&E[  S( t + 1 )  -  S( t )  S( t ) . ]
+=_j S( t )  E[ _j( t + 1 ) S( t ) . ]
+
+&12E_Q [ _i S( t ) ,j S( t )  P_ij( t + 1 )  ]
+
+= & S( t ) 2 E_Q ( _ i S( t ), j S( t )  P_ij( t + 1)  S( t )  )
+
+& S( t ) 2_  S'( t )  n/2    E_Q ( _ i S'( t ), j S'( t )  P_ij( t + 1)  S'( t )  ) 
+
+= & S( t ) 2_m( Q ).
+The form of set-increase is consistent with the counterpart in static networks. Therefore, we can follow the same lines in the rest part of the proof.
+
+Application on Specific Mobility ModelsIn the interest of space, the concept of mobile conductance is instantiated only through two mobility models in this section, and some less important technical details are omitted. The interested reader is referred to for more details and results.
+
+
+We will assume that the network instances follow the RGG model for concreteness, and evaluate (). The main efforts in evaluation lie in finding the bottleneck segmentation (i.e., one that achieves the minimum in ()), and determining the expected number of connecting edges between the two resulting sets.
+It is known that for a static RGG , the bottleneck segmentation
+is a bisection of the unit square, when  is sufficiently large.
+Intuitively, mobility offers the opportunity to escape from any bottleneck structure of the static network, and hence facilitates the spreading of the information. As will be shown below, fully random mobility destroys such a bottleneck structure, in that  and  are fully mixed after the move; this move yields mobile conductance of , a dramatic increase from static conductance  . Even for the more realistic velocity constrained model, part of the nodes from  and  cross the boundary after the move and the connecting edges between the two sets are increased. The width of this contact region is proportional to .
+
+Fully Random Mobility
+
+In fully random mobile networks, the mobile conductance scales as .
+[Sketch of Proof]
+ Since this mobility model is memoryless, for an arbitrary 
+, the nodes in both  and 
+ are uniformly distributed after the move, with density  and 
+ respectively.
+For each node in , the size of its neighborhood
+area is . Since each node contacts only one node in its radius, the expected number of contact pairs is
+
+ E_Q [ N_S'( t + 1 ) ]
+ =  S'( t )  S'( t )  r^2.
+Noting that
+*
+regardless of the choice of  (with size no larger than ) and , we have . There is no bottleneck segmentation in this mobility model.
+
+Remarks: In the gossip algorithms, only the nodes with the message can contribute to the increment of . Consider the ideal case that each node with the message contacts a node without the message in each step, which represents the fastest possible information spreading. A straightforward calculation reveals that
+ for an
+arbitrary constant . Theorem  indicates that in the fully random model, the corresponding mobile spreading time scales as  (when ), so the optimal performance in
+information spreading is achieved. The
+potential improvement on information spreading time due to mobility
+is dramatic: from  to 
+.
+
+Velocity Constrained Mobility
+
+For the mobility model with velocity constraint , the mobile conductance scales as .
+[Sketch of Proof]
+As argued in, for the velocity constrained mobility model, the bottleneck segmentation is still the bisection of the unit square as shown in the upper plot of Fig. , with  on the left and  on the right before the move in time slot . For better illustration, darkness of the regions in the figure represents the density of nodes that belong to
+. We can see that after the move, with
+some nodes in both  and 
+ crossing the border to enter the other half, a mixture
+strip of width  emerges in the middle of the
+graph.
+
+We take the center of the graph as the origin. Denote  and 
+ as the density
+of nodes before moving, and 
+ and 
+ as the density of nodes
+after moving, with  the horizontal coordinate(The node distributions are uniform in the vertical direction.).
+After some derivation, we have
+
+*
+and
+*
+
+ Change of Node Densities Before and After the Move 
+
+ Calculation of the Number of Contact Pairs 
+The contact pairs with the above bottleneck segmentation lie in the 
+ wide vertical strip in the center. All nodes outside this region will not contribute
+to .
+The number of contact pairs after the move can be calculated according to Fig. . The center of the circle with radius  is  away from the middle line. For node  located at the
+center, the number of nodes that it can contact is equal to
+the number of nodes belonging to  in the circle. Since the density of nodes belonging to  at positions  away from the middle line
+is , the number of
+nodes that  can contact is 
+
+. Taking all nodes belonging to  in
+the contact region into consideration, the expected number of
+contact pairs after the move is
+& E_Q [ N_S'( t + 1 ) ]  
+
+  = & _ - v_  - r^v_  + r '_S'(t) ( x )_x - r^x + r '_S'(t) ( l )2r^2  - ( l - x )^2  dldx .
+ 
+
+
+
+
+
+
+
+After some calculation, the mobile conductance is well approximated by
+_m
+ .
+
+Remarks: Theorem  indicates that, when , 
+, and the spreading time scales as , which degrades to the static case; when , , and the spreading time scales as , which improves over the static case and approaches the optimum when  approaches . These observations are further verified through the simulation results below.
+
+
+Simulation Results
+We have conducted large-scale simulations to verify the correctness and accuracy of the derived theoretical results. In our simulation, up to 20,000 nodes are uniformly and randomly deployed on a unit square and move according to specified mobility models. The transmission radius  is set as . For each curve, we simulate one thousand Monte-Carlo rounds and present the average.
+
+The spreading time results for static networks and fully random mobile networks are shown in Fig.  as the upper and lower bounds.
+
+In particular, the bottommost curve (fully random mobility) grows in a trend of  (note that the x-axis is on the log-scale), which confirms Theorem .
+Fig.  also confirms our remarks on Theorem . When , the corresponding curve exhibits a slope almost identical to that for the fully random model. We also observe that  is a breaking point: lower velocity () leads to a performance similar to the static case.
+
+
+
+ Spreading Time under the Velocity-Constrained Mobility Model
+
+
+Conclusions and Future Work
+In this paper, we analyze information spreading in
+mobile networks, based on the proposed move-and-gossip information spreading model. For a dynamic graph that is connected under mobility, i.e., , we have derived a general expression for the information spreading time by gossip algorithms in terms of the newly defined metric mobile conductance, and shown that mobility can significantly speed up information spreading. This common framework facilitates the investigation and comparison of different mobility patterns and their effects on information dissemination.
+
+In our current definition of mobile conductance, it is assumed that in each step, there exist some contact pairs between  and  after the move. In extremely sparse networks (depending on the node density and transmission radius), we may have . Let  be the first meeting time of nodes  and . We plan to extend the definition of mobile conductance to the scenario with .
+
+
+
+
+
+
+1
+
+M. Grossglauser and D. Tse, "Mobility increases the capacity of ad
+hoc wireless networks," IEEE/ACM Trans. Networking, vol. 10,
+no. 4, pp. 477-486, Aug. 2002.
+
+D. Shah, "Gossip algorithms," Foundations and Trends in
+Networking, vol. 3, no. 1, pp. 1-125, Apr. 2009.
+
+A. Chen and E. Gunes, "On the cover time and mixing time of random
+geometric graphs," Theoretical Computer Science, vol. 380, no. 1-2, pp. 2-22, Jul. 2007.
+
+M. Penrose, Random Geometric Graphs, Oxford Studies in Probability, Oxford: Oxford University Press, 2003.
+
+
+
+
+
+Z. Kong and E. Yeh, "On the latency for information dissemination in mobile wireless networks,"
+in Proc. of ACM MobiHoc, 2008, pp. 139-148.
+
+A. Clementi, A. Monti, F. Pasquale, R. Silvestri, "Information Spreading in Stationary Markovian Evolving Graphs,"  
+IEEE Trans. Parallel Distrib. Syst., vol. 22, no. 9, pp. 1425-1432, Sept. 2011.
+
+Y. Chen, S. Shakkottai and J. G. Andrews, "Sharing Multiple
+Messages over Mobile Networks," in Proc. IEEE INFOCOM, Shanghai, China, 2011, pp. 658-666.
+
+A. Sarwate and A. Dimakis, "The impact of mobility on gossip algorithms," IEEE Trans. Inf.
+Theory, vol. 58, no. 3, pp. 1731-1742, 2012.
+
+H. Zhang, Z. Zhang, H. Dai and S. Chen, "Packet spreading without relaying in mobile wireless networks," in Proc. IEEE WCSP, Oct. 2012.
+
+L. Sun and W. Wang, "On the dissemination latency of cognitive
+radio networks under general node mobility," in Proc. IEEE
+ICC, Kyoto, Japan, 2011, pp. 1-5.
+
+
+
+
+
+
+H. Zhang, Z. Zhang and H. Dai, "Gossip-based Information Spreading in Mobile Networks," Technical report, Department of Electrical Engineering, NC State University, 2012. Available at http://www4.ncsu.edu/ hdai/InformationSpreading-HZ-TP.pdf.
+
+
+

@@ -1,0 +1,327 @@
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+Explainable Neural Computation via Stack Neural Module Networks
+
+
+Explainable Neural Computation via Stack Neural Module Networks
+
+
+Ronghang Hu1 Jacob Andreas1 Trevor Darrell1 Kate Saenko2
+
+
+
+
+
+R. Hu, J. Andreas, T. Darrell, K. Saenko
+
+
+
+University of California, Berkeley Boston University 
+
+ronghang,jda,trevor@eecs.berkeley.edu, saenko@bu.edu
+
+
+
+
+
+In complex inferential tasks like question answering, machine learning models must confront two challenges: the need to implement a compositional reasoning process, and, in many applications, the need for this reasoning process to be interpretable to assist users in both development and prediction. Existing models designed to produce interpretable traces of their decision-making process typically require these traces to be supervised at training time. In this paper, we present a novel neural modular approach that performs compositional reasoning by automatically inducing a desired sub-task decomposition without relying on strong supervision. Our model allows linking different reasoning tasks though shared modules that handle common routines across tasks. Experiments show that the model is more interpretable to human evaluators compared to other state-of-the-art models: users can better understand the model's underlying reasoning procedure and predict when it will succeed or fail based on observing its intermediate outputs.
+neural module networks, visual question answering, interpretable reasoning
+
+Introduction
+
+Deep neural networks have achieved impressive results on many vision and language tasks. Yet the predictive power of generic deep architectures comes at a cost of lost interpretability, as these architectures are essentially black boxes with respect to human understanding of their predictions. This can impair human users' trust in learning systems and make them harder to refine.
+
+These issues have led to recent efforts in explaining neural models, ranging from building in attention layers to post-hoc extraction of implicit model attention, e.g. by gradient propagation, post-hoc natural language explanations and network dissection. Such approaches can highlight the image regions that are most important for predicting a particular label or provide a textual interpretation of the network output. However, explainable models of more complex problems involving multiple sub-tasks, such as Visual Question Answering (VQA) and Referential Expression Grounding (REF), are less studied in comparison.
+Complex problems may require several reasoning steps to solve. For example in Figure , the question "There is a small gray block; are there any spheres to the left of it?" might require solving the following subtasks: find the "small gray block", look for "spheres to the left of it" and decide whether such object exists in the image. Therefore, a single heat-map highlighting important spatial regions such as may not tell the full story of how a model performs.
+
+In this paper, we present a new model that makes use of an explicit, modular reasoning process, but which allows fully differentiable training with back-propagation and without expert supervision of reasoning steps. 
+Existing modular networks first analyze the question and then predict a sequence of pre-defined modules (each implemented as a neural net) that chain together to predict the answer. However, they need an "expert layout", or supervised module layouts for training the layout policy in order to obtain good accuracy. 
+Our proposed approach, the Stack Neural Module Network or Stack-NMN, can be trained without layout supervision, and replaces the layout graph of with a stack-based data structure. Instead of making discrete choices on module layout, in this work we make the layout soft and continuous, so that our model can be optimized in a fully differentiable way using gradient descent. We show that this improves both the accuracy and interpretability compared to existing modular approaches.
+We also show that this model can be extended to handle both Visual Question Answering (VQA) and Referential Expression Grounding (REF) seamlessly in a single model by sharing knowledge across related tasks through common routines as in Figure .
+
+A variety of different model architectures have been proposed for complex reasoning and question answering.
+Our evaluation in this paper focuses on both the accuracy and interpretability of these models. In particular, we ask:
+does explicit modular structure make models more interpretable?
+We use the CLEVR dataset as a testbed, as it poses a task of high complexity.
+State-of-the-art models for this task vary in the degree to which they provide "explanations". Relation Networks and FiLM achieve high performance but do not expose their internal decision process. Other state-of-the-art models on CLEVR use recurrent layers to compute the answer over multiple steps and output different image and/or text attention at each step. These include modular networks, and non-modular recurrent attention models. It has been suggested by the authors that the attention and/or module layouts inferred by these methods can be regarded as explanations of the networks' internal reasoning process. Yet, to the best of our knowledge, their meaningfulness to humans has never been explicitly evaluated;
+we provide a more rigorous assessment of the interpretability of multi-step attentional VQA models here.
+
+We categorize existing multi-step models in terms of whether they have a discrete library of structured modules for each step (e.g., NMN and related approaches), vs. homogeneous subtask computational elements (e.g., multi-hop attention networks, MAC, etc.).
+We assess these models below and identify tradeoffs between accuracy and interpretability of these existing model classes. We find that our proposed Stack-NMN model has comparable performance to existing modular approaches even without expert supervision, while achieving the greatest interpretability among evaluated models with respect to both subjective and objective measures of human understanding.
+
+
+Our model reveals interpretable subtask structure by inducing a decomposition of the reasoning procedure into several sub-tasks, each addressed by a neural module. It can simultaneously answer visual questions and ground referential expressions.
+
+Related work
+
+Visual question answering (VQA). The task of visual question answering is to infer the answer based on the input question and image. Existing methods on VQA can be mainly categorized into holistic approaches (e.g.,), and neural module approaches. The major difference between these two lines of work is that neural module approaches explicitly decompose the reasoning procedure into a sequence of sub-tasks, and have specialized modules to handle the sub-tasks, while holistic approaches do not have explicit sub-task structure, and different kinds of reasoning routines are all handled homogeneously.
+
+Some holistic models perform sequential interactions between the image and the question. For example, SAN uses multi-hop attention to extract information from the image. FiLM uses multiple conditional batch normalization layers to fuse the image representation and question representation. Among these methods, MAC performs multiple steps of reading and writing operations to extract information from the image and update its memory. Although these models have sequential interactions between the input image and the question, they do not explicitly decompose the reasoning procedure into semantically-typed sub-tasks. In our model, we adopt a similar textual attention mechanism as in in Sec. , while also predicting module weights from the input text.
+
+Neural module networks (NMNs). In NMN, N2NMN, PG+EE and TbD, the inference procedure is performed by analyzing the question and decomposing the reasoning procedure into a sequence of sub-tasks. In, and, a layout policy is used to turn the question into a module layout. Then the module layout is executed with a neural module network. Here, given an input question, the layout policy learns what sub-tasks to perform, and the neural modules learn how to perform each individual sub-tasks.
+
+However, it is shown in these previous work that "expert layouts" (i.e. human annotations of the desired layout) are needed to pretrain or supervise the layout policy in order to get compositional behavior and good accuracy. Without expert guidance, existing models suffer from significant performance drops or fail to converge. This indicates that it is challenging to simultaneously learn "what" and "how" in these models. In this work, we address this problem with soft and continuous module layout, making our model fully differentiable and trainable with using gradient descent without resorting to expert layouts.
+
+Interpretable reasoning and explainable neural networks. Recent years have seen increased interest in various aspects of interpretability in learned models, particularly in neural networks.
+This includes work aimed at both explaining the decision rules implemented
+by learned models, and the mechanisms by which these rules are derived from data. In the present work we are primarily interested
+in the former. 
+One line of research in this direction attempts to generate post-hoc explanations of decisions 
+from generic model architectures, either by finding interpretable local surrogates in the form of 
+linear models, logical rules 
+ or natural language descriptions, or by visualizing salient features.
+
+An alternative line of work investigates the extent to which models can be 
+explicitly designed from the outset to provide enhanced interpretability, where main focus of study has been visual attention. While
+the various modular approaches described above
+are sometimes described as "interpretable", we are not aware of any
+research evaluating this in practice. In the present
+work, our goal is to evaluate whether this kind of
+explicit modular structure, and not just iterated
+attention, improves interpretability in concrete evaluation scenarios.
+
+Multi-task learning.
+Different from existing multi-task approaches such as sharing common features (e.g.,), our model simultaneously handles both Visual Question Answering (VQA) and Referential Expression Grounding (REF) by exploiting the intuition that related tasks should have common sub-routines, and addressing them with a common set of neural modules.
+
+Approach
+
+
+,clip,width=]figures/method.pdf
+Overview of our model. Our model predicts a continuous layout via module weights  and executes the modules in a soft manner with a memory stack.
+
+In this paper, we analyze and design interpretable neural networks for high-complexity VQA and REF tasks. We evaluate the interpretability of multi-step VQA networks to humans, and in particular compare modular networks to non-modular networks in terms of how well humans can understand the internal computation process. We describe our proposed evaluation strategy and results in Section . We also improve modular networks by proposing a new formulation, which we describe in this section. Specifically, we describe Stack Neural Module Networks (Stack-NMNs) with the following components. 1) A layout controller that decomposes the reasoning task into a sequence of sub-tasks, and translates the input question into a soft layout, specified via a soft distribution over module weights  at each timestep . The controller also supplies each module with a textual parameter  at every time-step using textual attention. 2) A set of neural modules  to handle the sub-tasks specified by the controller. Each neural module is a differentiable parameterized function that performs a specific sub-task, and can be executed dynamically on-the-fly according to the soft layout. 3) A differentiable memory stack to store and retrieve intermediate outputs from each module during execution.
+
+Figure  shows an overview of our model. The overall architecture of our model is conceptually similar to N2NMN, where layout controller in our model resembles the previous layout policy.
+The major difference between our model and this prior work lies in whether the layout selection is continuous or discrete. N2NMN makes discrete choices of module layout in a graph structure and can only be end-to-end optimized with reinforcement learning approaches. On the other hand, our model makes soft layout selection with a differentiable stack structure, by giving each module a continuous-valued weight parameter and averaging the outputs of all modules according to their weights. This makes the execution procedure fully differentiable so that our model is trainable with back-propagation like other neural networks.
+
+Module layout controller
+
+The layout controller in our model decides what subtask to perform at each execution time step  by selecting a module  for that time step, and also supplying it with a textual parameter  to give specific instruction to the module . For example, the controller may decide to look for red things at , by running a Find module with a textual parameter  that contains the information for the word "red".
+
+The structure of our layout controller is similar to the control unit in. Suppose there are  words in the input question. The layout controller first encodes the input question  into a -dimensional sequence  of length  using a bi-directional LSTM as , where each  is the concatenation of the forward LSTM output and the backward LSTM output at the -th input word.
+Next, the controller runs in a recurrent manner from time-step  to time-step . At each time-step , it applies a time-step dependent linear transform to the question , and linearly combines it with the previous -dimensional textual parameter  as , where  and  are  and  matrices respectively, and  and  are -dimensional vectors. Unlike all other parameters in the layout controller,  is not shared across different time steps.
+
+To select the module to execute at the current time-step , a small multi-layer perceptron (MLP) is applied to  to predict a -dimensional vector  as . The module weight  contains the weight distribution over each module  and sums up to one (i.e. ), which resembles a probability distribution or soft attention over the modules. It is used to select modules in each time-step  in a continuous manner.
+
+Finally, the controller predicts a textual parameter  with a textual attention over the encoded question words as
+ and , where  is element-wise multiplication,  is a  matrix,  is the word attention score (scalar) on the -th question word. Finally,  is the textual parameter supplied to the modules at time-step , containing question information needed for a sub-task.
+
+Neural modules with a memory stack
+
+Module implementation. Following the terminology in N2NMN, a neural module is a differentiable function with some internal trainable parameters, and can be used to perform a specific sub-task. For example, the question "how many objects are right of the blue object?" can be possibly answered by the layout Answer['how many'](Transform['right'](Find['blue']())), where the modules such as Transform are selected with module weight  and the textual information such as 'blue' is contained in the textual parameter .
+
+The module implementation basically follows. We also simplify the implementation in by merging unary answering modules (Count, Exist, Describe) into a single Answer module, and pairwise comparison (More, Less, Equal, Compare) into a single Compare module. Finally, we introduce a NoOp module that does nothing, which can be used to pad arbitrary module layouts to a maximum length . Our module implementation is summarized in Table . 
+
+
+
+ 
+ 
+
+Neural modules used in our model. The modules take image attention maps as inputs, and output either a new image attention  or a score vector  over all possible answers ( is elementwise multiplication;  is sum over spatial dimensions).
+
+Differentiable memory stack. In our model, different modules may take different numbers of input, and the model sometimes needs to take what it currently sees and compare it with what it has previously seen before. This is typical in tree-structured layouts, such as Compare(Find(), Transform(Find())). To handle tree-structured layouts, the model needs to have a memory to remember the outputs from the previous reasoning time-steps. Similar to Memory Networks, we provide a differentiable memory pool to store and retrieve the intermediate outputs. However, to encourage compositional behavior, we restrict our memory pool to be a Last-In-First-Out (LIFO) stack similar to. The LIFO behavior encourages the neural modules to work like functions in a computer program, allowing only arguments and returned values to be passed between the modules, without arbitrary memory modification.
+
+Our memory stack can be used to store vectors with fixed dimensions. It consists of a length- memory array  (where  is the stack length) and a stack-top pointer , implemented as a -dimensional one-hot vector. The stack  implements differentiable push and pop operations as follows. Pushing a new vector  into stack  is done via pointer increment as  followed by value writing as , . Similarly, popping the current stack-top vector  from stack  is done via value reading as  followed by pointer decrement as .
+Here  is the vector at stack depth  in . In both push and pop operations, the one-hot stack pointer  is incremented or decremented using 1-d convolution.
+
+In our model, we use the above memory stack to store the  dimensional image attention maps, where  and  are the height and the width of the image feature map. Using the memory stack, each module first pops from the stack to obtain input image attentions, and then pushes its result back to the stack. For example, in tree-like layouts such as Compare(Find(), Transform(Find())), the Find module pushes its localization result into the stack, the Transform module pops one image attention map from the stack and pushes back the transformed attention, and the Compare module pops two image attention maps and uses them to predict the answer.
+
+Soft program execution
+Our model performs continuous selection of module layout through the soft module weights . At each time step , we execute all the modules in our module list  (shown in Table ), and perform a weighted average of their results with respect to the weights  predicted by the layout controller. Specifically, the resulting memory stacks from the execution of each module are weighted-averaged with respect to  to produce a single updated memory stack.
+
+At time step , we initialize the memory stack  with uniform image attention and set stack the pointer  to point at the bottom of the stack (one-hot vector with 1 in the 1st dimension). Then, at each time step , for every module  we execute it on the current memory stack . During execution, each module  may pop from the stack and push back its results, producing an updated stack  as , . We average the resulting new stack from each module according to its weight  as , and then sharpen the stack pointer with a softmax operation to keep it as a (nearly) one-hot vector as .
+
+Final output. We apply this model to both the Visual Question Answering (VQA) task and the Referential Expressions Grounding (REF) task. To obtain the answer in the VQA task, we collect the output answer logits (i.e. scores) in all time-steps from those modules that have answer outputs (Answer and Compare in Table ), and accumulate them with respect to their module weights as 
+where  contains Answer and Compare.
+
+To output grounding results in the REF task, we take the image-attention map at the top of the final stack at , and extract attended image features from this attention map. Then, a linear layer is applied on the attended image feature to predict the bounding box offsets from the feature grid location.
+
+Training
+
+Unlike previous modular approaches N2NMN, PG+EE and TbD, our model does not require expert layouts to achieve good performance. When such expert layout supervision is available, our model can also utilize it by supervising the soft module weights  with a cross-entropy loss to match the expert's module choice.
+But as the entire network is fully differentiable, it can be trained effectively without reinforcement learning, from task supervision alone, in the absence of expert layout supervision.
+
+For VQA, we train with softmax cross entropy loss on the final answer scores . For REF, we map the center of the ground-truth bounding box to a location on the feature grid. Then we train with a softmax cross entropy loss on the final image attention map to put all the attention on the ground-truth feature grid, and a bounding box regression loss on the bounding box offsets to match the ground-truth box. We train with the Adam optimizer with  learning rate. 
+Our code and data are available at http://ronghanghu.com/snmn/.
+
+Experiments
+
+We evaluate our model on the Visual Question Answering (VQA) task on the large-scale CLEVR dataest. The dataset consists of 70000, 15000 and 15000 images for training, validation and test, and each image is associated with 10 questions. The images in the dataset are rendered from a graphics engine, and the questions are synthesized with complex reasoning procedure.
+
+To evaluate our model on the Referential Expression Grounding (REF) task, we build a new CLEVR-Ref dataset with images and referential expressions in CLEVR style using the code base of. Our new CLEVR-Ref dataset has the same scale as the original CLEVR dataset for VQA, but contains referential expressions instead of questions. Each referential expression refers to a unique object in the image, and the model is required to ground (i.e. localize) the corresponding object with a bounding box. The grounded bounding box is considered correct if it overlaps with the ground-truth bounding box by at least 0.5 intersection-over-union (IoU). Similar to question answering in the CLEVR dataset, the referential expressions also involve complex reasoning and relationship handling. See Figure  for an example of the CLEVR-Ref dataset.
+
+Model performance
+
+
+
+ 
+ 
+
+Validation accuracy on the CLEVR dataset (VQA) and the CLEVR-Ref dataset (REF). Our model simultaneously handles both tasks with high accuracy.
+
+Our model aims to simultaneously handle both VQA and REF tasks, and to decompose the reasoning procedure into sub-tasks by inducing a suitable module layout on each question or referential expression.
+
+We train our model on the CLEVR dataset for the VQA task, and the CLEVR-Ref dataset for the REF task. We experiment with training only on the VQA task, training only on the REF task, and joint training on both tasks (VQA+REF) using the loss from both tasks. To test whether our model can induce a reasonable sub-task decomposition and module layout, we experiment with both using expert layout supervision (same as in) and training from scratch without expert layout. We use a ResNet-101 convnet pretrained on ImageNet classification to extract visual features from the image.
+
+
+
+Examples of our model on VQA (left) and REF (right). At each step, we visualize the module with the highest weight, the words receiving most textual attention ( in Sec. ) and the module output.
+
+The results are summarized in Table . It can be seen that when training on each individual task, our model achieves over 90 accuracy on both tasks (which is reasonably good performance), whether using expert layout supervision or not. Furthermore, joint training can lead to even higher accuracy on these two tasks (especially when not using expert layout). Our model can simultaneously handle these two tasks by exploiting the common sub-tasks in them, such as finding object and handling relationships.
+
+Sub-task decomposition and layout induction. By comparing the bottom 3 rows (trained without using expert layout) and the top 3 rows (trained with expert layout supervision), it can be seen that although the models trained with expert layout still outperforms training from scratch, the gap between the two scenarios is relatively small. This indicates that our model can still work well without layout supervision, which is something previous modular approaches such as N2NMN, PG+EE and TbD could not handle.
+
+We visualize the reasoning procedure our multi-task model on both VQA and REF task, for both with expert layout and without expert layout supervision. Figure  shows the module layout, the intermediate reasoning outputs and the most attended words from textual attention ( in Sec. ). It can be seen that our model can induce a reasonable decomposition of the inference procedure into sub-tasks without expert layout supervision, and it learns to share common sub-tasks such as find (localization) and transform in across the two tasks.
+
+We note that our model learns peaky module weights after convergence. The average entropy of the learned soft module weights (which can be seen as a probability distribution) is  when trained without layout supervision (corresponds to putting over  weights on one module), and  when trained with layout supervision (corresponds to putting over  weights on one module). This shows that even without any strong supervision on module layout, our model learns to almost discretely select one module through the soft module weights at test time. Hence, our proposed framework can be regarded as a novel end-to-end differentiable training approach for modular networks.
+
+We further experiment with test-time layout discretization by replacing the soft module weights with a one-hot argmax vector. This results in sightly lower performance on the CLEVR validation set (90.0 when trained without layout supervision and 94.8 with layout supervision). Considering the discrepancy between training and test time, the relatively small accuracy drop () from test-time layout discretization indicates that our model works similar to previous modular networks at test time, rather than acting as a mixture of experts.
+
+Evaluation of accuracy. We first compare the accuracy of our model on the CLEVR VQA dataset with the previous modular approaches N2NMN, PG+EE and TbD. N2NMN uses a layout policy to predict discrete layouts and a neural module network to answer the question. PG+EE and TbD are also modular approachs similar to N2NMN, where the program generator is similar to the layout policy, and the execution engine is essentially a neural module network. For fair comparison with previous work, we train our model on the CLEVR VQA dataset only (without using CLEVR-Ref for joint training).
+
+The results are shown in Table . It can be seen from the top 4 rows that among all the modular approaches (N2NMN, PG+EE, TbD and Ours), when layout supervision is available, our model outperforms N2NMN by a large margin, and achieves comparable performance with PG+EE while underperforms TbD by a small margin. We note that even when using expert layout, our model still uses less supervision than PG+EE or TbD as they both require fine-grained module specification (e.g. finding shape and finding color are different modules in while the same module with different textual attention in our model).
+
+The bottom 4 rows show the results without using expert layout supervision, where our model significantly outperform N2NMN. In this case, N2NMN has large performance drop while PG+EE and TbD fails to converge or cannot not be trained without layout supervision. This can be attributed to the fact that N2NMN, PG+EE and TbD all use discrete non-differentiable layout, while our model is fully differentiable and can be trained with back-propagation.
+
+We note that the best non-modular architectures achieve higher performance without using expert layout supervision, and compare those against modular performance on both accuracy and interpretability in Sec. .
+
+
+
+ 
+ 
+
+Comparison of our model and other modular approaches on the CLEVR dataset for VQA. Our model achieves the best accuracy when not relying on expert layout, while N2NMN has significant performance drop in this case. The best non-modular architectures (e.g.,) do achieve higher performance; we compare those against modular performance on both accuracy and interpretability in Sec. .
+
+
+
+
+ 
+ 
+
+Single-model accuracy of our method and N2NMN on both VQAv1 and VQAv2datasets, using the same experimental settings (e.g. visual features).
+
+Results on real-image VQA datasets.
+We also evaluate our method on real-image visual question answering datasets and compare with N2NMN. We run our approach on both VQAv1 and VQAv2 datasets following the same settings (e.g. using ResNet-152 image features and single model at test time without ensemble) as in, where the results are in Table . Although the question answering task in these datasets focuses more on visual recognition than on compositional reasoning, our method still outperforms even without expert layout supervision (the expert layouts are obtained by a syntactic parser).
+
+Model interpretability
+
+Evaluation of interpretability. It is often suggested in existing works that modular networks can be more interpretable to humans compared to holistic models. However, there is a lack of human studies in these works to support this claim.
+In this section, we evaluate how well the user can understand the internal reasoning process within our model, and compare it with MAC. We compare to MAC because it is a state-of-the-art holistic model that also performs multi-step sequential reasoning and has image and textual attention at each time-step, while other models (e.g., FiLM and Relation Net) have lower performance and do not have any image or textual attention to visualize. MAC is a multi-step recurrent structure with a control unit and a reading-writing unit. Similar to our model, it also attend to text and image in each reasoning step. But unlike our model, there is not explicit modular structure in MAC.
+
+Here, we investigate two distinct, but related questions: does modular structure improve humans' subjective perceptions of model 
+interpretability, and does this structure allow users to form
+truthful beliefs about model behavior? To this end,
+we present two different sets of experiments (subjective understanding and forward prediction) with human 
+evaluators.
+With respect to the taxonomy of interpretability evaluations presented in, these are both "human-grounded" metrics aimed at testing "general notions of the quality of an explanation".
+
+In the subjective understanding evaluation, we visualize model's intermediate outputs such as the image attention and textual attention at each step, and we also show the model's final prediction. The visualizations can be seen in Figure . Then the human evaluators are asked to judge how well they can understand the internal reasoning process, or whether it clear to the user what the model is doing at each step. Each example is rated on a 4-point Likert scale (clear, mostly clear, somewhat unclear and unclear) corresponding to numerical scores of 4, 3, 2 and 1. 
+The averaged scores and the percentage of each choice are shown in Table , where it can be seen that our model has higher subjective understanding scores than MAC and is much more often rated as "clear" in both cases (using or not using expert layout supervision). This shows that the users can more clearly understand the reasoning procedure in our model.
+
+In the forward prediction evaluation, we investigate whether humans can predict the model's answer and detect its failure based on these visualizations. We split the test set into half correct and half incorrect model predictions, and the final answer output is not shown, so that human baseline performance should be chance or 50. Our hypothesis is that if humans can predict whether the model succeed or fail better than chance, they understand something about the model's decision process. In Table , we show the human accuracy on this task along with 95 confidence interval. It can be seen that our model allows them to predict whether the model will get the correct answer or fail consistently higher than chance when trained without expert layout supervision. We also notice that when using supervision from expert layout, our model does worse at human prediction of model's failure. We suspect it is because predicting the answer requires human to understand how the model works. When supervising the layout, the model may overfit to the expert layout, at the expense of predictability. It may output an "intuitive" layout by mimicking the training data, but that layout may not actually be how it is solving the problem. On the other hand, the unsupervised model is not being forced to predict any particular layouts to minimize loss, so its layouts may be more directed at minimizing the answer loss.
+
+Finally, we compare our model with MAC on VQA accuracy in Table . Our model underperforms the state-of-the-art MAC in terms of VQA accuracy. However, our model is more interpretable to a human user. This is in line with the intuition that there may be an accuracy-explainability tradeoff, e.g., linear models are less accurate but more interpretable than non-linear models. However, our model greatly reduces the accuracy gap with the top performing models, without requiring expert layout supervision at training time.
+
+
+ 
+
+percentage of each choice (clear, mostly clear, somewhat unclear and unclear) 
+
+
+ 
+ 
+
+Human evaluation of our model and the state-of-the-art non-modular MAC model. Based on the models' intermediate outputs, the evaluators are asked to (a) judge how clearly they can understand the reasoning steps performed by these models on a 4-point scale (i.e. subjective understanding) and (b) do forward prediction (failure detection) and decide whether the model fails without seeing the final output answer. The results show that our model is more interpretable to human users. However, our model underperforms the non-modular MAC approach in VQA accuracy, which is in line with the intuition that there may be an accuracy-explainability tradeoff.
+
+Conclusion
+
+In this paper, we have proposed a novel model for visual question answering and referential expression grounding.
+We demonstrate that our model simultaneously addresses both tasks by exploiting the intuition that related tasks should share common sub-tasks, and sharing a common set of neural modules between tasks. Compared with previous modular approaches, our model induces a decomposition of the inference procedure into sub-tasks while not requiring expert layout supervision. The proposed model can explain its reasoning steps with a sequence of soft module choices, image attentions, and textual attentions. Experimental evaluation found that these explanations produced better understanding in human users with respect to both subjective and objective evaluations, even in the absence of human-provided explanations at training time.
+
+Acknowledgements. This work was partially supported by
+US DoD and DARPA XAI and D3M, and the Berkeley Artificial Intelligence Research (BAIR) Lab.
+
+splncs04
+
+
+
+Visualization of our model and MAC
+
+The differentiable memory stack in our Stack-NMN model is a Last-In-First-Out (LIFO) data structure. We illustrate how our memory stack works with a visualized example in Figure .
+
+
+An illustration example of our differentiable memory stack.
+
+In Figure , we show additional visualized examples of the reasoning steps in our model (trained either with or without expert layout supervision). We also use a similar visualization to show the per-step image attentions and the textual attentions from the MAC model. The MAC model is similar to our model as it also have multiple steps (12 steps are used in) and involves textual attention and image attention in each step. However, unlike our model, it does not have a modular structure, and uses a homogeneous unit to handle all kinds of sub-tasks in reasoning.
+
+Details of the human evaluation on interpretability
+
+In our human evaluation described in Sec. 4.2 of the main paper, we deployed the evaluation on the Amazon Mechanical Turk (AMT) platform. For subjective understanding, we showed 200 visualized examples of each model, and asked the human evaluators to judge whether the model's reasoning steps were clear and understandable to them. The evaluation interface is shown in Figure  and . For forward prediction (failure detection), we collected 100 successful and 100 failure examples from each model, and the human evaluators were asked to predict whether the model succeeds or fails on each example. The evaluation interface is shown in Figure  and . In both subjective understanding and forward prediction evaluation, we paid the AMT workers 0.5 USD for each example they annotated.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Examples from of our model and the MAC model. The MAC model has 12 reasoning steps. We visualize the per-step image attentions and textual attentions (showing the words with the most attention), and the selected module (the one with the highest weight) in our model.
+
+
+ 
+
+ 
+
+The evaluation interface for subjective understanding on our model, deployed on Amazon Mechanical Turk (AMT).
+
+
+ 
+
+ 
+
+The evaluation interface for subjective understanding on MAC model, deployed on Amazon Mechanical Turk (AMT).
+
+
+ 
+
+ 
+
+The evaluation interface for forward prediction (failure detection) on our model, deployed on Amazon Mechanical Turk (AMT).
+
+
+ 
+
+ 
+
+The evaluation interface for forward prediction (failure detection) on MAC model, deployed on Amazon Mechanical Turk (AMT).
+

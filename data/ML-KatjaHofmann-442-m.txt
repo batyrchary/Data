@@ -1,0 +1,1591 @@
+
+Solving the compact game with 
+sec:FPL
+
+Our first algorithm to solve eq:f4, , is based on the Follow-the-Perturbed-Leader ()
+algorithm oftkalai03:fpl. is designed for a standard
+online learning problem:
+Let  and  be subsets of .
+On each round ,
+the learner chooses a decision vector , and
+then receives a loss vector .
+The learner's goal is to minimize its cumulative loss
+ relative to the best
+possible loss using a fixed decision, that is,
+.
+chooses  as the best such vector based on a slightly
+perturbed version of the preceding losses. Namely,
+letting  be chosen uniformly at random
+from ,
+ _t = _ _t-1 _ + _t.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We solve eq:f4 by sparring two copies of
+, called  and , in the fashion of a repeated game.
+On every round ,  uses to select a vector ,
+while  uses a different copy of to select a vector
+.
+We then define the resulting loss vectors to be  for
+, and  for .
+Here is the complete algorithm:
+itemize  For :
+itemize  Choose uniform random perturbations ,  from
+.
+Let 
+
+
+.
+
+Let 
+
+.
+itemize
+Output
+
+
+itemize
+The  expressions in the algorithm are implemented using the classification oracle.
+The returned vector  is in , and in fact corresponds
+to a uniform mixture of  policies.
+
+In Appendix sec:pf-FPL, we show that to find an solution to eq:f4 with probability , it suffices to
+use
+    
+steps of the algorithm
+with
+    ,
+which in turn implies Theorems thm:main-eps and thm:main-regret for .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We next begin a development that will lead to efficient methods
+(in terms of time, space and data) for handling
+even extremely large policy spaces, under a particular assumption
+discussed below.
+We describe a general approach for exploration, for using the
+collected data to find a statistically sound solution, and for
+reducing the problem that must be solved to a more
+tractable form.
+
+We focus mainly on the explore-then-exploit problem.
+Thus, we have  exploration rounds, and on each round , a pair  is selected
+at random, and the learner is permitted to choose and observe the
+outcome of a single duel .
+Although  is observed,  is not.
+Here, we propose a simple exploration strategy, called uniform exploration, in which
+each dueling pair  is selected uniformly at random.
+Let  be the resulting observed outcome.
+Based on these, the learner can obtain a noisy but unbiased
+version of the hidden preference matrix .
+Specifically, let us define a matrix  where ,
+and all other entries  are set to zero.
+It can be verified that the expected value of each entry
+ is exactly ; that is,
+.
+
+In Appendix appendix-proof-perceptron, we extend our setting to an arbitrary unbiased estimator  of , and in particular to an arbitrary exploration strategy that does not change adaptively over time. This extension is parameterized by upper bounds on the absolute value and the variance of  for all rounds  and all actions . For uniform exploration, both upper bounds are .
+
+
+
+
+
+
+
+
+
+
+
+
+While non-adaptive exploration strategies usually lead to suboptimal statistical performance, they are often preferable in practice. This is because in large-scale industrial applications the existing infrastructure is often insufficient to support a feedback loop that would update the exploration strategy adaptively over time, and upgrading the infrastructure may be infeasible in the near term.
+
+Statistical guarantees.
+With these noisy versions of the empirical preference matrices, we can
+estimate the expected outcome in a "meta-duel" between two policies
+ and , that is, an entry of the matrix  defined
+in eq:f6.
+In particular, let
+equation eq:f3
+ = 1
+               
+             _i=1^ (x_i)(x_i).
+equation
+Then the expected value of this quantity is , the
+corresponding entry of .
+Moreover, using Bernstein's inequality and the union bound, we can
+show that, with probability at least ,
+equation  eq:f2
+   -     for all ,
+equation
+where
+
+
+
+.
+(The proof for eq:f2 and the subsequent Lemma lem:explore-first are in Appendix sec:pf-ExploreFirst.)
+
+
+Thus, although huge, the matrix  is well-approximated by the
+matrix  using only a moderately sized sample.
+In fact, to find an approximate maxmin strategy for  it suffices to find one for ,
+which will be the approach taken by our algorithms.
+
+
+
+
+
+
+lemma
+lem:explore-first
+Given the set-up above, suppose that eq:f2 holds
+(as will be the case with probability at least
+), and suppose further that
+ is a probability vector for which
+
+_   _ _  - .
+
+Then  is a -approximate von Neumann
+winner for .
+
+lemma
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A more compact version of the problem.
+Our aim now is to find an approximate maxmin strategy for the
+matrix .
+Although this matrix is gigantic in both dimensions, by leveraging how
+it was constructed from only a small number of empirical observations,
+we can re-express the problem in a far more compact form.
+To this end, let us define, for each policy ,
+a policy vector  that encodes the behavior of
+ on the exploration data.
+For readability, although a vector, we index entries of  by
+pairs , where  is a round and  is an action,
+and we define
+
+   ia = (x_i) = a/.
+
+Thus,  is broken into  length- blocks, with
+block  encoding in a natural way the action selected by
+ on .
+(The constant  is for normalization.)
+
+We also define an
+
+block-diagonal matrix , where the
+ blocks along the diagonal are exactly the
+ matrices
+ described above.
+Formally, using the earlier indexing,
+
+ iajb = i=j ab.
+
+
+Working through these definitions, it can be verified that for any two
+policies  and , the quantity
+
+is exactly equal to  as defined in eq:f3.
+This means that if  and  are probability vectors over , then
+
+      = _ ()  
+            _ () .
+
+Therefore, the problem of finding a maxmin strategy for  is
+equivalent to solving
+
+
+
+equation eq:f4
+  _ _  equation
+where  is the convex hull of the set of all policy vectors
+ (henceforth, the policy hull).
+Furthermore, a solution  is necessarily a convex combination of
+vectors , and therefore corresponds to a probability vector over
+policies.
+
+The formulation given in eq:f4 shows that  should
+itself be viewed as a game matrix, and that our remaining goal is to
+approximately solve this game.
+This matrix has the advantage of being far smaller than .
+However, unlike a conventional matrix game, the space from which the
+players' vectors  and  are chosen is not the standard space
+of probability vectors over actions, but rather the convex hull of an exponentially
+large set of vectors.
+
+
+
+Classification oracle.
+Our algorithms assume that the policy space  is structured
+in a way that admits a certain computational operation
+that is quite natural in the realm of learning.
+Specifically, we assume the existence of a classification oracle.
+The input to this oracle is a sequence of cost vectors
+, each in ,
+with the interpretation that  is the cost of choosing
+action  on context .
+The output of the oracle is the policy in  with minimum cost,
+that is,
+equation eq:f5
+  _ 
+          _i=1^ _i((x_i)).
+equation
+Indeed, regarding the 's as examples, the actions  as
+labels or classes, and the policies  as classifiers, we see that
+this oracle is in fact solving an empirical, cost-sensitive,
+multi-class classification problem.
+Thus, the assumption of such an oracle is an idealization based on the
+numerous cases in which effective classification algorithms already
+exist. In practice, the policy space  is usually defined as the space of all possible policies returned by a given classification algorithm,
+and we hope that our methods will be effective when
+using ordinary off-the-shelf classification algorithms as
+oracle.
+
+Equivalently, the classification oracle can be described in terms of
+policy vectors.
+Specifically, the cost vectors above can be identified
+with their concatenation, a single vector ,
+divided naturally into  blocks.
+Then the problem given in eq:f5 is the same as
+
+  _ ,
+
+where the  is over the policy hull  defined above. This is because the minimum, without loss of generality, will be a policy vector , where  minimizes eq:f5.
+Therefore, in what follows, we use expressions of this latter form
+to indicate an invocation of our assumed classification oracle.
+
+
+Algorithms and end-to-end guarantees.
+We design algorithms that compute an approximate von Neumann winner  by solving the optimization problem in eq:f4. Although there exist many methods for solving such a game, the challenge here is the requirement that the solution be in the policy hull . As already seen in sec:exp4-spar, regret minimization algorithms are a natural choice. However, most standard algorithms will not conform to this constraint. In the sections that follow, we provide two algorithms: Algorithm that builds on the Follow-the-Perturbed-Leader algorithm oftkalai03:fpl, and Algorithm that builds on online projected gradient descent methods oftZinkevich03:online.
+
+  
+ 
+
+
+For a given approximation quality, the performance of either algorithm is characterized by several quantities: the sufficient number of exploration rounds, the running time, the storage requirement, and the number of policies in the support of . As it turns out, the key quantities are the number of exploration rounds and the number of oracle calls. We assume each oracle call returns both a policy vector and a corresponding policy, each representable using  bits.
+(Often, policies are specified as a parameter vector to some algorithm that implements them.
+For finite classes, it is usually the case that  is roughly .
+)
+The solution  is specified by explicitly listing the probabilities and policies in its support.
+
+Consider  actions and a policy class  with -bit representation. Fix parameters . Both and compute an von Neumann winner  with probability  using
+    
+exploration rounds with uniform exploration strategy.
+The number of oracle calls is
+       
+for and
+    
+for .
+For both algorithms, disregarding oracle calls,
+the running time is ,
+the storage requirement is , and
+ is a distribution over at most  policies.
+ 
+While is very simple and intuitive, achieves a better number of oracle calls whenever
+    .
+
+Our algorithms can be used in the full-explore-exploit setting as well: after  exploration rounds with uniform exploration strategy,  is computed and used in the remaining rounds for both actions. The parameter  is chosen in advance as a function of the time horizon . The statistical performance is expressed via regret, as defined in eq:rd1. The total running time is dominated by the time to compute .
+(The running time to execute  in each of the exploitation rounds (i.e., to compute the random action for a given context) is a low-order term; we omit further details from this version.)
+
+[regret]Consider  actions, time horizon , and a policy class  with -bit representation. Fix a parameter . Both and achieve regret
+         
+with probability , where
+    .
+The number of oracle calls is                         
+       
+for and
+       
+for .
+For both algorithms, disregarding oracle calls,
+the total running time is ,
+the storage requirement is , and
+the number of exploration rounds is
+    .
+
+
+
+
+
+
+
+
+
+
+
+Analysis of (proof of Theorem )
+
+To fulfill the requirements of the learning model for , we also need to define rewards  for all of
+the actions that were not chosen.
+Furthermore, these rewards need to be defined before
+each copy of the algorithm chooses its action (or, more technically, in a
+manner that is conditionally independent of each copy's choice).
+To this end, for every pair of actions , we define
+a -valued random variable  with the
+expected value .
+Thus,  can be viewed as the outcome of a hypothetical duel between actions  and .
+These values are only used for the mathematical argument, and do not
+literally have to be computed.
+Only the pair  is actually used in a duel.
+
+For , based on chosen action , we then define rewards
+ for all .
+And similarly,
+for , based on chosen action , we define rewards
+ for all .
+In particular, this means that  receives, for its chosen action , the reward
+ (that is, the result of a duel between  and ), while  receives
+the reward  for its chosen action .
+
+Let us first take the point of view of .
+Plugging in to eq:exp4-g1, we have that, with probability at least
+, for all ,
+
+
+
+
+Further, using Azuma's lemma and union bound, we can show that, with
+probability at least , for every 
+
+
+
+
+Similarly, from perspective, with probability at least
+, for all
+,
+
+
+
+
+and, by Azuma's lemma and the skew-symmetry of , with probability at least
+, for every
+,
+
+
+
+
+
+Combining and rearranging now yields the theorem.
+
+Analysis of and 
+
+Compared to the presentation in the body of the paper, we extend our setting from uniform exploration strategy to an arbitrary unbiased estimator  of , i.e., to any matrix  which satisfies
+    .
+Our results are parameterized by two numbers, , such that
+     and 
+for all exploration rounds  and all action pairs . For uniform exploration, both upper bounds are .
+
+
+Reduction from  to  (proof of Lemma )
+
+In this subsection, we prove Lemma  which reduces the optimization problem to that on the approximate matrix  computed from the data. As a first step, we prove eq:f2 which relates  to the true preference matrix for .
+
+[eq:f2]
+Let  be independent, identically distributed random
+variables, each taking values in , and each having mean zero and
+variance .
+Then according to Bernstein's inequality,
+the probability that the average  exceeds
+some value  is at most
+
+
+
+
+For an appropriate choice of , this implies that, with
+probability at least ,
+
+
+To derive eq:f2, for a fixed pair of policies  and
+, we can let
+
+whose mean is zero and variance is at most ;
+further, .
+Plugging into eq:bern1 implies that eq:f2 holds with
+
+
+
+
+
+with probability at least .
+By the union bound, with probability at least , this will
+hold simultaneously for all policies  and .
+
+
+[Lemma ]
+eq:f2 implies that
+ is within  of
+, for all probability vectors  and .
+Therefore,
+*
+
+
+
+Analysis of 
+
+To analyze , we build on the provable guarantees for .
+
+For convenience, let us recap the learning setting for .
+Let  and  be subsets of .
+On each round ,
+the learner chooses a decision vector , and
+then receives a loss vector .
+The learner's goal is to minimize its cumulative loss
+ relative to the best
+possible loss using a fixed decision, that is,
+.
+
+
+
+[Theorem 1.1]kalai03:fpl prove the following
+(slightly simplified) result: assume that ,  and  are such
+that for all  and  we have that
+,  and
+.
+Also, let .
+Then, for any sequence ,
+
+where the expectation is over the random choice of perturbations.
+Kalai and Vempala prove this in the oblivious case when the adversary
+has fixed the 's ahead of time.
+However, this restriction can be relaxed to allow each
+ to be selected adaptively in a possibly stochastic fashion
+that may depend on the entire preceding history through round ,
+but not on the perturbation  for the current round.
+Using a martingale argument and Azuma's lemma
+(see also),
+it can then be shown that, with probability at least ,
+
+
+
+
+In , set parameter .
+Then with probability at least , the vector  returned by the algorithm satisfies
+
+
+
+
+
+where
+
+
+
+.
+
+
+Thus, to find an -approximate solution, we can choose
+ to be
+.
+This also gives a bound on the number of oracle calls (it is called twice per round).
+
+
+Note that in our case, we can choose ,
+ and
+.
+
+Let
+.
+Then we have the following chain of inequalities holding with
+probability at least :
+
+Here, eq:i1eq:i2 follow directly from
+eqn:fpl3 applied, respectively, to  and  with
+.
+Noting that
+
+
+
+
+
+the theorem now follows.
+
+
+Analysis of : outer loop
+
+Using an analysis similar to ,
+but for a fixed learning rate,
+and taking into account the errors introduced by imperfect
+projections, we can show the following:
+  For the algorithm  with
+, we have
+
+
+
+
+
+
+
+where
+
+.
+
+
+For all , we have
+
+Here, eq:dp-g1 uses eq:b1, applied to our case where
+we have .
+eq:g2 follows from straightforward algebra.
+Since
+,
+summing over  yields, for all
+,
+*
+Re-arranging completes the lemma.
+
+We can prove that the returned vector  is an
+-approximate maxmin solution using a technique similar
+to .
+(Alternatively, we could use the average of the 's which is an
+-approximate minmax solution by the same proof.)
+
+  The vector  satisfies
+  
+
+
+where  is as
+Lemma .
+
+
+
+Let
+
+
+.
+Then
+*
+
+
+
+Analysis of : inner loop
+
+It remains to analyze the inner loop of , i.e., the approximate-projection procedure
+.
+
+Let  be the projection of  onto the policy hull .
+We can prove the following for this algorithm using
+ as a potential function.
+  For the algorithm  with
+ and ,
+we have
+
+
+
+
+
+
+
+
+We have
+
+eq:b4 uses
+.
+To see eq:b5, note that
+*
+The inequality here uses the fact that, for any two vectors  and
+, we have
+.
+
+Also,
+
+
+Summing eq:b5 for  and combining with
+eq:h1 gives
+*
+Re-arranging and applying our choice of  completes the lemma.
+
+
+Next, we show that  satisfies the specification given in
+eq:g3.
+
+
+For the algorithm ,
+
+
+with  set as in Lemma .
+Thus, eq:g3 holds for  if we set
+.
+
+
+Let
+
+
+
+
+Then
+
+eq:b7 uses Jensen's inequality and the fact that
+ is concave for each .
+eq:b8 follows from our choice of  (which minimizes
+).
+eq:b9 uses linearity of  for each .
+And eq:b10 uses
+
+for all , which
+follows from simple Euclidean geometry and the
+Pythagorean theorem.
+
+
+Finally, combining with Lemma  and
+Theorem , this shows that the overall solution 
+will be an -approximate maxmin solution where
+
+
+
+.
+Thus, we can obtain any desired value of  by setting
+.
+The resulting number of calls to the classification oracle will be
+.
+As earlier noted, compared to , this bound gives a different
+trade-off between  and .
+For the case that , and with  as in
+sec:explore-first, this algorithm gives a better bound by a
+factor of .
+
+
+
+
+
+
+
+Failure of the Condorcet winner to exist
+
+Here, we investigate the reliability of the Condorcet assumption by replicating the experiment of with a small modification. As in their setting, we consider a family of -armed dueling bandit problems arising from the ranker evaluation problem in IR, where the comparisons are carried out using Probabilistic Interleave hofmann11:probabilistic and the preferences are generated using click models simulating user behavior guo09:tailoring,guo09:efficient. The rankers are sampled randomly from the set of  rankers provided with the MSLR dataset.(http://research.microsoft.com/en-us/projects/mslr/default.aspx) However, unlike the experiments of, we use an informational click model, rather than a perfect one hofmann13:fidelity. The former simulates the behavior of a user who is seeking general information about a broad topic, while the latter represents an idealized user, who meticulously examines every document in the retrieved list. We believe that the informational click model is more realistic and therefore use it here.
+
+The plot in Figure  shows the probability with which the encountered dueling bandit problems contain Condorcet winners. As this figure demonstrates, in this setting, the occurrence of the Condorcet winner drops rapidly as the number of rankers grows.
+
+This shows that even in this simple non-contextual example the assumption that there exists a Condorcet winner is too unreliable to be practical. Needless to say that in the contextual dueling bandit problem, where one is dealing with a potentially very large and diverse set of policies, the likelihood of one policy dominating every single other policy is even more unrealistic.
+
+[!t]
+
+The probability that the Condorcet assumption holds for subsets of the feature rankers in the MSLR dataset. The probability is shown as a function of the size of the subset of rankers under consideration.
+
+
+Comparison between the Copeland and von Neumann winners
+
+A Copeland winner is defined to be any arm that beats the largest number of other arms. It is a generalization of the Condorcet winner in the sense that if the Condorcet winner exists, it will be a Copeland winner. However, we claim that the von Neumann winner is a more natural generalization than the Copeland winner for the following two reasons: first, in the absence of a Condorcet winner, Copeland winners, both individually and as a collective, can lose to an arm that is not a Copeland winner, whereas the von Neumann winner beats or ties with every single arm; second, the set of Copeland winners can be altered by the introduction of "clones," i.e., arms whose corresponding rows of the preference matrix are identical to each other.
+
+To demonstrate this lack of stability of Copeland winners, consider any -armed example with , where arms  and  beat all other arms and the three of them are in a cycle, with  beating ,  beating  and  beating  all with probability . It is easy to see that these three arms are the only Copeland winners with Copeland score equal to  and also form the support of the von Neumann distribution: indeed, the von Neumann distribution is simply the uniform distribution on these three arms. Now, let us consider a slight modification of this problem, where we add one more arm, called , which is a duplicate of arm ; hence  and  for all . In the following we explain what happens to the set of Copeland winners after this modification. In the presence of ties, there are three sensible definitions that one could use for the Copeland score; these definitions and the corresponding scores for the top four arms in our modified example can be found in Table . As the quantities in this table show, regardless of the definition of the Copeland score used, the set of Copeland winners for our new -armed dueling bandit problem does not contain all of . Indeed, under no definition can arm  be considered a Copeland winner.
+
+On the other hand, arms  still form the support of the von Neumann distribution of this modified dueling bandit problem: if we assign weights  to these four arms such that
+
+and sample an arm  according to these weights, we will (on average) beat any  with  and tie with all  with .
+
+We consider the lack of stability under cloning illustrated by this example to be a major drawback of the Copeland score as a measure of quality.
+
+
+[!t]
+    Copeland scores of the top arms in the duplicated example
+    
+    
+	
+
+
+Furthermore, as the following -armed preference matrix illustrates, the von Neumann winner does not necessarily contain the Copeland winner in its support:
+
+*
+= 
+   0  & -0.50  & -0.50  & -0.50  & -0.95 
+
+ -0.50  &   0  & -0.50  & -0.20  & -0.50 
+
+ -0.50  & -0.50  &   0  & -0.20  & -0.50 
+
+ -0.50  & -0.20  & -0.20  &  0   & -0.50 
+
+ -0.95  & -0.50  & -0.50  & -0.50  &  0
+
+[!t]
+
+The percentage of preference matrices of a given size, sampled from the MSLR dataset, for which all Copeland winners are contained in the support of the von Neumann winner
+
+
+
+
+Indeed, the von Neumann winner of this matrix is the uniform distribution on the first three arms, as can be easily checked by multiplying the row vector  with , while the Copeland winner is the fourth arm, since the Copeland scores of the  arms are . Moreover, the fourth arm also happens to be both the Borda winner and the Random Walk winner. The Borda winner is the arm with the highest chance of winning a comparison against a uniformly randomly chosen opponent, i.e., the arm corresponding to the row in the preference matrix whose entries have the highest sum: in this case the Borda scores are . The Random Walk winner is obtained as follows: first, we convert the "probabilistic" preference matrix (i.e., ) into a column-wise stochastic matrix (by dividing each column by its sum), then find the stationary distribution of the Markov chain defined by this matrix (by finding the right eigenvector of the stochastic matrix corresponding to eigenvalue ), and, finally, declare the arm with the highest probability under this stationary distribution to be the Random Walk winner. In this particular example, the stationary distribution is  and so the Random Walk winner is the fourth arm, as mentioned before.
+
+[!t]
+
+The fractions of preference matrices of a given size (horizontal axis) with a given maximum Copeland loss among the arms in the support of their von Neumann winner (vertical axis): given  and , the area of the circle at coordinate  of this plot is proportinal to the percentage of -armed sub-matrices of the Informational MSLR preference matrix, , for which the maximum Copeland loss of an arm in the support of the von Neumann winner of  is equal to .
+
+
+Despite the above observations, in practice, the Copeland winner and the von Neumann winner tend to agree to a large extent. For instance, in preference matrices sampled from the MSLR dataset, as described in Appendix , in over 99.9 of the examples, the von Neumann winner contained at least one Copeland winner. Moreover, in the overwhelming majority of the cases, all Copeland winners were assigned non-zero probability by the von Neumann winner, although the percentage of cases where this phenomenon occurs is slightly lower than the above figure and dependent on the number of arms (see Figure ).
+
+
+
+Based on these observations, the Copeland winner can roughly be thought of as a more restrictive notion than the von Neumann winner.
+
+
+
+Furthermore, as Figure  demonstrates, the arms in the support of the von Neumann winner tend to have high Copeland scores (or equivalently, low Copeland losses) in practice. Given this close relation between these two notions of winners, a natural question becomes whether the recent improvements made in solving the Copeland dueling bandit problem can be used to speed up the task of finding the von Neumann winner.
+
+
+[!t]
+
+The percentages of preference matrices of a given size with von Neumann winners of a given support size: the bottom plot is simply a zoomed version of the top one, and it was included, because preference matrices with von Neumann winners of support size 5 were very infrequent.
+
+
+Another aspect of the von Neumann winner that might be disconcerting when first encountered is the fact that it is a distribution, which in theory can put non-zero probability on all arms; however, in practice, this is very far from being the case. Indeed, among the over a million preference matrices sampled from the MSLR dataset, not a single one had a von Neumann winner that assigned non-zero probability to more than 5 arms. In fact, in the vast majority of the cases, the von Neumann winners had supports of size 1 or 3 (see Figure ). Note that fewer than 0.03 of preference matrices had von Neumann winners whose support contains 5 arms.
+
+
+
+
+
+
+
+
+
+asred      
+
+
+
+
+
+
+ 
+
+Cpld
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+cmmib10
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[Contextual Dueling Bandits]Contextual Dueling Bandits
+
+ 
+ Miroslav Dudik mdudik@microsoft.com
+
+ Microsoft Research, New York, NY USA
+  Katja Hofmann katja.hofmann@microsoft.com
+
+ Microsoft Research, Cambridge, United Kingdom
+  Robert E. SchapireOn leave from Princeton University. schapire@microsoft.com
+
+ Microsoft Research, New York, NY USA
+  Aleksandrs Slivkins slivkins@microsoft.com
+
+ Microsoft Research, New York, NY USA
+   Masrour ZoghiPart of this research was conducted during an internship with Microsoft Research. m.zoghi@uva.nl
+
+ University of Amsterdam, Amsterdam, The Netherlands
+ 
+
+
+We consider the problem of learning to choose actions using
+contextual information when
+provided with limited feedback in the form of relative pairwise
+comparisons.
+We study this problem in the dueling-bandits framework of
+yue09:k-arm, which
+we extend to incorporate context.
+Roughly, the learner's goal is to find the best policy, or way of
+behaving, in some space of policies, although "best" is not always
+so clearly defined.
+Here, we propose a new and natural solution concept, rooted in game theory,
+called a
+von Neumann winner, a randomized policy that beats or ties
+every other policy.
+We show that this notion overcomes important
+limitations of existing solutions, particularly the Condorcet winner which
+has typically been used in the past, but which requires strong and often
+unrealistic assumptions.
+We then present three efficient algorithms for online learning in our setting,
+and for approximating a von Neumann winner from batch-like
+data.
+The first of these algorithms achieves particularly low regret, even
+when data is adversarial, although its time and space requirements are
+linear in the size of the policy space.
+The other two algorithms require time and space only
+logarithmic in the size of the policy space when provided access to an
+oracle for solving classification problems on the space.
+
+
+contextual dueling bandits, online learning, bandit algorithms, game theory.
+
+
+
+
+
+
+
+
+
+
+We would like to thank Alekh Agarwal for insightful comments and discussions.
+
+
+
+
+
+
+
+Incorporating context
+
+Next, we consider how the preceding development can be extended to a
+much more realistic setting in which the best way of acting may depend
+on additional, observable information, called context.
+Thus, prior to choosing actions, the learner is allowed
+to observe some value , the context, selected by Nature from
+some unspecified space .
+For instance,  might be a feature-vector description of a web user.
+In this setting, the preference matrix is no longer static;
+rather, which actions are better than which others now varies and depends on
+the context, which therefore must be taken
+into account to fully optimize the choice of actions.
+
+Formally, we assume that on every round  of the learning
+process, a context  and preference matrix  are chosen by Nature.
+The context  is revealed to the learner, but the preference
+matrix  remains hidden.
+Based on , the learner selects two actions  for a
+duel, whose outcome has expectation determined by the current (hidden)
+preference matrix  in the usual way.
+Except where noted otherwise, in this paper, we always assume that
+each pair  is chosen at random according to independent
+draws from some unknown joint distribution .
+
+The goal is to determine which action to select as
+a function of the context.
+Such a mapping  from contexts  to actions  is called a
+policy.
+Typically, we are working with policies of a particular form, that is,
+from some policy space .
+For instance, this space might
+represent the set of all decision trees.
+For simplicity, we assume that  has finite cardinality.
+
+However, we generally think of  as an
+extremely large space, exponential in any reasonable measure of
+complexity.
+
+
+
+
+
+The notion of von Neumann winner (as well as other concepts, like
+Condorcet winner) can be extended to incorporate context
+essentially by reducing to the non-contextual setting.
+We can regard each policy  as a
+"meta-action," and define a  preference matrix
+ over these meta-actions.
+Thus, the rows and columns of  are each
+indexed by policies in ,
+and
+
+This quantity is the expected outcome
+when a "meta-duel" is held between the two policies  and ,
+whose stochastic outcome is determined by randomly selecting ,
+and then holding an ordinary duel on  between
+the actions  and .
+This huge matrix  thus encodes the probability of any policy
+beating any other policy in a duel.
+
+We can now define von Neumann winner in the contextual setting
+to be an (ordinary) von Neumann winner for the matrix 
+(regarded here as a kind of "meta-preference-matrix").
+Thus, unraveling definitions, a (contextual) von Neumann winner
+is a probability distribution 
+over policies such that for every opposing policy ,
+if  is chosen at random from
+, then the probability that  beats 
+in a duel is at least .
+That is, the randomized policy defined by  beats or ties every policy in the space .
+By Proposition (applied to ), such a von Neumann winner must exist.
+
+For the rest of the paper, we study how to
+compute (or approximate) contextual von Neumann winners.
+Of course, because the space  and corresponding matrix 
+are both gigantic, this will present significant computational
+challenges.
+
+
+
+Learning scenarios
+
+We consider two possible learning scenarios.
+
+In the simpler of these, called explore-then-exploit, we suppose
+that the learner is allowed to explore for some number of rounds
+
+(where, as described above, on each round, the learner is presented
+with a random context and permitted to run and observe the outcome of a duel
+between a pair of actions of its choosing).
+At the end of these  rounds, the learner outputs a distribution
+ over policies in .
+The learner's goal is to produce  which is an
+-approximate von Neumann winner, that is, for which
+
+
+
+for some small .
+In other words, for all ,  should beat  with
+probability at least .
+Naturally,  should be "reasonable" as a function
+.
+This setting is almost like learning from a passively selected
+batch of training examples, except that the learner has an active
+role in selecting which actions to play in each duel.
+
+In the alternative full-explore-exploit setting, learning
+occurs in a fully online manner across  rounds (in the manner
+described earlier), with performance
+measured using some notion of regret.
+In this paper, where we are working with policies and changing
+preference matrices,
+we propose to define regret to be
+
+If we can find an algorithm for which this regret is , then
+eventually the algorithm selects actions  which cannot be
+beaten by any other policy .
+
+In the standard dueling-bandits setting with a static preference
+matrix, a seemingly different definition of regret was used
+by in terms of an assumed Condorcet winner.
+However, when specialized to their setting, and when provided with
+their same assumptions, their definition can be shown to be equivalent
+(up to constant factors) to eq:rd1.
+
+Solving the compact game with 
+
+Our second algorithm, called , solves eq:f4 using online projected gradient descent methods as studied by . The algorithm maintains a vector  corresponding to a
+strategy for the row player.
+On every round, a column strategy  is chosen that is a "best
+response" to .
+The strategy  is updated by taking a small gradient step.
+The resulting vector  is likely to be outside the set
+, and therefore is (approximately) projected back to ,
+yielding .
+The algorithm is as follows:
+   Choose any 
+For :
+
+   
+
+
+
+Output 
+
+
+
+Ideally, we would like for  to be the exact Euclidean
+projection of  onto , but instead need to settle for an approximation.
+For this purpose,
+the procedure , described below,
+computes an approximate
+projection of an arbitrary vector  onto .
+It takes as an input a second vector  that is already in , and which
+we can think of as an initial guess at the actual projection.
+The quality (as an approximation) of the returned vector  is
+allowed to depend on how close  is to .
+Specifically, we require that, for all , and a constant  specified later,
+
+
+In Appendix , we show that with the parameter
+    
+our algorithm finds an solution to eq:f4, where
+    
+.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Computing approximate projections.
+It remains to describe the approximate-projection procedure
+.
+Given an arbitrary vector  and another
+vector ,
+the goal of the algorithm, as in eq:b1, can be restated as
+that of finding a vector  for which
+
+where we define
+
+
+.
+Note that  is linear in  (for each ), and concave in
+ (for each ).
+To ensure that eq:g3 holds, we give an algorithm that aims to
+maximize the left-hand side of this inequality.
+(As a side note, the maximizing vector turns out to be exactly the
+projection of  onto , although we do not require that fact
+for our algorithm and analysis.)
+
+To this end, we use an algorithm that resembles repeated play of
+a game in which the payoff is defined by .
+The  player uses best response on each round, while the 
+player again uses a variant of online gradient ascent
+applied to the function .
+The algorithm takes a parameter , and uses
+, which was provided as an argument
+to , as the initial vector.
+Here is the algorithm:
+
+  For :
+
+  
+
+
+Output 
+Note that  is in  for every  (by convexity of ), and
+therefore  is as well.
+
+In Appendix , we show that  with parameter
+    
+computes  that satisfies eq:g3 with
+    .
+We optimize the choice of  and  to show that one can obtain an -approximate solution to eq:f4 using only
+    
+oracle calls. This in turn implies Theorems  and  for .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Sparring 
+
+Our goal then is to find, approximate or perform as well as a
+von Neumann winner, which, as we have seen, is a maxmin strategy for a
+particular game.
+Under this interpretation, it becomes especially natural to use
+ordinary no-regret learning algorithms as players of this game since
+it is known that such algorithms, when properly configured for this
+purpose, will converge to maxmin or minmax
+strategies FreundSc-GEB.
+The idea is simply to run two independent copies of such an algorithm
+against one another.
+Such a "sparring" approach was previously proposed for dueling
+bandits by, though without details, and not in the
+contextual setting.
+
+We consider using the multi-armed bandit algorithm  beygelzimer11:epoch
+for this purpose in the full-explore-exploit setting.
+ is well-suited since it is
+designed to work with partial information as in our bandit setting,
+and since it can handle the kind of adversarially generated data that
+arises unavoidably when playing a game.
+It also is designed to work with policies in a contextual setting like
+ours (or, more generally, to accept the advice of "experts").
+
+The learning setting for  is as follows (somewhat,
+but straightforwardly, modified for our present purposes).
+There are  possible actions, , and a finite space 
+of policies.
+On each round , an adversary chooses and reveals a context
+, and also chooses, but does not reveal rewards
+ for each of the  actions.
+The learner then selects an action , and receives the revealed reward .
+The learner's total reward is thus
+  ,
+while the reward of each policy  is
+  .
+The learner's goal is to receive reward close to that of the best
+policy.
+ prove that (subject to very benign conditions)
+with probability at least ,
+ achieves reward
+
+(This holds for any ; the  is passed as a parameter to the algorithm.)
+
+For contextual dueling bandits,
+
+we run two separate copies of  which are played against one another; let us call them
+ and .
+We use the same actions, contexts, and policies for the two copies as for the original problem.
+On each round , Nature chooses a context  and a preference
+matrix .
+The context (but not the preference matrix) is revealed to  and , which
+select actions  and , respectively.
+A duel is then held between these two actions; the outcome  is
+passed as feedback to  (for its chosen action ),
+and its negation  is similarly passed to . We call this algorithm .
+
+
+Consider  actions, policy space , and time horizon . Fix parameter .
+Then with probability at least , achieves regret at most
+
+
+.
+
+The proof is in Appendix . This result holds also for an adversarial environment in which the pairs  are selected by an adversary rather than at random. Also, we can adapt this algorithm for explore-then-exploit learning using the following standard technique for online-to-batch conversion. Run for  exploration rounds. In each round ,  internally computes a distribution  over policies. Then  is an von Neumann winner where
+.
+
+Although yielding very good regret bounds and handling adversaries, this approach requires
+time and space proportional to , and is therefore not
+practical for extremely large policy spaces.
+
+Explore-then-exploit algorithms with a classification oracle
+
+
+
+
+
+Introduction
+
+
+We study how to learn to act
+based on contextual
+information when provided only with partial, relative feedback.
+This problem naturally arises in information retrieval (IR) and recommender systems, where the user feedback is considerably more reliable when interpreted as 
+relative comparisons rather than absolute labels
+radlinski2008:how.
+For instance, in web search, for a particular query, the IR system may
+have several candidate rankings of documents that could be presented,
+with the best option being dependent upon the specific user.
+By presenting a mix or interleaving of two of the candidate rankings and
+observing the user's response,
+it is possible for such a system to get feedback about user preferences.
+However, this feedback is partial since it is only
+with respect to the two rankings that were chosen, and it is relative
+since it only tells which of the two rankings is
+preferred to the other.
+
+The dueling-bandits problem of formalizes
+this setting.
+Abstractly,
+the learner is repeatedly faced with a set of possible actions,
+and may select two of these actions to face off in a duel
+whose stochastically determined winner is then revealed.
+Through such experimentation, the learner attempts to find the
+"best" of the actions.
+
+In this paper,
+we focus on the contextual dueling bandit setting, where context can provide information that helps identify the best action.
+For instance,
+in the example above, the actions may be the candidate
+rankings to choose among, and the context may be
+additional information about the user or query that might help in
+choosing the best ranking.
+The learner's goal now is to find a good policy, a rule for choosing
+actions based on context.
+
+Similar to prior work
+on contextual (non-dueling)
+bandits EXP4,LangfordZh07,dudik2011efficient,AgarwalEtAl14,
+we propose a setting in which
+the learner has access to a space of policies , with the goal of
+performing as well as the "best" in the space.
+This space plays a role analogous to the hypothesis space in
+supervised learning.
+It will typically be extremely large or even infinite.
+We therefore explicitly aim for methods that will be applicable
+when this is the case.
+
+Merely defining the precise goal of learning can be problematic
+in such a relative-feedback setting.
+When rewards are absolute, the best policy in  is clearly and easily
+defined as the one that achieves the highest expected reward, because, by
+such an absolute measure, this policy beats every other policy.
+In a relative-feedback setting, since we have a means of obtaining pairwise
+comparisons between actions or policies,
+we might aim to choose the policy
+in  that (on average)
+beats every other policy in the class in such head-to-head
+competitions.
+Most previous work on dueling bandits yue09:k-arm,yue2011beat,Urvoy:2013,RUCB2014 has in fact explicitly or
+implicitly assumed that such a Condorcet winner
+exists.
+But there are good reasons to doubt such a strong assumption,
+particularly when working with large and rich policy spaces.
+There are numerous examples, even in natural situations, where this
+assumption (and more generally, transitivity among policies) is known
+to fail (see, for instance,).
+Indeed, the preferences of a population of users do not need to be
+transitive, even if each individual user has transitive preferences.
+
+In this paper, we seek to improve the dueling bandits techniques in two respects.
+First, we seek to relax the modeling restrictions on which previous
+methods have depended so as to develop methods that are more generally
+applicable.
+Second, we seek to achieve a similar level
+of flexibility in the design of policies
+as for supervised learning algorithms.
+
+Contributions.
+Our first contribution (in sec:vonneumann) is the introduction of a new
+solution concept, called the von Neumann winner, which is based
+on a game-theoretic interpretation.
+Like a Condorcet winner, when facing any other policy in a duel, a von Neumann winner has at least a 50 chance of winning; in this sense, a von Neumann winner is at least as good as every policy in the space.
+On the other hand, a von Neumann winner is always guaranteed to
+exist, without any extraneous assumptions.
+This guarantee is made possible by allowing
+policies to be selected in a randomized fashion, as is quite natural in such a
+learning setting.
+
+With the goal of learning clarified, we turn to algorithms.
+As a warm-up, in sec:exp4-spar, we give a fully online algorithm in which
+two copies of the  multi-armed bandit algorithm beygelzimer11:epoch
+are run against one another
+(using a "sparring" approach previously suggested by Ailon:2014).
+Although yielding good regret,
+this algorithm requires time and space linear in , which is impractical
+in most realistic settings where we would expect  to be enormous.
+
+To address this difficulty, we propose an approach
+used previously in other works on contextual bandits
+LangfordZh07,dudik2011efficient,AgarwalEtAl14.
+Specifically, we assume that
+we have access to a classification oracle for our policy
+class that can find the minimum-cost policy in  when given
+the cost of each action on each of a sequence of contexts.
+In fact, an ordinary cost-sensitive, multiclass classification
+learning algorithm can be used for this purpose, which suggests that,
+practically, this may be a reasonable and natural assumption.
+
+We then consider techniques for constructing a von Neumann winner from
+empirical exploration data.
+(Although we focus on a batch-like setting, the resulting algorithms can be used online as well.)
+We analyze the statistical efficiency of this approach in sec:explore-first.
+In Sections  and , we  give two polynomial-time algorithms for
+computing an approximate von Neumann winner from data: one based on
+kalai03:fpl's Follow-the-Perturbed-Leader algorithm kalai03:fpl, and the other based
+on projected gradient ascent as studied by  Zinkevich03:online.
+These techniques yield learning algorithms that approximate or perform as well as the von Neumann winner, using data, time, and space that only depend
+logarithmically on the cardinality of the space , and therefore,
+are applicable even with huge policy spaces.
+
+Dueling bandits and the von Neumann winner
+
+In the dueling bandits problem yue09:k-arm,
+the learner has access to  possible actions,
+, and attempts to determine the "best" action through
+repeated stochastic pairwise comparisons of actions, called duels.
+Thus, at each time step, the learner
+chooses a pair of actions  for a duel;
+the outcome of the duel is  if  wins, and  if  wins.
+The (unknown) expected value of this outcome is denoted , and is assumed
+to depend only on the selected pair .
+In other words, the probability that  beats  in a duel is
+, and the two actions are exactly evenly matched if
+.
+We say that  beats  to mean that the chance of
+ winning a duel with  is strictly greater than ;
+similarly,  ties  if this probability is exactly .
+
+The  matrix  of all such expectations  is called the
+preference matrix.(In the literature, the preference matrix  often refers to the matrix of probabilities . With our modification,  becomes anti-symmetric around , which simplifies the arguments considerably.)
+This matrix is initially unknown to the learner, but can be discovered
+bit-by-bit through experimentation.
+We assume, of course, that all of the entries of  are in
+, and furthermore, that  is skew-symmetric,
+meaning that  so that a duel
+ is equivalent to (the negation of) a duel .
+(This also implies  for every action , as is natural.)
+Other than this, we strenuously avoid making any assumptions in the
+current work about the matrix .
+For instance, we do not make any assumptions regarding
+transitivity among the various actions.
+
+
+
+In such a relative-feedback setting, the "best" action
+is not always well-defined because there is no measure of the absolute
+quality of actions.
+Existing work typically assumes the existence of a Condorcet
+winner, that is, an action  that
+beats every other action .
+This is a very natural definition from a preference learning
+perspective, since  is indeed preferred to every other
+action. However, it has been shown that dueling bandit problems
+without Condorcet winners arise regularly in
+practice RCS2014.
+(See also Appendix  for more compelling evidence that this is indeed the case.)
+
+Although there is no guarantee of a single action beating all others,
+the situation changes considerably if we simply allow actions
+to be selected in a randomized fashion.
+With this natural relaxation, the problem of non-existence entirely
+vanishes.
+Thus, the idea is to find a probability vector  in 
+(where  is the simplex of vectors in  whose entries
+sum to )
+such that
+
+In words, for every action , if  is selected randomly according
+to distribution , then the chance of beating  in a 
+duel is at least .
+(Note that this property implies that the same will be true
+if  is itself selected in a randomized way.)
+
+A distribution  with this property is said to be
+a von Neumann winner for the preference matrix .
+
+As the name reflects, this notion is intimately connected to a
+game-theoretic interpretation.
+Indeed, we can view preference matrix  as describing a
+zero-sum matrix game.
+In such a game, the two players simultaneously choose
+distributions (or mixed strategies)
+ and  over rows and columns, respectively,
+yielding a gain to the row player of .
+According to von Neumann's celebrated minmax theorem,
+for any matrix ,
+
+
+
+
+
+the common value being the value of the game .
+A maxmin strategy  or a minmax strategy 
+is one realizing the  or  on the left- or right-hand side of this equality, respectively.
+Finding these strategies is called solving the game.
+
+We have assumed that the matrix  is itself skew-symmetric,
+so the game it describes is a
+symmetric game.
+Such games are known to have value exactly equal to zero (see, for instance,
+[Theorem II.6.2]owen1995game).
+Working through definitions,
+this means that  is a maxmin strategy if and only if
+
+
+
+But this is exactly equivalent to eqn:v1. Therefore:
+
+
+  A probability vector  is a von Neumann winner for
+preference matrix  if and only if
+it is a maxmin strategy for the game .
+Consequently, every preference matrix  has a von Neumann winner.
+
+Before continuing, we briefly mention some of the
+other solution concepts that have been proposed to remedy
+the potential non-existence of a Condorcet
+winner schulze11:monotonic.
+Two of these are the Borda winner, the action
+that has the highest probability of winning a duel against a
+uniformly random action;
+and the Copeland winner, the action that wins the most
+pairwise comparisons Urvoy:2013.
+Both of these fail the independence of
+  clones criterion, meaning that adding
+multiple identical copies of an action can change the Borda or
+Copeland winner.
+This criterion is particularly crucial in a dueling bandit setting
+because a given policy class may contain many identical policies.
+In contrast, the von Neumann winner performs at least as
+well as any individual policy, and is thus unaffected by the presence or
+absence of clones. See Appendix  for a more detailed discussion.
+Note that if there does happen to exist a Condorcet winner, then it
+will also be the unique von Neumann winner.
+
+
+
+
+
+
+
+
+
+Other related work.
+Numerous algorithms have been proposed for the (non-contextual) dueling bandits problem: Interleaved Filter; Beat the Mean (BTM); Sensitivity Analysis of VAriables for Generic Exploration (SAVAGE); Relative Confidence Sampling; Relative Upper Confidence Bound (RUCB); Doubler, MultiSBM and Sparring and mergeRUCB. These methods impose various constraints on the problem at hand, ranging from the requirement that it arise from an underlying utility function (e.g., MultiSBM) to no constraint at all (e.g., SAVAGE); they mainly provide regret bounds that are logarithmic in the number of rounds, and at least linear in the number of actions.
+In principle, these methods could be applied to contextual dueling bandits by treating policies as actions.
+But this would lead to regret at least linear in the number of policies which is far worse than the logarithmic bounds obtained in this paper.
+
+The method that is the most closely related to our work is Dueling Bandit Gradient Descent (DBGD), a policy gradient method that iteratively improves upon the current policy by conducting comparisons with nearby policies, assuming that the policy space comes equipped with a distance metric, and incrementally adapting the policy if a better alternative is encountered.
+
+As with all local optimization methods, DBGD imposes a convexity assumption on the dueling bandit problem for its performance guarantee: the dueling bandit problem is assumed to arise from the noisy observations of an underlying convex objective function. In this paper, we both relax the assumptions imposed by DBGD and improve upon the regret bound.

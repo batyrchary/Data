@@ -1,0 +1,668 @@
+
+
+CISPA
+
+
+[C]
+
+main.bib
+IEEEabrv.bib
+
+
+
+
+
+
+   
+                        
+ 
+                        
+arrows
+positioning
+
+
+  
+  
+ 
+
+ 
+
+
+mystyle
+    
+    commentstyle=,
+    keywordstyle=,
+    numberstyle=codegray,
+    stringstyle=,
+    basicstyle=,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+
+
+style=mystyle
+
+
+[switch]SwitchEndSwitch
+[1]switch #1
+
+Case[1]case #1:
+
+SE[DOWHILE]DodoWhile[1] #1
+
+
+
+"#1"
+
+#1
+/#1/
+
+
+
+#1
+#1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+Sample-Free Learning of Input Grammars for Comprehensive Software Fuzzing    
+(Dated )
+Rahul Gopinath
+Bjorn Mathis
+Mathias Hoschele
+Alexander Kampmann
+Andreas Zeller
+rahul.gopinath, bjoern.mathis, hoeschele, kampmann, zeller@cispa.saarland 
+
+CISPA / Saarland University, Saarland Informatics Campus, Saarbrucken, Germany
+ 
+Gopinath, Mathis, Hoschele, Kampmann, Zeller
+
+
+
+
+
+
+
+
+
+*
+
+
+
+
+  Montserrat-TOsFCISPA Helmholtz-Zentrum i.G.
+
+
+  
+  
+
+  
+  
+  
+
+
+  
+  
+  
+
+
+
+
+
+
+
+Generating valid test inputs for a program is much easier if one knows the input language. We present first successes for a technique that, given a program  without any input samples or models, learns an input grammar that represents the syntactically valid inputs for -a grammar which can then be used for highly effective test generation for . To this end, we introduce a test generator targeted at input parsers that systematically explores parsing alternatives based on dynamic tracking of constraints; the resulting inputs go into a grammar learner producing a grammar that can then be used for fuzzing.
+
+In our evaluation on subjects such as , , or , our prototype took only a few minutes to infer grammars and generate thousands of valid high-quality inputs.
+
+2
+
+Introduction
+
+Testing programs with generated inputs is a common way to test programs for robustness.  Such generated inputs must be valid, because otherwise, they would be rejected by the program under test before reaching the functionality to be tested; and they must well sample the full range of possible inputs, because otherwise, important program features may not be covered.  In the absence of a formal input specification such as a grammar, common test generators have to rely on samples of valid inputs.  These would then
+*
+be systematically mutated  using generic operations such as bit flips or character exchanges; or 
+be used to infer grammars and syntactical rules that can then be used to generate more similar inputs .
+Both approaches, however, would have great difficulty synthesizing features that are not present in the original samples already.  In principle, test generators could use symbolic analysis on the program under test to determine and solve the exact conditions under which an input is accepted ; but nontrivial input formats induce a large number of constraints that can easily overwhelm symbolic constraint solvers.
+
+*
+
+
+    ultra thin/.style= line width=0.1pt,
+    very thin/.style=  line width=0.2pt,
+    thin/.style=       line width=0.4pt,
+    semithick/.style=  line width=0.6pt,
+    thick/.style=      line width=0.8pt,
+    very thick/.style= line width=1.2pt,
+    ultra thick/.style=line width=2pt
+
+[->,>=stealth',shorten >=1pt,auto,node distance=3cm,
+  thick,main node/.style=font=,minimum size=15mm,label node/.style=font=,minimum size=5mm,draw,circle,gray!80]
+
+  [main node] (PUT) Program Under Test;
+  [main node] (PDTG) [below of=PUT] Parser-Directed Test Generator;
+  [main node] (GL) [right=20em of PDTG] Grammar Learner;
+  [main node] (F) [right=25em of PUT] Fuzzer;
+  
+  [label node] (0) [left=0.1em of PUT] 0;
+  [label node] (1) [left=0.1em of PDTG] 1;
+  [label node] (2) [right=0.1em of GL] 2;
+  [label node] (3) [right=0.1em of F] 3;
+  
+  [every node/.style=font=,
+  	fill=white,inner sep=1pt,
+        every edge/.style=draw=red,ultra thick]
+    (PDTG) edge node [anchor=center,pos=0.5] Inputs + Equivalence Classses (GL)
+    (PUT)  edge [left=55] node[right=1em] Comparisons (PDTG)
+    (PUT)  edge [bend right=5] node[anchor=center,pos=0.5] Dynamic Taints (GL)
+
+    (GL)   edge [bend right=30] node[left=1em] Grammar (F)
+    (F)    edge [ right=40] node[left=1em] Test Inputs (PUT)
+    (PDTG) edge [bend left=50] node[left=1em] Valid Prefixes (PUT);
+
+The prototype starts with a program under test (0) into which we feed a fixed, valid prefix (say, an empty string).  By dynamically tracking the comparisons of input characters against expectations, a parser-directed test generator (1) systematically satisfies these expectations, eventually producing a set of inputs that cover all parser alternatives.  These go into a grammar learner (2), which by tracking the data flow of these characters through the program produces an input grammar.  Using this grammar, a fuzzer (3) can now produce syntactically valid program inputs at high speed, systematically covering input features.
+
+
+In this paper, we follow recent advances in grammar inference  by first learning an input grammar, and then using this grammar for test generation.  In contrast to this state of the art, however, our approach automatically infers an accurate description of the input language without requiring any input samples at all-actually, all that is needed for comprehensive testing is the program itself.  fig:overview summarizes our approach:
+
+
+
+
+  To address the problem of learning without samples, we introduce a test generator specifically targeting input parsers.  Our approach starts with a fixed input (typically an empty string), which would be rejected.  During parsing, we use dynamic tainting(
+We use a pure python library similar to the algorithm by Conti et al.  for tracing taints and comparisons. Hence, our algorithm does not require specially crafted interpreter to track taints.) to dynamically track all comparisons of input characters against expected values, and then provide an input that satisfies these expectations.  By repeating this process from rejection to rejection, we eventually obtain a set of inputs that covers all comparison alternatives made by the parser-and consequently, all structural (syntactic) alternatives as well.  
+
+To learn a grammar from the parser-covering inputs, we  dynamically track the data flow of input characters throughout program execution to induce a grammar.  Our main algorithm is inspired by Hoschele et al. : Character sequences that share the same data flow then form syntactic entities; subsequences with different data flow induce composition rules.  On top, our grammar learner makes use of equivalence classes found during Step 1: If the test generator finds that, say, some input fragment can be any digit, this generalization is also reflected in the grammar.
+
+
+To produce inputs, we use the grammar from Step 2 as a producer, now very rapidly producing inputs for the program under test.  At this point, no instrumentation of the program is required anymore, and the inputs produced could also be given to another program with the same input language.
+
+
+
+As a result, we obtain a tool chain that requires nothing but an executable code, and produces high-quality inputs that cover and combine all syntactic features.  Our prototype(PYGMALION = PYthon Grammar Miner 
+Actively Learning Inputs Of Note.  See also Pygmalion  on language learning..
+
+) for Python programs requires only a few minutes to infer accurate grammars and produce thousands of valid inputs for formats such as .
+
+
+
+Our approach is generic in its use of tools, as we could easily integrate different grammar learners or producers.  It is also versatile in its purposes, as the resulting grammars could also be used for activities such as input understanding, program understanding, parsing and translating inputs, or debugging.
+
+The remainder of this paper is organized as follows.  sec:example illustrates our approach using arithmetic expressions as an example, devoting a section each to the individual steps from fig:overview:
+
+sec:testing details how we generate inputs to systematically cover parsing alternatives.  
+sec:mining shows how we use the resulting inputs and equivalence classes to induce high-quality grammars.
+sec:fuzzing discusses how we use these grammars as producers, reentering grammar induction should generated inputs be rejected.
+sec:evaluation evaluates our publicly available prototype testing formats such as and .  We find that achieves the same coverage as constraint-based alternatives; its inputs, however, are not only much more likely to be valid, they also cover and combine more features of the input language.  sec:conclusion closes with conclusion and future work.
+
+
+Our Approach in a Nutshell
+
+To illustrate our approach, let us assume we want to exhaustively test some mystery program .  We know nothing about ; in particular, we have no documentation or example inputs.  What we know, though, is that
+*
+ accepts some input  sequentially as a string of characters; and that
+ can tell us whether  is a valid or an invalid input.
+We further assume that we can observe  processing : Specifically, we need to be able to observe the dynamic data flow of input characters from  as  processes them.
+
+
+Step 1: Testing a Parser
+
+In Step 1 (fig:overview), we explore the capabilities of 's input parser by means of directed test generation.  The key idea is to observe all comparisons an input character goes through, and systematically satisfy and cover alternatives, notably on rejection.
+
+
+We start with an empty string as input, which is rejected as invalid
+immediately as EOF is encountered. The EOF is detected
+as any operation that tries to access past the end of given argument.
+This error is fixed in the next round by testing  with a random string,
+say "A"> (). Indeed, this input is also rejected by  as
+invalid.
+Before rejecting the input, though,  checks  for a number of properties: 
+
+Does  start with a digit?  Does  start with a '('> character?  Does  start with '+'> or '-'>?  Only after these checks fail does  reject the input.
+
+All these conditions are easy to satisfy, though-and this is a general property of parsers, which typically only consider the single next character. 
+Using a combination of depth-first and breadth-first search, our test generator picks one condition randomly. Satisfying cond:digit, it would produce a digit as input (say, "1">).  This would now be accepted by  as valid, and we have generated our first input.
+
+After the acceptance of "1"> as a partial input,  conducts a check
+to see if another character follows  "1"> by accessing the next character in
+the input. Since  reached the end of the string we consider the prefix as
+valid and add another random character. This results in the new prefix "1B">
+which results in new conditions: Is the "B"> a digit? Or any of the
+characters '+'>, '-'>, '*'>, or '/'>?  Again, one of these conditions
+is chosen randomly, together with the prefix "1B"> seen so far.
+
+In a consecutive execution with another random seed, the first condition to be addressed might be cond:parenthesis.  Satisfying this condition yields "("> which will again cause the parser reaching the end of the input, so we append a random character and get "(C"> as input. This is rejected, but only after again checking for a number of expected characters that could follow. These would be the same checks already performed on the input "A">: digits, parentheses, '+'>, and '-'>. 
+We randomly choose the condition cond:plusminus, where again the prefixes "(+"> and "(-"> would be invalid on their own, so we again choose one prefix for further computations.
+
+By continuing this process, we thus obtain more and more inputs that systematically cover the capabilities of the parser.
+
+
+
+
+In the end, we obtain a set of legal inputs that covers all the conditions encountered during parsing:
+
+1 11 +1 -1 1+1 1-1 1*1 1/1 (1) We see that our mystery program  in fact takes arithmetic expressions as inputs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Step 2: Inducing a Grammar
+
+In Step 2 (fig:overview), we take the generated inputs together with  to induce an input grammar-that is, a context-free grammar which describes the input language of .  To this end, we feed the generated inputs into  while tracking their data flow, notably into variables and function arguments.  
+
+We find that an input such as "1+1"> flows into a function
+ parseexpr()>, which
+*
+first recursively invokes parseexpr()> on the left "1">,
+then invokes parsebinop()> on the "+">, and 
+finally recursively invokes parseexpr()> on the right "1">.
+Tracking the recursive calls of parseexpr()> on "1">, we find that these invoke parseint()>, which in turn invokes parsedigit()>, always passing the "1"> as argument.
+
+From this sequence of calls, we can now induce a grammar rule, using these key ideas:
+
+First, we can associate input fragments with the functions that successfully process them and assume that each input argument to a function represents a syntactic entity.  Hence, "1"> is a digit, an integer, and an expression; "+"> is a binary operator; and "1+1"> is an expression.
+
+Second, if some entity  is a substring of a larger entity , we can derive a grammar rule decomposing  into .  In the above case, we obtain rules such as
+
+Expr Int  Expr BinOp Expr;
+BinOp +;
+Int Digit
+Digit 1;
+
+Third, during parser-directed test generation, we track equivalence classes as induced by successful conditions.  We thus know that besides "1">, any digit would have satisfied the conditions seen.  We can thus replace "1"> with the equivalence class of all digits:
+
+Digit [0-9];
+Say something about how to infer Int Digit+?  - AZ
+
+Finally, we can repeat the process for all inputs seen during the parser-directed test generation in Step 1.  This introduces alternatives for all elements processed in the grammar, covering all operators and other syntactic features.  The resulting grammar (fig:grammar) represents all alternatives seen.
+
+*
+
+Expr Int  UnOp Expr  Expr BinOp Expr  ( Expr );
+UnOp +  -;
+BinOp +  -  *  /;
+Int Digit+
+Digit [0-9];
+-0.5
+Grammar induced from the inputs in Step 1
+-0.5
+With this, we now have obtained a full description of 's input language-
+without any sample inputs, specification, or model.
+
+
+Step 3: Grammar-Based Fuzzing
+
+Grammars as obtained in Step 2 can serve many purposes.  We can use them to understand the structure of inputs, as well as the programs that process them.  We can use them to parse and process existing inputs, for instance to create detailed statistics on the occurrences of specific elements, or to protect programs against invalid inputs.  Our main application in this paper, though, is their use for test generation.
+
+Turning a grammar into a producer is a simple exercise.  Starting with the start symbol (Expr in our case), we keep on replacing nonterminal symbols by one of the alternatives until only terminal symbols are left.  To avoid boundless expansion, we can set a limit on the maximum length of the string; once this is reached, we always prefer expansion paths that lead to terminal symbols.
+
+This generation process now no longer requires any execution, instrumentation, or analysis of the program under test.  Hence, it is fast; and the strings generated can even be applied to some other program  that shares the input language with .  A simple grammar producer can thus easily generate thousands to millions of inputs per minute, covering all kinds of symbols and their combinations.  This is what our technique produces: Given only a program , without any input samples, we obtain an input grammar that accurately describes the input language of , and consequently, can generate as many syntactically valid test inputs as desired.
+
+*
+-++7 / +(9 - 6 / 7 + 5) - 1 + (0) / -75 * +(3 - 6 - 0 - 7)
+9 + 4 - 3 + 7 / 7 + 3 / +3 * (9 - 2 * 9) - 8
+++-+7 - (6 * 6 * 3) / (0 + 2) / +(5 / 6 / 5 + 3 * 1)
+3 * 2764 + 1 / 0 * 4 / -5 / 6 * (1 * (8) + 9 / 4 * 0 * +4)
+3 * 5 + 0 * 0 / 8 - 7 * 7 * ++(2 + 5 - 9 * 9)
++05834 * -(46 + +1 / +-+(-46 / 4) - -(63 - -(5 + 1 + +2 * 0 / 
+    ++82 + (9 + 6)))) / -404471632
+3 - 4 / 5 - 0 / 6 + 1 * 9 * 4 - +334
+8 + 7 / 4 * 9 - (3 + 6 - (7)) + -0 - -+(5 + 8) * -++++5 - -2973
+-0.5
+Fuzzing output from the grammar in fig:grammar
+-0.5
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*
+      Results of fuzzing with valid inputs of , , and .
+  
+   
+  *AFL and KLEE were given the same time as PYG for all subjects
+  
+  
+  
+Initial Results
+
+We have implemented the above approach as a proof-of-concept prototype in Python, named .
+
+We evaluate and all its parts on three different formats:  , (We manually converted the Java parser to Python.), and  . We used a coverage tool for Python  to compute the coverage the inputs achieve on the different subjects. For comparison, we used the   random fuzzer and  , a symbolic execution engine, both state of the art input generators. Since is not available for Python, we generated inputs with on a C parser of the respective input language and then executed the Python parser for this language with the generated inputs. and were both run with default settings.  tbl:fuzz summarizes our results, detailed in the remainder of this section.
+
+
+Execution Time
+
+We let run until it produced 100 inputs.
+The length of inputs produced by is affected by the complexity of
+input grammar.
+
+In particular,
+when considering nested grammars, each successive character might increase
+the amount of nesting in the string produced, by adding a character-e.g. '('-or close existing nested structures-e.g. ')'. Since we are interested in valid strings, after a fixed number of characters is produced, we switch to a strategy designed to identify short suffixes that can complete the current string prefix.
+
+The inputs from was used
+to infer the grammar (Steps 1 and 2); we then used this grammar to produce 1,000 inputs (Step 3). For producing samples from the grammar, we chose to limit the number of symbols expanded to 100 before applying heuristics to complete the string generation.
+
+tbl:fuzz reports the execution times broken down per step; Steps 1 and 2 need to be run once per program, Step 3 for every 1,000 inputs generated.  Note that switching from Python to C would speed up all three steps further, especially Step 3.
+
+For comparison, we let and run as long as all three phases of and assessed the resulting test cases.  has no built-in limit to how long it will run and produce inputs; stops as it has explored all paths, but would not reach this limit within the execution time of .
+
+
+
+Input Validity
+
+For all three subjects, between 73 and 78 of all inputs generated by would be valid; the remainder is invalid due to overgeneralization in Step 2.  For , we only report those inputs where it found a new path (which is the default setting); only between 0 and 50 of these inputs, though, are valid.  produced thousands to millions of inputs, with 25 to 46 being valid.  Most of the inputs of and exercise handling of syntax errors.(For , actually none of the inputs generated by would be valid in the original Python subject because the C subject we applied on would erroneously accept URLs without a protocol prefix.  For fairness, we therefore changed the Python parser to also accept URLs without prefix.)
+
+
+Coverage
+
+Let us now come to the one metric typically used to compare the performance of test generators-coverage.  We only report coverage of code handling valid inputs, as this would be the code that actually holds program functionality.  (As discussed before, if one wanted to deliberately produce invalid inputs, would probably be the best choice.)  and achieve a very similar coverage.  The only 1-point difference is in , where explores queries (prefixed by '?'>) and doesn't; the reason is that (a) the parser accepts any string after the hostname, with no special provisions for '?'> (queries) or ''> (anchors); and (b) grammar inference does not generalize the characters to include '?'> characters.  Apart from '?'>, in all three cases, the coverage achieved by is the maximum one can achieve on these subjects using valid inputs.
+
+
+
+
+
+
+
+
+Input Quality
+
+A good test case will not only cover code, but also explore combinations of features to thoroughly test their possible interactions and interference.  As a very simple assessment of how our inputs fare in this regard, we take a look at the generated valid inputs with maximum length, for example for :  
+
+
+  The longest input covers and combines elements such as arrays, objects, strings, and numbers(It also exercises a bug in the parser.):
+
+[false ,[  "o":    ,   "
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

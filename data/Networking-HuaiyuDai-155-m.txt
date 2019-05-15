@@ -1,0 +1,1183 @@
+
+
+
+
+
+
+
+ 
+
+ 
+
+ 
+
+
+   
+
+   ../pdf/../jpeg/
+
+   .pdf,.jpeg,.png
+
+
+   
+
+   ../eps/
+
+   .eps
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+op-tical net-works semi-conduc-tor
+
+
+[4]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+cases.
+theoremTheorem
+propositionProposition
+lemmaLemma
+corollaryCorollary
+resultResult
+claimClaim
+definationDefination
+
+
+
+
+
+On the Capacity Region of Cognitive Multiple Access over White Space Channels
+
+Huazi Zhang, Zhaoyang Zhang, Member, IEEE, and Huaiyu Dai, Senior Member, IEEE
+Manuscript received Apr. 18, 2012; revised Sep. 3, 2012.
+
+Huazi Zhang (E-mail: thomas25@163.com) and Zhaoyang Zhang (E-mail: ningming@zju.edu.cn, Phone  Fax: +86-571-87952060) are with the Department of Information Science and Electronic Engineering, Zhejiang University, Hangzhou, China. Huaiyu Dai (E-mail: hdai@ncsu.edu, Phone: (919) 513-0299, Fax: (919) 515-5523) is with the Department of Electrical and Computer Engineering, NC State University, Raleigh, NC 27695.
+
+This work was supported in part by the National Key Basic Research Program of China (Nos. 2009CB320405 and 2012CB316104), the National Natural Science Foundation of China (No.60972057), the Zhejiang Provincial Natural Science Foundation of China (No.LR12F01002), the Supporting Program for New Century Excellent Talents in University (No. NCET-09-0701), and the US National Science Foundation under Grants CCF-0830462 and ECCS-1002258.
+
+
+IEEE Journal on Selected Areas in Communications, Vol. 31, No. 11, Nov. 2013
+Shell et al.: Bare Demo of IEEEtran.cls
+for Journals
+
+
+
+
+Opportunistically sharing the white spaces, or the temporarily unoccupied spectrum licensed to the primary user (PU), is a practical way to improve the spectrum utilization. In this paper, we consider the fundamental problem of rate regions achievable for multiple secondary users (SUs) which send their information to a common receiver over such a white space channel. In particular, the PU activities are treated as on/off side information, which can be obtained causally or non-causally by the SUs. The system is then modeled as a multi-switch channel and its achievable rate regions are characterized in some scenarios. Explicit forms of outer and inner bounds of the rate regions are derived by assuming additional side information, and they are shown to be tight in some special cases. An optimal rate and power allocation scheme that maximizes the sum rate is also proposed. The numerical results reveal the impacts of side information, channel correlation and PU activity on the achievable rates, and also verify the effectiveness of our rate and power allocation scheme. Our work may shed some light on the fundamental limit and design tradeoffs in practical cognitive radio systems.
+
+
+
+
+Cognitive multiple access channel (CogMAC), cognitive radio, white space channel, three-switch channel, capacity region, optimal rate and power allocation.
+
+
+
+
+
+
+
+Introduction
+
+Motivation
+To solve the dilemma between the ever increasing bandwidth demand and the actual under-utilization of spectrum resource
+, FCC has allowed unlicensed devices to opportunistically access the temporarily unoccupied TV spectrum, namely white spaces. To this end, Cognitive Radio (CR) techniques that adopt the "sense and access" paradigm, in which the Secondary Users (SUs) identify the activity of the Primary User (PU) before accessing the white space channels, has been extensively studied in the past years.
+
+Recently, more and more effort has been paid to apply CR into practical systems. The above idea of opportunistically accessing the white spaces is one of the most practical ways for CR applications, which has been implemented in several systems such as the Cognitive Radio Sensor Networks (CRSN) and IEEE 802.22 Wireless Regional Area Networks (WRAN). In both networks, SUs are grouped into clusters according to their locations and channel separation. The cluster members (CMs) transmit to the cluster head (CH) through a common white space channel in the uplink, which forms a special cognitive multiple access channel (CogMAC) that has the white space as the common media.
+
+In such a special CogMAC, a fundamental problem exists, that is, what's the fundamental limit when multiple secondary users are supposed to send their information to the CH over a common white space? The answer will allow us to better understand the performance of practical cognitive radio systems. Equipped with the spectrum sensing capability, SUs can obtain the states of PU activities, either causally or non-causally. Thus, PU activities can be viewed as side information about the channel state at both cognitive transmitters and receivers, and information theoretic results on channel capacity with side information may be explored to reveal the fundamental limit and various tradeoffs.
+
+
+Related Works
+The existing studies on the capacity of cognitive channels are
+mainly conducted in the context of interference channels, further
+divided into the underlay and overlay
+ cases. The former assumes that
+the SU has the channel knowledge and can control
+its transmission power to restrict the interference to the PUs. In contrast, the overlay approach models the coexistent
+communications as the "interference channel with degraded message
+sets (IC-DMS)", and employs intricate coding schemes for capacity enhancement.
+
+The capacity of the cognitive MAC fading channel is studied recently in, in which the ergodic sum-rate is obtained under the interference-power constraint. In the impact of multiuser interference diversity is further exploited on the
+the capacity regions of various CR networks, including the cognitive MAC channel.
+
+Recent works on the throughput of cognitive networks are fueled by the seminal work. In particular, it has been shown that both the primary and secondary network can achieve the throughput scaling as two standalone networks under various situations.
+
+In the above study, concurrent transmission of the primary and
+secondary systems is allowed. To effectively control the
+interference, either channel gains of the SU-PU links or PU messages are assumed known at the secondary transmitter. However, many
+practical cognitive systems only determine the existence of PU transmissions through spectrum sensing, and access the white space channels to avoid undesired interference. In these applications, locally sensed PU activities become the major factors influencing the rate regions of SUs.
+
+Summary of Contributions
+To the best of our knowledge, the pioneering work
+is the first to consider the "sense and access" paradigm, in which
+the PU activities sensed at the cognitive transmitter and receiver
+are modeled as on/off side information, and the capacity of a
+two-switch cognitive channel is explored. Motivated by this work, in this paper we extend the study to a cognitive multiple access
+scenario. The contributions of this
+paper are summarized below:
+
+
+Achievable Rate Regions of the Cognitive MAC Channel:
+By viewing the primary user activities around the transmitters and receiver as side information, we model the memoryless cognitive MAC channel as a three-switch MAC channel. The achievable regions of the three-switch MAC channel are derived for two scenarios with independent causal and non-causal side information at the transmitters, and a special case in which the receiver has strong spectrum sensing capacity. The insights gained from our results may shed some light on the design of practical systems.
+
+Outer and Inner Bounds:
+The capacity regions of the three-switch MAC channel are defined implicitly in the form of mutual information. We further obtain explicit outer and inner bounds of the capacity region by assuming additional side information at the transmitters or receiver. It is found that the outer and inner bounds coincide in two special cases: when the side information between the transmitters and receiver are highly correlated, or when the states of PU signals change slowly.
+
+Sum-rate Optimal Rate/Power Allocation:
+We optimize the rate and power allocation between transmitters when both the transmitters and receiver have global side information, and analyze the impact of two parameters, PU occupation probability and correlation in side information, on the sum rate. The results may serve as a guideline for the design of power/rate allocation algorithm in practical sensing-based CR uplink transmission systems.
+
+Extension to the fading scenario:
+We further analyze a general model with fading and interference, in which the receiver is active all the times. The results provide a guideline for the power/rate allocation algorithm design under channel fading and interference.
+
+
+The rest of the paper is organized as follows. In Section II, we
+introduce the memoryless cognitive MAC channel and model it as a
+three-switch MAC channel. The main results of rate expressions,
+bounds and rate/power allocation are listed in Section III, with
+relevant derivations and analysis given in Section IV. Numerical results are presented in Section V, and the whole paper is
+concluded in Section VI.
+
+Problem Formulation and System Model
+The cognitive MAC channel with neighboring primary activities is
+illustrated in Fig. . We follow and model the memoryless cognitive MAC channel as a three-switch equivalent channel, as in Fig. . The states of switches at the two cognitive transmitters CT1, CT2 and the cognitive receiver CH are denoted respectively as ,  and , taking values of either (on) or (off). When the cognitive users detect (strong enough) interference from PU signals, the switch is turned off to avoid collisions. Otherwise, the switch is turned on for opportunistic communications. Based on this model, the input and output of the channel is related as:
+
+where  and  are the transmitted symbols of CT1 and CT2
+with average power constraint 
+, and  is the AWGN
+noise with unit variance.
+
+ 
+
+Memoryless Cognitive MAC Channel 
+
+
+In this work, we assume perfect spectrum sensing for ease of discussion. Then, the state of switch is actually controlled by the PU occupation, which is regarded as a type of side information to the cognitive users. The side information is said to be causal if the transmitters or receiver only has knowledge of the past/current states of the corresponding switch, and non-causal if the future states are also known.
+
+ 
+
+Three Switch MAC Channel 
+
+
+Main Results
+Achievable Rate and Capacity Regions of Cognitive MAC Channel
+We first explore the rate regions of the memoryless cognitive MAC
+channel with independent transmitter side information, either causal or non-causal. Note that the causality of the receiver side
+information does not matter in the study, as the receiver can decode after the transmission is finished. In the special case that the
+transmitter side information is also known at the receiver, we can
+derive the capacity region. These results are natural extension of
+those in concerning the capacity of a single-link
+two-switch channel.
+
+1) Causal Side Information at the Transmitters. 
+
+Theorem 1: For the three-switch channel with independent(Here, we consider the cases where
+the side information of two transmitters are independent. Note this is reasonable when PU signal power is relatively low and the
+cognitive transmitters keep a non-trivial distance with each other.) causal side information  and 
+at the transmitters and side information  at the receiver, coding can be performed directly on the input alphabets
+(i.e., ,  ) and an achievable rate
+region is given by:
+
+for all , where  denotes the convex hull of all rate pairs.
+
+Remarks:  The above result indicates that in a white-space (on-off switching) multiple access channel, the optimal input distribution takes the form as if the channels were always on, like in general MAC. The achievable rate region is solely limited by the channel on-off behavior (reflected in the transition probabilities), and can be achieved by a code sequence with the optimal independent distribution after being masked at each "off" state.
+
+2) Non-causal Side Information at the Transmitters. 
+
+Theorem 2: For the three-switch channel with independent non-causal side information  and  at the transmitters and side information  at the receiver, coding can be performed directly on the input alphabets (i.e., ,  ) and an achievable rate region is given by:
+
+
+for all .
+
+Remarks:  In the non-causal case, the input distribution depends on the on-off side information, which indicates that the side information non-causally available at each transmitter now can be used to choose an optimal code sequence capable of adapting itself to the channel on-offs and facilitating the cognitive receiver's decoding with the side information which is possibly correlated to that of the transmitter. Intuitively, this will result in better achievable rates.
+
+3) Strong Spectrum Sensing Capability at the Receiver. 
+
+Theorem 3: For the three-switch channel, if the
+transmitters' side information  and 
+ are known to the receiver, i.e. 
+, no matter whether the transmitters' side
+information is causal or non-causal, the channel capacity
+regions are the same, as given by:
+
+for all .
+
+Remarks:  The above result indicates that, when the cognitive receiver has full knowledge about the transmitter on-off states, the optimal coding at each transmitter shall rely on the channel states, and the decoding at the receiver may make full use of those information. It is easy to see that the achievable rates are even better than those of the non-causal case as described in Theorem 2.
+
+Outer bounds and Inner bounds for Gaussian Switch Channel
+Since the above capacity regions are given implicitly in the form of mutual information, we further explore explicit outer and inner
+bounds of the capacity region with the help of additional side information. We restrict to the Gaussian case to obtain the optimal results.
+
+Definition 1: To facilitate the analysis, we define six
+events ( to ) related to primary states , 
+and , together with their probabilities of occurrence as
+follows:
+*
+
+Besides, we use  to denote the power allocated to
+user  during event .
+
+Theorem 4: For the three-switch MAC channel,
+outer bound 1 of the capacity region can be obtained by assuming global side information at both the transmitters and the receiver:
+
+
+
+Theorem 5: For the three-switch MAC channel, outer bound 2 of the capacity region can be obtained by assuming full side information only at the receiver:
+
+
+
+
+
+
+
+
+
+
+
+
+
+Theorem 6: For the three-switch MAC channel
+(with either causal or non-causal side information), an
+inner bound of the capacity region can be obtained as follows:
+
+where  denotes the rate pair in outer bound 2, and , , and  denote the rate gaps.
+
+Remarks: When the PU states change very slowly, or are highly correlated among transmitters and receiver, it is shown that the outer bounds and inner bound coincide. In the case
+with global side information, we can employ rate and power
+allocation strategies to improve the system's overall performance.
+Specifically, if we impose power constraints on both transmitters,
+an optimal rate and power allocation scheme is obtained to maximize
+the sum rate. We also analyze the effect of correlation in side information and PU occupation probability on the sum rate.
+
+Analysis
+
+Preliminaries
+The memoryless cognitive MAC channel is modeled as a
+three-switch channel, so that existing results on the memoryless MAC channel with
+transmitter and receiver side information can be employed to derive
+the cognitive rate regions, which are listed as the following lemmas:
+
+Lemma 1. Causal Case: An achievable rate region of the discrete
+memoryless MAC channel with receiver side information and
+independent causal transmitter side
+information is given by the convex closure of the rate pairs satisfying:
+
+where the message is contained in the mutually independent auxiliary random
+variables  and , and the causality is embodied in the following
+conditional probability distribution:
+
+
+
+
+
+
+Lemma 2. Non-causal Case: An achievable rate region of the discrete
+memoryless MAC channel with receiver side information and
+independent non-causal transmitter side information is given by the convex closure of the rate pairs satisfying:
+
+where the message is contained in the mutually independent auxiliary random
+variables  and , and the non-causality is embodied in the following
+conditional probability distribution:
+
+
+
+
+
+
+
+
+
+
+Lemma 3. If the transmitters' side information can be
+expressed as a function of the receiver side information, i.e. 
+, the memoryless MAC channel capacity regions are the same for causal and
+non-causal cases, i.e. , given by
+
+with the conditional probability distribution 
+
+
+
+Achievable Rate and Capacity Regions with Causal and Non-causal Side Information
+In Shannon's seminal work on channel with side information, and later in Cover and Chiang's work on channel duality, it is shown that it suffices for the optimal input of a channel with causal/non-causal side information to be a deterministic function of the side information and the auxiliary random variables. In, Jafar provides a unified view for both the causal and non-causal cases, and extends the results to the multiple access channel wherein independent side information at the two transmitters are assumed. Here in our study, by assuming independent on-off switching at the two transmitters, the above sufficient condition for the optimal inputs to be deterministic functions of the side information and auxiliary variables is satisfied, which lays a basis for the following proofs.
+
+[1) Proof for Theorem 1]
+As stated in and, it suffices for the optimal inputs ,  to be deterministic functions of the causal side information ,  and the auxiliary random variables , , i.e.,  and . Since , we define
+
+
+
+
+
+
+
+
+
+
+
+
+
+Note that in the switch channel, when  or  is zero,  is not influenced by
+ or  at all. Therefore, it is reasonable to assume
+
+
+
+
+
+
+That means it suffices for the optimal  to be a deterministic function of , in other words, decoding  is sufficient for decoding . On the other hand, since the information rate transmitted over a channel with causal side information is bounded by the maximal mutual information between the channel output and the auxiliary variable, it is necessary for the channel input  to carry all information  may have so as to achieve the maximal rate. Consequently, decoding  should also be sufficient for recovering information in . The above facts reveal that  and  are in fact equivalent in the sense of carrying information. Therefore, without loss of generality, the rate region of cognitive MAC channel can be formulated by replacing  and  with  and  respectively in Lemma 1.
+
+Furthermore,  is independent of  according to Shannon's coding theorem for channel with causal side information (see also Lemma 1). As a result, it suffices for the input distribution to take the form of
+
+
+
+
+
+
+
+[2) Proof for Theorem 2] We first derive the rate of
+ based on Lemma 2.
+*
+R_1 &I( U_1;Y,S_R U_2 . ) - I( U_1;S_T_1 ) 
+
+& = ^(a) I( U_1 ,X_1 ;Y,S_R  U_2 ,X_2  . ) - I( U_1 ,X_1 ;S_T_1   ) 
+
+ & = (  ) 
+
+& = ^(b) (  ) 
+
+& ^(c) I( X_1 ;Y,S_R  X_2  . ) - I( X_1 ;S_T_1   ),
+
+where 
+
+ is due to 
+.
+
+Note that from Lemma 2,  is conditioned on , that means  is still conditioned on  but can be solely determined by the variable  in the switch channel;
+
+ holds as  and  are independent, thus
+ are independent of ; 
+
+ is obtained as 
+
+ forms a Markov
+Chain, or equivalently, 
+
+, and the equality is achievable when simply setting .
+
+By symmetry we can similarly obtain 
+
+
+.
+
+For the sum rate of , from, we have
+
+ R_1  + R_2  &(  )  
+ 
+ &= ^( a ) (  ) 
+ 
+ & = (  )  
+ 
+ &= ^( b ) (  )  
+ 
+ &= ^( c ) (  )  
+
+ &^( d ) I( X_1 ,X_2 ;Y,S_R  ) - I( X_1 ;S_T_1   ) - I( X_2 ;S_T_2   ) ,
+
+where
+
+ is due to ;
+
+ and  hold as  and  are independent, thus  are independent of ;
+
+
+
+
+
+ is obtained as 
+
+
+ forms a Markov chain, so does 
+
+
+. Hence, 
+
+ also forms a Markov Chain, or equivalently, 
+
+
+. Finally, the equality in last-line-sumrate is achievable by setting  and  in 1st-line-sumrate.
+
+[3) Proof for Theorem 3]
+
+
+
+
+
+
+
+
+Since the three-switch MAC channel is a special case of the
+memoryless channel with side information, only that the side
+information here is binary, we can directly employ the result of
+Lemma 3 to complete the proof.
+
+Remarks: The assumption in Theorem 3
+requires that CH (or BS) knows the primary activities not only at
+its own side, but also near the transmitters. In practice, it may not be easy for the CH (or BS) to obtain this knowledge directly. But in some cases, with the aid of channel feedback or out-of-band signalling, it can be achieved indirectly.
+
+Outer and Inner Bounds
+Since the above capacity regions are given implicitly in mutual information, we further explore explicit outer and inner
+bounds of the capacity region with the help of additional side information for the typical Gaussian channel.
+
+We consider two kinds of additional side information at the cognitive transmitters and/or receiver, and derive the corresponding outer bounds.
+In Case 1, both the transmitters and the receiver have full
+knowledge of all side information (i.e., , , and ). In Case 2, only the receiver has full side information. For the case when only the transmitters (both) have full side information, either of  them transmits only when its own switch is on and . We assume that the receiver can infer the states of transmitters through signal detection (With the assumption that the receiver knows the codebooks of both transmitters, the receiver can distinguish when there is one or two active transmitters.), thus this case coincides with Case 1.
+Note that when the receiver also has transmitter side information, there is no differences between the causal and non-causal case. Also, arbitrary correlation among side information may be considered in these genie-aided scenarios.
+
+Outer bound for Case 1-Global Side Information
+With global side information, the transmissions occur when  and
+, which can be further categorized into three subcases.
+
+When , the MAC channel degrades
+into a point-to-point channel, in which Gaussian input is optimal. Assuming CT1's transmission power to
+be , the achievable rate region corresponding to event  is 
+
+
+
+
+
+Similarly, when , assuming
+CT2's transmission power to be , the achievable rate region corresponding to event
+ is
+
+
+
+
+
+When , the channel is the traditional
+MAC channel. Assuming the transmission power of CT1 and CT2 to be 
+ and , respectively, the achievable rate region corresponding to event  is:
+
+
+
+
+
+
+
+Taking into account the power constraints: 
+, and 
+,
+outer bounds 1 can be derived as in Theorem4.
+
+Optimal Rate/Power Allocation:
+When both the transmitters and receiver have global state
+information, we can further explore the optimal rate and power
+allocation.
+
+Without loss of generality, we may take the optimal sum rate as our objective:
+
+This is a convex optimization problem, and can
+be solved through KKT conditions.
+
+
+
+
+
+
+Substituting the constraints 
+, the
+solution is obtained as
+
+
+The corresponding optimal sum rate is given as follows.
+
+Corollary 1: The maximal sum rate is 
+
+.
+
+Outer bound for Case 2-Full Side Information at Receiver
+In Case 2, transmissions occur only when . This can be further categorized into three subcases,
+which correspond to the events ,  and  in Definition 1.
+
+When  or 
+, the MAC channel degrades into a point-to-point channel. We assume
+CT1 and CT2's transmission power to be 
+and , respectively. When , the
+achievable rate regions for event  and  are 
+
+
+
+ and 
+
+
+
+
+
+.
+
+When , the channel becomes the basic
+MAC channel. We assume the transmission power of CT1 and CT2 to be  and , respectively.  When , the achievable rate region for event  is:
+
+
+
+
+
+
+
+
+
+where the power constraints are  and 
+.
+
+Since the transmitters do not have full side information, they can
+not discriminate the three subcases and have to use the same
+transmission power, i.e. , . The transmission power is bounded as 
+ and 
+.
+
+Although transmissions occur with the probabilities of , 
+and , effective transmissions occur only when , with
+the probabilities of ,  and . Only effective
+transmissions contribute to system capacity, therefore
+outer bound 2 is derived as in Theorem5.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Inner bound
+The inner bound can not be calculated directly. However, we can
+obtain it with the help of genie information.
+Suppose a genie provides some additional information about the transmitter states to the receiver
+every channel use through a genie variable G. The basic idea of
+genie-aided lower bound is that "the improvement in capacity
+induced by the genie information G cannot exceed the entropy rate of the genie information itself".
+
+When  or ,
+the MAC channel degrades to a point-to-point channel. Employing the genie-aided bound, the inner bounds for the two subcases are 
+ and .
+
+When , it is now a MAC channel. Since for the MAC, the maximal sum rate improvement due to the availability of genie information is bounded by the amount of genie information itself, i.e., , we thus get the lower bound on sum rate , where  denotes the maximal rate pair in outer bound 2.
+
+To sum up, , , and . Thus, the overall inner bound is obtained as in Theorem 6.
+
+Remarks:
+According to Theorem 6, in event ,  and , the
+inner bounds are ,
+ and 
+ bits per channel
+use lower than the outer bounds with full side information at the receiver, respectively.
+
+The transmitters only need to send one bit notification to the receiver when there is a change of PU states. We assume that, on average, the PU activities at the transmitters change every  time slots. Then the genie
+information rate is at most  bit per time slot for each transceiver pair. Formally, the gap between outer bound 2 and inner bound is restricted as  and .
+
+Moreover, when the side information between the transmitters and receiver are highly correlated, 
+, 
+and  also converge to
+zero, and so do ,  and . Therefore, we conclude that the outer bounds and inner bound
+coincide when the states of PU signals change very slowly or the side information between the transmitters and
+receiver are highly correlated.
+
+Effect of correlation and PU occupation rate
+We take the optimized sum rate in Corollary 1 as an example, and analyze how it is influenced by two system parameters within a specific probabilistic model. We assume the PU occupation rates at both transmitters and the receiver to be the same, ; and the mutual correlation coefficient between the three states also to be the same, as . It is relatively straightforward to extend the study to the more general scenario regarding channel correlation and PU activity. According to the definition of correlation coefficient, the joint probability distribution is denoted in Table I, where ,
+,
+, and .
+The probabilities for the six events in Definition 1 can be expressed as functions of  and :
+
+
+
+
+Joint Probability Distribution under Non-fading and Fading Models 
+
+
+
+
+Combining optimal-solution and probabilities, the
+sum rate can be re-written in the forms of  and :
+
+where .
+
+We find that sumrate-mu-rho is monotonically increasing with . Moreover, since ,
+
+
+
+
+
+Thus sumrate-mu-rho is a monotonically decreasing function
+of  and monotonically increasing function of . The
+insights here are that the sum rate increases when the PU is less
+active and when the correlation among the side information is
+stronger.
+
+Extension to Interference and Fading model
+We first consider a natural extension of cogMAC, in which the secondary receiver keeps on all the time. It is reasonable as the receiving process will not cause interference to the PU system. Our intention is to examine how much gain we can obtain by allowing the secondary receiver to remain receiving even in the presence of PU interference. Thus the received signal falls in one of the following two categories:
+
+where  denotes the PU interference plus noise, which is modeled as a Gaussian variable with variance . ,  and  are defined the same as in the three-switch model cogMAC.
+
+Following the same line in Corollary 1 (Section IV.C), the maximal sum rate for
+cognitive MAC channel with interference is obtained after solving the convex optimization problem:
+
+where 
+ and 
+ are the probabilities with and without PU interference at the receiver, respectively.
+ is the power spent when , and 
+ is the power spent when , both of which are
+under the average power constraints. It can be shown that the
+above maximum is achieved when
+
+
+From max-solution-fading, we observe that when , the sum-rate optimal strategy is to avoid transmission when PU is active, and this is identical to the three-switch model. Also as expected, it suggests that when  is large or  is small, performance gain through decoding in the presence of PU would be very limited. Numerical results in Section V validate our analysis, where marginal performance improvement is observed even when  is not large.
+
+We continue to include channel fading into consideration, and explore the following model
+
+where  and  are the channel gains between the cognitive transmitters and receiver.
+
+By letting  and , the channel model can be normalized as 
+.
+
+Define  as the normalized
+channel gain vector and consider all fading possibilities, whose cdf and pdf are denoted by  and , respectively. The
+achievable rate region of the cognitive MAC fading channel can be expressed as:
+
+where 
+
+is the set of all possible power allocation schemes within the power constraints.
+
+Now, we discuss the optimal rate/power allocation under
+fading and interference when the PU states and channel gains are
+known to both the transmitters and receiver. According to
+, when global state information is available, the maximum sum rate  can be optimized over all possible power allocation schemes. The solution has the form of:
+
+P_1^*( h, ) =   .
+
+P_2^*( h, ) =   .
+
+where the constant vector 
+ is determined by the following average
+power constraints:
+*
+_0^( 12_1 - 1h )^ + F_1( _1_2h )f_1( h ) dh P_1,
+
+_0^( 12_2 - 1h )^ + F_2( _2_1h )f_2( h ) dh P_2.
+
+
+Remarks: From power-allocation-D.Tse, we can see that for the on/off cognitive MAC channel with PU interference and fading, the optimal rate/power allocation is given by the generalized time-domain water-filling, which is performed on the generalized parameters  and , taking into account the factors of the PU states and PU interference.
+
+When  and  are identically distributed,  by symmetry.
+An observation from power-allocation-D.Tse is
+that when the channel gain of one SU transmitter is worse than
+another, the transmission will be turned off to save power. In other
+words, the two SU transmitters will transmit simultaneously with
+equal power only when their channel gains are the same. Therefore,
+the cognitive MAC channel with fading and interference can be
+further simplified into the following model:
+
+where 
+
+
+ and 
+
+
+ are the generalized binary transmitter side information,  and  are the generalized noise and interference. Note that FadingModelSimplified has the same form as InterferenceModel, so similar methods can be employed to obtain the maximum sum rate.
+
+Extension to the m-user Case
+Throughout this paper, we focus on the three-switch channel where we only consider two transmitters. However, the results and analysis
+can be generalized to the -user case. The extension is omitted here due to space limitation. The reader is referred to
+ for the details.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Numerical Results
+
+Outer and Inner Bounds
+To plot the outer and inner bounds, we travel through all possible
+power pairs which satisfy the power constraints, and compute the corresponding
+rate pairs. As for the inner bound, we calculate the gap between outer bound 2 and
+inner bound and subtract it from outer bound 2.
+
+Fig.  to Fig.  show the outer bound 1,
+2 and the inner bound under different PU occupation rates
+ and PU states correlation coefficients . The parameters
+are , , 
+and  for the four figures, respectively. All
+four cases are under the power constraints of  and 
+. Based on these parameters, we calculate  to 
+according to probabilities, and obtain the bounds.
+We also plot the sum rate of outer bound 1 with
+respect to PU occupation rate  and correlation coefficient
+ on Fig.  to Fig. , in which
+the sum rate corresponds to the corner points in Fig. 
+to Fig. .
+
+ 
+
+Capacity region bounds when  
+
+
+
+ 
+
+Capacity region bounds when 
+
+
+
+ 
+
+Capacity region bounds when  
+
+
+
+ 
+
+Capacity region bounds when 
+
+
+
+ 
+
+Effect of PU activities on sum rate 
+
+
+ 
+
+Effect of side information's correlation on sum rate
+
+
+
+
+The insights obtained from these results are summarized below.
+
+Correlation coefficient : By comparing Fig.  with
+Fig. , and Fig.  with Fig. , we
+find gaps between the outer and inner bounds become closer as 
+grows. On the one hand, outer bound 2 approaches outer bound 1 as  grows, as the transmitters in Case 2
+gradually have global side information, and Case 2 evolves to
+Case 1. On the other hand, inner bound
+approaches outer bound 2 because 
+ decreases as  grows.
+In addition, Fig.  also demonstrates that the
+maximal sum rate increases with , which indicates more
+correlation improves the overall performance.
+
+PU occupation rate : By comparing Fig.  with
+Fig. , and Fig.  with Fig. , we
+observe that as  decreases, the overall
+system throughput grows. This is further verified in Fig. . When , the PUs keep silent, and the
+cognitive MAC rate region evolves to the traditional MAC rate region. When , the spectrum is always occupied by PUs, the
+cognitive MAC rate degrades to zero.
+
+State changing rate: Fig.  to Fig.  show that, the
+inner bound are closer to the outer bounds when the  increases.
+This indicates that, in the case where the PU states change
+slowly, the inner bound approaches outer bound 2.
+
+Transmitter Side information: Compared with Case 1, the transmitters in
+Case 2 lack global side information. Hence, the big gap
+between outer bound 1 and 2 implies the importance of the transmitter side information. Moreover, this gap is larger in Fig.  than in Fig. , which indicates that the transmitter side information is more valuable in busy channels.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Optimized Sum Rate in Interference Model
+We now provide numerical results for the cognitive MAC channel when the receiver is exposed to PU interference (c.f. InterferenceModel), which is discussed in Section VI.E. The joint probabilities are shown in Table I. In addition, we assume that the power constraints are  and . The maximal sum rates with respect to the PU interference power , PU occupation rate  and the correlation coefficient  are plotted in Fig.  and Fig. , which are computed according to probabilities, max-sumrate-fading, and max-solution-fading.
+
+Suppose that the receiver employs an energy detector with a threshold 2W, through which it determines if a PU is present. Fig.  shows that the advantage of keeping the receiver always on (and decoding) over the original three-switch model is significant only for small  values and when  is large (i.e., the PU is active). Of course, the performance of model InterferenceModel is no worse than that of cogMAC concerning the optimal sum rate, due to the optimal rate/power allocation, which essentially turns off transmission in the face of severe interference.
+
+ 
+
+Sum rate in interference model v.s. 
+
+
+
+ 
+
+Sum rate in interference model v.s. 
+
+
+
+
+In Fig. ,  is selected as W, W and W and the following two insights on the additional benefit brought by allowing the secondary receiver to
+remain receiving even in the presence of PU interference are further confirmed.
+
+It is rewarding to turn on the receiver's switch only when the PUs are very active: when  is large, the additional time period that the receiver can decode is longer, which results in more benefit. As seen, the additional benefit is obvious only when .
+More opportunities can be exploited under lower correlation among PU states: this is due to the fact that when  is large, the transmitters are likely to keep silent when the receiver is under PU interference.
+
+
+Conclusion
+In this paper, the cognitive MAC channel is modeled as a three-switch channel, and the achievable rate regions are obtained when viewing PU activities as causal/non-causal on/off side information. The closed form outer and inner bounds are derived, which are shown to be tight under some special cases. A rate allocation scheme is also proposed to maximize the sum rate with global side information, and the effect of correlation in side information and PU activities is analyzed. The extension to the fading scenario and general -user case is discussed. The numerical results show the importance of transmitter side information in enhancing the capacity and the effectiveness of our rate allocation scheme.
+
+
+
+
+
+
+
+unsrt
+100
+
+
+M. A. McHenry, "NSF spectrum occupancy measurements project summary," Shared Spectrum Company Report, Aug. 2005.
+
+
+"In the matter of unlicensed operation in the TV broadcast bands:
+second report and order and memorandum opinion and order,"
+Federal Communications Commision, Tech. Rep. 08-260, Nov. 2008.
+[Online]. Available: http://hraunfoss.fcc.gov/edocspublic/attachmatch/
+FCC-08-260A1.pdf.
+
+
+
+
+
+
+
+O. Akan, O. Karli, O. Ergul, and M. Haardt, "Cognitive radio sensor networks," IEEE Network, vol. 23, no. 4, pp. 34-40 July 2009.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IEEE Std 802.22-2011(TM), Standard for Wireless Regional Area Networks-Part 22: Cognitive Wireless RAN Medium Access Control (MAC) and Physical Layer (PHY) specifications: policies and procedures for operation in the TV bands, July 2011.
+
+
+H. Zhang, Z. Zhang, H. Dai, R. Yin and X. Chen, "Distributed
+spectrum-aware clustering in cognitive radio sensor networks, in
+Proc. IEEE GlobeCom, Dec. 2011.
+
+
+H. Zhang, Z. Zhang, X. Chen and R. Yin, "Energy Efficient Joint Source and Channel Sensing in Cognitive Radio Sensor Networks," in Proc. IEEE ICC, June 2011.
+
+
+H. Zhang, Z. Zhang, Y. Chau, "Distributed compressed wideband sensing in Cognitive Radio Sensor Networks," in Proc. IEEE INFOCOM WKSHPS, April 2011.
+
+
+A. Goldsmith, S. A. Jafar, I. Maric and S. Srinivasa, "Breaking spectrum gridlock with cognitive radios: an information theoretic perspective"
+Proceedings of the IEEE, vol. 97, no. 5, pp. 894-914, May 2009.
+
+
+A. Ghasemi and E. S. Sousa, "Capacity of fading channels under
+spectrum-sharing constraints," in Proc. IEEE ICC, June 2006.
+
+
+A. Jovicic and P. Viswanath, "Cognitive radio: an
+information-theoretic perspective," IEEE Trans. Inf.
+Theory, vol. 55, no. 9, pp. 3945-3958, Sept. 2009.
+
+
+N. Devroye, P. Mitran and V. Tarokh, "Achievable rates in cognitive radio channels," IEEE Trans. Inf. Theory, vol. 52, no. 5,
+pp. 1813-1827, May 2006.
+
+
+W. Wu, S. Vishwanath, and A. Arapostathis, "Capacity of a class of
+cognitive radio channels: interference channels with degraded
+message sets," IEEE Trans. Inf. Theory, vol. 53, no. 11,
+pp. 4391-4399, Nov. 2007.
+
+
+J. Jiang and Y. Xin, "On the achievable rate regions for
+interference channels with degraded message sets," IEEE Trans. Inf. Theory, vol. 54, no. 10, pp. 4707-4712, Oct. 2008.
+
+
+
+R. Zhang, S. Cui, and Y. C. Liang, "On ergodic sum capacity of fading cognitive multiple-access and broadcast channels," IEEE Trans. Inf. Theory, vol. 55, no. 11, pp. 5161-5178, Nov. 2009.
+
+
+R. Zhang and Y. C. Liang, "Investigation on multiuser diversity in spectrum sharing based cognitive radio networks," IEEE Commun. Letters, vol. 14, no.2, pp. 133-135, Feb. 2010.
+
+
+Piyush Gupta and P. R. Kumar, "The capacity of wireless networks,"
+IEEE Trans. Inf. Theory, vol. 42, no. 2, pp. 388-404,
+March 2000.
+
+
+S. Jeon, N. Devroye, M. Vu, S. Chung, and V. Tarokh, "Cognitive
+networks achieve throughput scaling of a homogeneous network," to
+appear in IEEE Trans. Inf. Theory, vol.57, no.8, pp.5103-5115, Aug. 2011.
+
+
+C. Yin, L. Gao, and S. Cui, "Scaling laws for overlaid wireless
+networks: A cognitive radio network vs. a primary network,"
+IEEE Trans. Networking, vol. 18, no. 4, pp. 1317-1329, Aug.
+2010.
+
+
+M. Franceschetti, O. Dousse, D. Tse, and P. Thiran, "Closing the
+gap in the capacity of wireless networks via percolation theory,"
+IEEE Trans. Inf. Theory, vol. 53, no. 3, pp. 1009-1018,
+Mar. 2007.
+
+
+C. Li and H. Dai, "On the throughput scaling of cognitive radio ad
+hoc networks," IEEE INFOCOM, mini conference, Shanghai,
+China, Apr. 2011.
+
+
+L. Sun and W. Wang, "On Study of Achievable Capacity with Hybrid Relay in Cognitive Radio Networks, in Proc. IEEE GlobeCom, Nov. 2009.
+
+
+
+S. A. Jafar, "Capacity with causal and noncausal side information:
+a unified view," IEEE Trans. Inf. Theory,
+vol. 52, no. 12, pp. 5468-5474, Dec. 2006.
+
+
+S. A. Jafar and S. Srinivasa, "Capacity limits of cognitive radio
+with distributed and dynamic spectral activity," IEEE JSAC,
+vol. 25, no. 3, pp. 529-537, April 2007.
+
+
+J. Ma, G. Y. Li, and B. H. Juang, "Signal processing in cognitive
+radio," Proceedings of the IEEE, vol. 97, no. 5, pp. 805-823, May 2009.
+
+
+C. E. Shannon, "Channels with side information at the transmitter," IBM Journal of Research and Development, vol. 2, pp. 289-293, 1958.
+
+
+T. M. Cover and M. Chiang, "Duality between channel capacity and
+rate distortion with two-sided state information," IEEE
+Trans. Inf. Theory, vol. 48, no. 6, pp. 1629-1638, June 2002.
+
+
+D. Tse and S. Hanly, "Multi-access fading channels: part I: polymatroid structure, optimal resource allocation and throughput capacities", IEEE Trans. Inf. Theory, vol. 44, no. 7, pp. 2796-2815, Nov. 1998.
+
+
+H. Zhang, Z. Zhang and H. Dai, "On the Capacity Region of Cognitive Multiple Access
+over White Space Channels," Technical report, NC State University,
+Department of Electrical Engineering, 2012.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[]Huazi Zhang
+received the B.S. degree in communication engineering from Zhejiang University, Hangzhou, China, in 2008. He then began to pursue his Ph.D degree in the Department of Information Science and Electronic Engineering, Zhejiang University. He is currently a visiting Ph.D student in the Department of Electrical and Computer Engineering, NC State University, Raleigh. His research interests include multiuser information theory, cognitive radio and networked information processing in mobile ad hoc networks and sensor networks.
+
+
+[]Zhaoyang Zhang
+[M'02] received his B.Sc. and Ph.D. degrees from Zhejiang University, Hangzhou, China,
+in 1994 and 1998, respectively. He is currently a professor with the
+Department of Information Science and Electronic Engineering, Zhejiang University. He was selected into the Supporting Program for New
+Century Excellent Talents in University (NCET) by the Ministry of
+Education, China, in 2009. His current research interests are
+mainly focused on network information theory and
+advanced coding theory, network signal processing,
+cognitive radio networks and cooperative relay networks, etc., as well as their
+applications in next generation wireless communications. He has authored
+or co-authored more than 150 refereed journal and conference papers in the above areas. He is currently
+serving as an Associate Editor for the International
+Journal of Communication Systems.
+
+
+
+[]Huaiyu Dai
+[M'03, SM'09] received the B.E. and M.S. degrees in electrical engineering from Tsinghua University, Beijing, China, in 1996 and 1998, respectively, and the Ph.D. degree in electrical engineering from Princeton University, Princeton, NJ in 2002.
+
+He was with Bell Labs, Lucent Technologies, Holmdel, NJ, during summer 2000, and with ATT Labs-Research, Middletown, NJ, during summer 2001. Currently he is an Associate Professor of Electrical and Computer Engineering at NC State University, Raleigh. His research interests are in the general areas of communication systems and networks, advanced signal processing for digital communications, and communication theory and information theory. His current research focuses on networked information processing and crosslayer design in wireless networks, cognitive radio networks, wireless security, and associated information-theoretic and computation-theoretic analysis.
+
+He has served as editor of IEEE Transactions on Communications, Signal Processing, and Wireless Communications. He co-edited two special issues for EURASIP journals on distributed signal processing techniques for wireless sensor networks, and on multiuser information theory and related applications, respectively.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

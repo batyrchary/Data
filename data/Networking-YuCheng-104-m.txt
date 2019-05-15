@@ -1,0 +1,696 @@
+Appendix A: Perfect Recovery Guarantee for the Problem (eqn:pro)
+The following theorem shows the perfect recovery guarantee for the problem (eqn:pro). Appendix C provides the proof for completeness.
+
+theoremthm:perfect-recovery
+Let  be a rank  matrix with a singular value decomposition  , where  and  are the left and right singular vectors of , respectively. Similar to many related works of matrix completion, we assume that the following two assumptions are satisfied:
+enumerate
+The row and column spaces of  have coherence bounded above by a positive number .
+Max absolute value in matrix  is bounded above by  for a positive number .
+enumerate
+Suppose that  entries of  are observed with their locations sampled uniformly at random, and among the  observed entries,  randomly sampled entries are corrupted. Using the resulting partially observed matrix as the input to the problem (eqn:pro), then with a probability at least , the underlying matrix  can be perfectly recovered, given 
+enumerate
+,
+,
+,
+enumerate
+where  is a positive constant;  and  denotes the low-rank and sparsity incoherence chandrasekaran2011rank.
+theorem
+Theorem thm:perfect-recovery implies that even if some of the observed entries computed by (eqn:A) are incorrect, problem (eqn:pro) can still perfectly recover the underlying similarity matrix  if the number of observed correct entries is at least . 
+For MATL with large , this implies that only a tiny fraction of all task pairs is needed to reliably infer similarities over all task pairs.
+Moreover, the completed similarity matrix  is symmetric, due to symmetry of the  input matrix .
+This enables analysis by similarity-based clustering algorithms, such as spectral clustering.
+
+Appendix B: Proof of Low-rankness of Matrix 
+We first prove that the full similarity matrix  is of low-rank. To see this, let   be the underlying perfect clustering result, where  is the number of clusters and  is the membership vector for the -th cluster. Given , the similarity matrix  is computed as
+
+    = _i=1^k _i _i^ = _i=1^k _i
+
+where  is a rank one matrix. Using the fact that  and , we have , i.e., the rank of the similarity matrix  is upper bounded by the number of clusters. Since the number of clusters is usually small,
+the similarity matrix  should be of low rank. 
+
+Appendix C: Proof of Theorem thm:perfect-recovery
+We then prove our main theorem. First, we define several notations that are used throughout the proof. Let  be the singular value decomposition of matrix , where  and  are the left and right singular vectors of matrix , respectively. Similar to many related works of matrix completion, we assume that the following two assumptions are satisfied:
+enumerate
+A1: the row and column spaces of  have coherence bounded above by a positive number , i.e.,  and , where , , and  is the standard basis vector, and
+A2: the matrix  has a maximum entry bounded by  in absolute value for a positive number .
+enumerate
+Let  be the space spanned by the elements of the form  and , for , where  and  are arbitrary -dimensional vectors. Let  be the orthogonal complement to the space , and let  be the orthogonal projection onto the subspace  given by
+
+    _T() = _+ _ - __.
+
+
+The following proposition shows that for any matrix , it is a zero matrix if enough amount of its entries are zero.
+prop
+Let  be a set of  entries sampled uniformly at random from , and  projects matrix  onto the subset . If , where  with  and  being a positive constant, then for any  with , we have  with probability .
+prop
+proof
+According to the Theorem 3.2 incandes2010power, for any , with a probability at least , we have
+eqnarrayeqn:4
+ _T()_F - _F n^2m_T__T()_F^2 = 0
+eqnarray
+where . Since , we have . Then from (eqn:4), we have  and thus .
+proof
+
+In the following, we will develop a theorem for the dual certificate that guarantees the unique optimal solution to the following optimization problem
+eqnarrayeqn:pro_appendix
+&_,  & _* + _1
+ eqn:B_app
+& s.t.& _(+)  =  _(). eqnarray
+thmthm:1
+Suppose we observe  entries of  with locations sampled uniformly at random, denoted by . We further assume that  entries randomly sampled from  observed entries are corrupted, denoted by . Suppose that  and the number of observed correct entries . Then, for any , with a probability at least , the underlying true matrices  is the unique optimizer of (eqn:pro_appendix) if both assumptions A1 and A2 are satisfied and there exists a dual  such that (a) , (b) , (c) , (d) , and (e) .
+thm
+proof
+First, the existence of  satisfying the conditions (a) to (e) ensures that  is an optimal solution. We only need to show its uniqueness and we prove it by contradiction. Assume there exists another optimal solution , where . Then we have
+eqnarray*
++__* + +__1 & & _* +_1 +  _, _+ _, _eqnarray*
+where  and  satisfying , ,  and . As a result, we have
+eqnarray*
+& & +__1 + +__* 
+
+& & _1 + _* + + _^c(_) - _^c(), _+ + _T^(_) - _T^(), _
+
+& = & _1 + _*  + , _+ _+ _^c(_) - _^c(), _+ _T^(_) - _T^(), _
+
+& = & _1 + _*  + _^c(_) - _^c(), _^c(_) + _T^(_) - _T^(), _T^(_) eqnarray*
+
+We then choose  and  to be such that  and . We thus have
+eqnarray*
+& & +__1 + +__*
+
+& &_1 + _*  + (- _^c()_) _^c(_)_1 + (1 - _T^())_T^(_)_*
+eqnarray*
+Since  is also an optimal solution, we have , leading to , or . Since , we have , where  and . Hence, , where . Since , according to Proposition 1, we have, with a probability , . Besides, since  and , we have . Since , we have , which leads to the contradiction.
+proof
+
+Given Theorem thm:1, we are now ready to prove Theorem 3.1.
+proof
+The key to the proof is to construct the matrix  that satisfies the conditions (a)-(e) specified in Theorem thm:1. First, according to Theorem thm:1, when , with a probability at least , mapping  is an one to one mapping and therefore its inverse mapping, denoted by  is well defined. Similar to the proof of Theorem 2 in chandrasekaran2011rank, we construct the dual certificate  as follows
+
+    =  () + _ + __T(_T__T)^-1(^ + _T)
+
+where  and . We further define
+eqnarray*
+& = & __T(_T__T)^-1(^) 
+
+& = & __T(_T__T)^-1(_T)
+eqnarray*
+Evidently, we have  since , and therefore the condition (a) is satisfied. To satisfy the conditions (b)-(e), we need
+eqnarray
+_T() = ^ & & _T = -_T( () + _) eqn:c1
+
+_T^() < 1 & & ()(+ __) + _T^() + _T^() < 1eqn:c2 
+
+_() =  () & & _ = - _(+ ) eqn:c3 
+
+_^c()_ < & & ()(1 + _T) < eqn:c4
+eqnarray
+Below, we will first show that there exist solutions  and  that satisfy conditions (eqn:c1) and (eqn:c3). We will then bound , , , and  to show that with sufficiently small  and , and appropriately chosen , conditions (eqn:c2) and (eqn:c4) can be satisfied as well.
+
+First, we show the existence of  and  that obey the relationships in (eqn:c1) and (eqn:c3). It is equivalent to show that there exists  that satisfies the following relation
+
+_T = -_T( ()) + _T_() + _T__T(_T__T)^-1(_T)
+
+or
+
+_T__T(_T__T)^-1(_T) = -_T( ()) + _T_(),
+
+where  indicates the complement set of set  in  and  denotes its cardinality. Similar to the previous argument, when , with a probability ,  is an one to one mapping, and therefore  is well defined. Using this result, we have the following solution to the above equation
+eqnarray*
+_T & = & _T__T(_T__T)^-1(-_T( ()) + _T_() )
+eqnarray*
+
+We now bound  and . Since , we bound  instead. First, according to Corollary 3.5 in candes2010power, when , with a probability , for any , we have
+
+    _T^__T(_T__T)^-1()_F _F.
+
+Using this result, we have
+eqnarray*
+    __ & & ()( + ) 
+
+    & & ()(1 + _T^()_F + _T + _T^()_F) 
+
+    & & ()(2 + _T + _T_F) 
+
+    & & ()[2 + (2k+1)_T]
+eqnarray*
+In the last step, we use the fact that  if . We then proceed to bound  as follows
+eqnarray*
+_T & & ()(+ __)
+eqnarray*
+Combining the above two inequalities together, we have
+eqnarray*
+_T & & ()()(2k + 1)_T + 2()() + () 
+
+__ & & ()[2 + (2k+1)()(+ __),
+eqnarray*
+which lead to
+eqnarray*
+_T & & () + 2()()1 - (2k+1)()() 
+
+__ & & 2() + (2k+1)()()1 - (2k+1)()()
+eqnarray*
+Using the bound for  and , we now check the condition (eqn:c2)
+eqnarray*
+1 & > & ()(+ __) + 12 + k2_T
+eqnarray*
+or
+
+< 1 - ()()(4k + 5)()(k+2)
+
+For the condition (eqn:c4), we have
+
+    > () + ()_T
+
+or
+
+    > () - (2k - 1)^2()()1 - 2(k+1)()()
+
+To ensure that there exists  satisfies the above two conditions, we have
+
+1 - 5(k+1)()() + (10k^2+21k+8)[(X)()]^2 > 0
+
+and
+
+1 - ()()(4k + 5) 0
+
+Since the first condition is guaranteed to be satisfied for , we have
+
+    ()() 14k + 5.
+
+Thus we finish the proof.
+proof
+
+
+Appendix D: Data Statistics
+We listed the detailed domains of the sentiment analysis tasks in Table tab:sa_data. We removed the musicalinstruments and toolshardware domains from the original data because they have too few labeled examples. The statistics for the 10 target tasks of intent classification in Table tab:nlu_data.
+
+table*[th]
+
+
+tabularcccc
+Domains & train &validation  & test  
+ apparel & 7398 & 926 & 928 
+
+automotive & 601 & 69 & 66 
+
+baby & 3405 & 437 & 414 
+
+beauty & 2305 & 280 & 299 
+
+books & 19913 & 2436 & 2489 
+
+cameraphoto & 5915 & 744 & 749 
+
+cellphonesservice & 816 & 109 & 98 
+
+computervideogames & 2201 & 274 & 296 
+
+dvd & 19961 & 2624 & 2412 
+
+electronics & 18431 & 2304 & 2274 
+
+gourmetfood & 1227 & 182 & 166 
+
+grocery & 2101 & 268 & 263 
+
+healthpersonalcare & 5826 & 687 & 712 
+
+jewelrywatches & 1597 & 188 & 196 
+
+kitchenhousewares & 15888 & 1978 & 1990 
+
+magazines & 3341 & 427 & 421 
+
+music & 20103 & 2463 & 2510 
+
+officeproducts & 337 & 54 & 40 
+
+outdoorliving & 1321 & 143 & 135 
+
+software & 1934 & 254 & 202 
+
+sportsoutdoors & 4582 & 566 & 580 
+
+toysgames & 10634 & 1267 & 1246 
+
+video & 19941 & 2519 & 2539 
+
+tabular
+Statistics of the Multi-Domain Sentiment Classification Data.tab:sa_data
+
+table*
+
+table*[th]
+
+
+tabularccc
+Dataset ID & labeled instances &labels   
+ 1	&	497	&	11	
+
+2	&	3071	&	14	
+
+3	&	305	&	21	
+
+4	&	122	&	7	
+
+5	&	110	&	11	
+
+6	&	126	&	12	
+
+7	&	218	&	45	
+
+8	&	297	&	10	
+
+9	&	424	&	4	
+
+10	&	110	&	17	
+
+tabular
+Statistics of the User Intent Classification Data.tab:nlu_data
+
+table*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+theoremTheorem[section]
+thmTheorem
+propProposition
+lemmaLemma
+cor[thm]Corollary
+definition[thm]Definition
+
+
+
+
+
+
+
+
+
+
+
+M
+B
+x
+H
+R
+w
+
+sgn
+a
+u
+
+
+E
+C
+
+
+y
+A
+q
+p
+x
+H_()
+y
+H__i
+f
+
+f
+x
+S
+X
+Q
+Z
+x
+D
+Y
+P
+u
+v
+e
+U
+V
+S
+X
+Q
+Z
+U
+N
+F
+V
+P
+Y
+B
+H
+E
+A
+x
+D
+
+supp
+L
+w
+D
+K
+
+A
+B
+v
+e
+M
+rank
+
+RobustTC
+
+
+Diverse Few-Shot Text Classification with Multiple Metrics
+
+
+ Mo YuEqual contributions from the corresponding authors: yum@us.ibm.com, xiaoxiao.guo@ibm.com, jinfengy@us.ibm.com.    Xiaoxiao GuoJinfeng YiShiyu Chang 
+ 
+ Saloni PotdarYu Cheng Gerald TesauroHaoyu WangBowen Zhou
+
+ 
+
+AI Foundations - Learning,  IBM Research
+
+IBM T. J. Watson Research Center, Yorktown Heights, NY 10598
+
+
+
+
+
+
+We study few-shot learning in natural language domains. Compared to many existing works that apply either metric-based or optimization-based meta-learning to image domain with low inter-task variance, we consider a more realistic setting, where tasks are diverse.  However, it imposes tremendous difficulties to existing state-of-the-art metric-based algorithms since a single metric is insufficient to capture complex task variations in natural language domain.   To alleviate the problem, we propose an adaptive metric learning approach that automatically determines the best weighted combination from a set of metrics obtained from meta-training tasks for a newly seen few-shot task.   Extensive quantitative evaluations on real-world sentiment analysis and dialog intent classification datasets demonstrate that the proposed method performs favorably against state-of-the-art few shot learning algorithms in terms of predictive accuracy. 
+We make our code and data available for further study.(https://github.com/Gorov/DiverseFewShot_Amazon)
+
+Introduction
+
+Few-shot learning (FSL)  aims to learn classifiers from few examples per class.  Recently, deep learning has been successfully exploited for FSL via learning meta-models from a large number of meta-training tasks.  These meta-models can be then used for rapid-adaptation for the target/meta-testing tasks that only have few training examples.  Examples of such meta-models include: (1) metric-/similarity-based models, which learn contextual, and task-specific similarity measures ; and (2) optimization-based models, which receive the input of gradients from a FSL task and predict either model parameters or parameter updates ravi2017optimization,munkhdalai2017meta,finn2017model,NIPS2017_7278. 
+
+In the past, FSL has mainly considered image domains, where all tasks are often sampled from one huge collection of data, such as Omniglot lake2011one and ImageNet vinyals2016matching, making tasks come from a single domain thus related.  Due to such a simplified setting, almost all previous works employ a common meta-model (metric-/optimization-based) for all few-shot tasks. However, this setting is far from the realistic scenarios in many real-world applications of few-shot text classification.  For example, on an enterprise AI cloud service, many clients submit various tasks to train text classification models for business-specific purposes. The tasks could be classifying customers' comments or opinions on different products/services, monitoring public reactions to different policy changes, or determining users' intents in different types of personal assistant services. As most of the clients cannot collect enough data, their submitted tasks form a few-shot setting. Also, these tasks are significantly diverse, thus a common metric is insufficient to handle all these tasks.
+
+We consider a more realistic FSL setting where tasks are diverse.  In such a scenario, the optimal meta-model may vary across tasks.  Our solution is based on the metric-learning approach and the key idea is to maintain multiple metrics for FSL.  The meta-learner selects and combines multiple metrics for learning the target task using task clustering on the meta-training tasks. During the meta-training, we propose to first partition the meta-training tasks into clusters, making the tasks in each cluster likely to be related.  Then within each cluster, we train a deep embedding function as the metric.  This ensures the common metric is only shared across tasks within the same cluster.  Further, during meta-testing, each target FSL task is assigned to a task-specific metric, which is a linear combination of the metrics defined by different clusters.  In this way, the diverse few-shot tasks can derive different metrics from the previous learning experience.
+
+The key of the proposed FSL framework is the task clustering algorithm. Previous works kumar2012learning,kang2011learning,crammer2012learning,barzilai2015convex mainly focused on convex objectives, and assumed the number of classes is the same across different tasks (e.g. binary classification is often considered). To make task clustering (i) compatible with deep networks and (ii) able to handle tasks with a various number of labels, we propose a matrix-completion based task clustering algorithm.   The algorithm utilizes task similarity measured by cross-task transfer performance, denoted by matrix .  The -entry of  is the estimated accuracy by adapting the learned representations on the -th (source) task to the -th (target) task. We rely on matrix completion to deal with missing and unreliable entries in  and finally apply spectral clustering to generate the task partitions.
+
+To the best of our knowledge, our work is the first one addressing the diverse few-shot learning problem and reporting results on real-world few-shot text classification problems.  The experimental results show that the proposed algorithm provides significant gains on few-shot sentiment classification and dialog intent classification tasks.  It provides positive feedback on the idea of using multiple meta-models (metrics) to handle diverse FSL tasks, as well as the proposed task clustering algorithm on automatically detecting related tasks.
+
+*[ht]
+The Convolutional Neural Networks (CNN) used in this work: (a) A CNN classifier. The encoder component takes the sentence as input and outputs a fixed-length sentence embedding vector; the classifier component predicts class labels with the sentence embedding. (b) A Matching Network, which only contains an encoder like in (a), and makes prediction via a k-Nearest-Neighbor classifier with the similarity defined by the encoder.
+
+
+Problem Definition
+
+Few-Shot Learning
+Since we focus on diverse metric-based FSL, the problem can be formulated in two stages:
+(1) meta-training, where a set of metrics  is learned on the meta-training tasks .  Each  maps two input  to a scalar of similarity score. Here  is a collection of  tasks. 
+Here  is a pre-defined number (usually ).
+Each task  consists of training, validation, and testing set denoted as , respectively.  Note that the definition of  is a generalized version of  in, since each task  can be either few-shot (where  is empty) or regular(For example, the methods in can be viewed as training meta-models from any sampled batches from one single meta-training dataset.).
+(2) meta-testing: the trained metrics in  is applied to meta-testing tasks denoted as , where each  is a few-shot learning task consisting of both training and testing data as .   is a small labeled set for generating the prediction model  for each . Specifically, s are kNN-based predictors built upon the metrics in . We will detail the construction of  in Section , Eq. ().  It is worth mentioning that the definition of  is the same as  in.  The performance of few-shot learning is the macro-average of 's accuracy on all the testing set s.
+
+Our definitions can be easily generalized to other meta-learning approaches.
+The motivation of employing multiple metrics is that when the tasks are diverse, one metric model may not be sufficient.  Note that previous metric-based FSL methods can be viewed as a special case of our definition where  only contains a single , as shown in the two base model examples below.
+
+Base Model: Matching Networks
+In this paper we use the metric-based model Matching Network (MNet)  as the base metric model.
+The model (Figure b) consists of a neural network as the embedding function (encoder) and an augmented memory. The encoder, , maps an input  to a -length vector. The learned metric  is thus the similarity between the encoded vectors, , i.e. the metric  is modeled by the encoder . The augmented memory stores a support set , where  is the supporting instance and  is its corresponding label in a one-hot format. The MNet explicitly defines a classifier  conditioned on the supporting set . For any new data ,  predicts its label via a similarity function  between the test instance  and the support set :
+
+y = P(.x, S) = _i=1^S (x, x_i;) y_i,
+where we defined  to be a softmax distribution given , where  is a supporting instance, i.e., , where  are the parameters of the encoder . Thus,  is a valid distribution over the supporting set's labels . To adapt the MNet to text classification, we choose encoder  to be a convolutional neural network (CNN) following  .
+Figure  shows the MNet with the CNN architecture. 
+Following, the model consists of a convolution layer and a max-pooling operation over the entire sentence. 
+
+To train the MNets, we first sample the training dataset  for task  from all tasks , with notation simplified as . For each class in the sampled dataset , we sample  random instances in that class to construct a support set , and sample a batch of training instances  as training examples, i.e., .  The training objective is to minimize the prediction error of the training samples given the supporting set (with regard to the encoder parameters ) as follows: 
+
+
+Base Model: Prototypical Networks
+Prototypical Network (ProtoNet) snell2017prototypical is a variation of Matching Network, which also depends on metric learning but builds the classifier  different from Eq. ():
+
+ is the number of classes and  is the support set of class .
+.
+
+
+*[ht]
+
+Overview of the idea of our multi-metric learning approach for few-shot learning. (a) an illustration of the sparse cross-tasks transfer-performance matrix with unobserved entries (white blocks) and unreliable values (top-right and bottom-left corners), where red colors indicate positive transfer and blue colors indicate negative transfer; 
+(b) the constructed binary partially-observed matrix with low-rank constraint for matrix completion and clustering (see Section  for the details); (c) an encoder trained with the matching network objective Eq. () on a task cluster (tasks 1, 2 and 3 in the example).
+
+
+Methodology
+
+We propose a task-clustering framework to address the diverse few-shot learning problem stated in Section . We have the FSL algorithm summarized in Algorithm . 
+Figure  gives an overview of our idea.
+The initial step of the algorithm is a novel task clustering algorithm based on matrix completion, which is described in Section . The few-shot learning method based on task clustering is then introduced in Section .
+
+
+Robust Task Clustering by Matrix Completion
+
+Our task clustering algorithm is shown in Algorithm . The algorithm first evaluates the transfer performance by applying a single-task model  to another task  (Section ), which will result in a (partially observed) cross-task transfer performance matrix .
+The matrix  is then cleaned and completed, giving a symmetry task similarity matrix  for spectral clustering.
+
+Estimation of Cross-Task Transfer Performance
+
+Using single-task models, we can compute performance scores  by adapting each  to each task . This forms an 
+ pair-wise classification performance matrix ,
+called the transfer-performance matrix.
+Note that  is asymmetric since usually .
+
+[ht]
+
+InputInput
+OutputOutput
+
+  meta-training tasks =; number of clusters ;  target few-shot meta-testing tasks 
+ Meta-model ,  . One classifier  for each target task .
+  Robust Task Clustering:  = (,) (Algorithm ) 
+ Cluster-Model Training: Train one encoder (multi-task MNet)  on each task cluster  (Section )
+ Few-Shot Learning on Cluster-models: Train a model  on task  with the method in Section .
+ Task Clustering for Few-Shot Learning
+
+Ideally, the transfer performance could be estimated by training a MNet on task  and directly evaluating it on task . However, the limited training data usually lead to generally low transfer performance of single-task MNet.
+As a result we adopt the following approach to estimate :
+
+We train a CNN classifier (Figure (a)) on task , then take only the encoder  from  and freeze it to train a classifier on task .
+This gives us a new task  model, and we test this model on  to get the accuracy as the transfer-performance .
+The score shows how the representations learned on task  can be adapted to task , thus indicating the similarity between tasks.
+
+Remark: Out-of-Vocabulary Problem
+In text classification tasks, transferring an encoder with fine-tuned word embeddings from one task to another is difficult as there can be a significant difference between the two vocabularies. Hence, while learning the single-task CNN classifiers, we always make the word embeddings fixed.
+
+[t]
+
+InputInput
+OutputOutput
+ A set of  tasks , number of task clusters 
+  task clusters 
+  Learning of Single-Task Models: train single-task models  for each task 
+ Evaluation of Transfer-Performance Matrix: get performance matrix  (Section )
+ Score Filtering: Filter the uncertain scores in  and construct the symmetric matrix  using Eq. ()
+ Matrix Completion: Complete the similar matrix  from  using Eq. () 
+ Task Clustering: =SpectralClustering
+ : Robust Task Clustering based on Matrix Completion
+
+Task Clustering Method
+
+Directly using the transfer performance for task clustering may suffer from both efficiency and accuracy issues. First, evaluation of all entries in the matrix  involves conducting the source-target transfer learning  times, where  is the number of meta-training tasks. For a large number of diverse tasks where the  can be larger than 1,000, evaluation of the full matrix is unacceptable (over 1M entries to evaluate). Second, the estimated cross-task performance (i.e. some  or  scores) is often unreliable due to small data size or label noise. When the number of the uncertain values is large, they can collectively mislead the clustering algorithm to output an incorrect task-partition. 
+To address the aforementioned challenges, we propose a novel task clustering algorithm based on the theory of matrix completion candes2010power. 
+Specifically, we deal with the huge number of entries by randomly sample task pairs to evaluate the  and  scores. Besides, we deal with the unreliable entries and asymmetry issue by keeping only task pairs  with consistent  and  scores.
+as will be introduced in Eq. ().
+Below, we describe our method in detail. 
+
+Score Filtering
+First, we use only reliable task pairs to generate a partially-observed similarity matrix . Specifically, if  and  are high enough,  
+then it is likely that tasks  belong to a same cluster and share significant information. Conversely, if
+ and  are low enough, 
+then they tend to belong to different clusters. To this end, we need to design a mechanism to determine if a performance is high or low enough. Since different tasks may vary in difficulty, a fixed threshold is not suitable.
+Hence, we define a dynamic threshold using the mean and standard deviation of the target task performance, i.e.,  and , where  is the -th column of
+. We then introduce two positive parameters  and , and define high and low performance as  greater than  or lower than , respectively. When both  and  are high and low enough, we set their pairwise similarity as  and , respectively. Other task pairs are treated as uncertain task pairs and are marked as unobserved, and don't influence our clustering method.
+This leads to a partially-observed symmetric matrix , i.e., 
+
+
+Matrix Completion
+Given the partially observed matrix , we then reconstruct the full similarity matrix .
+We first note that the similarity matrix  should be of low-rank (proof deferred to appendix). 
+Additionally, since the observed entries of  are generated based on high and low enough performance, it is safe to assume that most observed entries are correct and only a few may be incorrect. Therefore, we introduce a sparse matrix  to capture the observed incorrect entries in . Combining the two observations,  can be decomposed into the sum of two matrices  and , where  is a low rank matrix storing similarities between task pairs, and  is a sparse matrix that captures the errors in .  The matrix completion problem can be cast as the following convex optimization problem:
+
+where  denotes the matrix nuclear norm, the convex surrogate of rank function.  is the set of observed entries in , and  is a matrix projection operator defined as
+
+
+Finally, we apply spectral clustering on the matrix  to get the task clusters.
+
+Remark: Sample Efficiency
+In the Appendix A, we show a Theorem  as well as its proof, implying that under mild conditions, the problem () can perfectly recover the underlying similarity matrix  if the number of observed correct entries is at least .
+This theoretical guarantee implies that for a large number  of training tasks, only a tiny fraction of all task pairs is needed to reliably infer similarities over all task pairs.
+
+
+
+Few-Shot Learning with Task Clusters
+
+Training Cluster Encoders
+
+
+For each cluster , we train a multi-task MNet model (Figure (b)) with all tasks in that cluster to encourage parameter sharing. 
+The result, denoted as  is called the cluster-encoder of cluster . The -th metric of the cluster is thus .
+
+Adapting Multiple Metrics for Few-Shot Learning
+
+To build a predictor  with access to only a limited number of training samples, we make the prediction probability by linearly combining prediction from learned cluster-encoders:
+
+p(yx) = _k _k P(yx; f_k).
+where  is the learned (and frozen) encoder of the -th cluster,  are adaptable parameters trained with few-shot training examples. 
+And the predictor  from each cluster is 
+
+ is the corresponding training sample of label . 
+
+Remark: Joint Method versus Pipeline Method
+End-to-end joint optimization on training data becomes a popular methodology for deep learning systems, but it is not directly applicable to diverse FSL. One main reason is that deep networks could easily fit any task partitions if we optimize on training loss only, making the learned metrics not generalize, as discussed in Section .
+As a result, this work adopts a pipeline training approach and employing validation sets for task clustering. Combining reinforcement learning with meta-learning could be a potential solution to enable an end-to-end training for future work.
+
+Tasks and Data Sets
+
+We test our methods by conducting experiments on two text classification data sets. We used NLTK toolkit(http://www.nltk.org/) for tokenization. The task are divided into meta-training tasks and meta-testing tasks (target tasks), where the meta-training tasks are used for clustering and cluster-encoder training. The meta-testing tasks are few-shot tasks, which are used for evaluating the method in Eq. ().
+
+Amazon Review Sentiment Classification
+First, following, we construct multiple tasks with the multi-domain sentiment classification blitzer2007biographies data set. 
+The dataset consists of Amazon product reviews for 23 types of products (see Appendix D for the details).
+For each product domain, we construct three binary classification tasks with different thresholds on the ratings: the tasks consider a review as positive if it belongs to one of the following buckets  stars,  stars or  stars.(Data downloaded from http://www.cs.jhu.edu/ mdredze/datasets/sentiment/, in which the 3-star samples were unavailable due to their ambiguous nature.)
+These buckets then form the basis of the task-setup, giving us 23  369 tasks in total. For each domain we distribute the reviews uniformly to the 3 tasks.
+For evaluation, we select 12 (43) tasks from 4 domains (Books, DVD, Electronics, Kitchen) as the meta-testing (target) tasks out of all 23 domains. For the target tasks, we create 5-shot learning problems. 
+
+Real-World Tasks: User Intent Classification for Dialog System
+The second dataset is from an online service which trains and serves intent classification models to various clients. The dataset comprises recorded conversations between human users and dialog systems in various domains, ranging from personal assistant to complex service-ordering or customer-service request scenarios. During classification, intent-labels(In conversational dialog systems, intent-labels are used to guide the dialog-flow.) are assigned to user utterances (sentences). We use a total of 175 tasks from different clients, and randomly sample 10 tasks from them as our target tasks. For each meta-training task, we randomly sample 64 data into a training set, 16 into a validation set, and use the rest as the test set.
+The number of labels for these tasks varies a lot (from 2 to 100, see Appendix D for details), making regular -shot settings not essentially limited-resource problems (e.g., 5-shot on 100 classes will give a good amount of 500 training instances). 
+Hence, to adapt this to a FSL scenario, for target tasks we keep one example for each label (one-shot), plus 20 randomly picked labeled examples to create the training data. We believe this is a fairly realistic estimate of labeled examples one client could provide easily. 
+
+Remark: Evaluation of the Robustness of Algorithm  Our matrix-completion method could handle a large number of tasks via task-pair sampling. However, the sizes of tasks in the above two few-shot learning datasets are not too huge, so evaluation of the whole task-similarity matrix is still tractable. In our experiments, the incomplete matrices mainly come from the score-filtering step (see Eq. ). Thus there is limited randomness involved in the generation of task clusters.
+
+To strengthen the conclusion, we evaluate our algorithm on an additional dataset with a much larger number of tasks. The results are reported in the multi-task learning setting instead of the few-shot learning setting focused in this paper. Therefore we put the results to a non-archive version of this paper(https://arxiv.org/pdf/1708.07918.pdf)  for further reference.
+
+Experiments
+
+Experiment Setup
+
+Baselines 
+We compare our method to the following baselines:
+(1) Single-task CNN: training a CNN model for each task individually; (2) Single-task FastText: training one FastText model joulin2016bag with fixed embeddings for each individual task; 
+(3) Fine-tuned the holistic MTL-CNN: a standard transfer-learning approach, which trains one MTL-CNN model on all the training tasks offline, then fine-tunes the classifier layer (i.e.  Figure (a)) on each target task; (4) Matching Network: a metric-learning based few-shot learning model trained on all training tasks;
+(5) Prototypical Network: a variation of matching network with different prediction function as Eq. ;
+(6) Convex combining all single-task models: 
+training one CNN classifier on each meta-training task individually and taking the encoder,
+then for each target task training a linear combination of all the above single-task encoders with Eq. ().
+This baseline can be viewed as a variation of our method without task clustering.
+We initialize all models with pre-trained 100-dim Glove embeddings (trained on 6B corpus) pennington2014glove.
+
+*[ht]
+
+Accuracy of FSL on sentiment classification (Sentiment) and dialog intent classification (Intent) tasks. The target tasks of sentiment classification are 5-shot ones; and each intent target task contains one training example per class and 20 random labeled examples.
+
+
+Hyper-Parameter Tuning
+In all experiments, we set both  and  parameters in () to .
+This strikes a balance between obtaining enough observed entries in , and ensuring that most of the retained similarities are consistent with the cluster membership.
+The window/hidden-layer sizes of CNN and the initialization of embeddings (random or pre-trained) are tuned during the cluster-encoder training phase, with the validation sets of meta-training tasks. 
+We have the CNN with window size of 5 and 200 hidden units. The single-metric FSL baselines have 400 hidden units in the CNN encoders. On sentiment classification, all cluster-encoders use random initialized word embeddings for sentiment classification, and use Glove embeddings as initialization for intent classification, which is likely because the training sets of the intent tasks are usually small. 
+
+Since all the sentiment classification tasks are binary classification based on our dataset construction. A CNN classifier with binary output layer can be also trained as the cluster-encoder for each task cluster. Therefore we compared CNN classifier, matching network, and prototypical network on Amazon review, and found that CNN classifier performs similarly well as prototypical network. Since some of the Amazon review data is quite large which involves further difficulty on the computation of supporting sets, we finally use binary CNN classifiers as cluster-encoders in all the sentiment classification experiments.
+
+Selection of the learning rate and number of training epochs for FSL settings, i.e., fitting s in Eq. (), is more difficult since there is no validation data in few-shot problems.
+Thus we pre-select a subset of meta-training tasks as meta-validation tasks and tune the two hyper-parameters on the meta-validation tasks.
+
+Experimental Results
+Table  shows the main results on (i) the 12 few-shot product sentiment classification tasks by leveraging the learned knowledge from the 57 previously observed tasks from other product domains; and (ii) the 10 few-shot dialog intent classification tasks by leveraging the 165 previously observed tasks from other clients' data.
+
+Due to the limited training resources, all the supervised-learning baselines perform poorly. 
+The two state-of-the-art metric-based FSL approaches, matching network (4) and prototypical network (5), do not perform better compared to the other baselines, since the single metric is not sufficient for all the diverse tasks.
+On intent classification where tasks are further diverse, all the single-metric or single-model methods (3-5) perform worse compared to the single-task CNN baseline (1).
+The convex combination of all the single training task models is the best performing baseline overall. 
+However, on intent classification it only performs on par with the single-task CNN (1), which does not use any meta-learning or transfer learning techniques, mainly for two reasons: (i) with the growth of the number of meta-training tasks, the model parameters grow linearly, making the number of parameters (165 in this case) in Eq.() too large for the few-shot tasks to fit; (ii) the meta-training tasks in intent classification usually contain less training data, making the single-task encoders not generalize well.
+
+In contrast, our gives consistently better results compared to all the baselines.
+It outperforms the baselines in previous work (1-5) by a large margin of more than 6 on the sentiment classification tasks, and more than 3 on the intent classification tasks.
+It is also significantly better than our proposed baseline (6), showing the advantages of the usage of task clustering.
+
+Adaptive Although the improves over baselines on intent classification, the margin is smaller compared to that on sentiment classification, because the intent classification tasks are more diverse in nature. This is also demonstrated by the training accuracy on the target tasks, where several tasks fail to find any cluster that could provide a metric that suits their training examples. 
+To deal with this problem, we propose an improved algorithm to automatically discover whether a target task belongs to none of the task-clusters. If the task doesn't belong to any of the clusters, it cannot benefit from any previous knowledge thus falls back to single-task CNN. The target task is treated as "out-of-clusters" when none of the clusters could achieve higher than 20 accuracy (selected on meta-validation tasks) on its training data. We call this method Adaptive which gives more than 5 performance boost over the best result on intent classification. Note that the adaptive approach makes no difference on the sentiment tasks, because they are more closely related so re-using cluster-encoders always achieves better results compared to single-task CNNs.
+
+Analysis
+
+Effect of the number of clusters
+Figure  shows the effect of cluster numbers on the two tasks.  achieves best performance with 5 clusters on sentiment analysis (SA) and 20 clusters on intent classification (Intent). All clustering results significantly outperform the single-metric baselines (cluster=1 in the figure).
+
+
+Effect of clusters. and the performance of our  clusters on the sentiment and intent classification tasks. ASAP-MT-LR-SA: the state-of-the-art ASAP-MT-LR clusters on the sentiment-analysis tasks (the method is not applicable to the intent-classification tasks).
+
+1.5 em
+
+*[ht]
+
+
+Visualization of clusters on the Amazon review domain. The top shows the training tasks assigned to the 10 clusters. Here the number N refers to the threshold of stars for positive reviews. 
+At the bottom we show three tasks with largest improvement from The top-3 most relevant task clusters (i.e. with highest weights s in Eq. ) are highlighted with  font.
+
+Effect of the clustering algorithms
+Compared to previous task clustering algorithms, our  is the only one that can cluster tasks with varying numbers of class labels (e.g. in intent classification tasks).
+Moreover, we show that even in the setting of all binary classifications tasks (e.g. the sentiment-analysis tasks) that previous task clustering research work on, our  is still slightly better for the diverse FSL problems.
+Figure  compares with a state-of-the-art logistic regression based task clustering method (ASAP-MT-LR) barzilai2015convex. 
+Our  clusters give slightly better FSL performance (e.g. 83.12 vs. 82.65 when cluster=5).
+
+Visualization of Task Clusters
+The top rows of Table  shows the ten clusters used to generate the sentiment classification results in Figure . From the results, we can see that tasks with same thresholds are usually grouped together; and tasks in similar domains also tend to appear in the same clusters, even the thresholds are slightly different (e.g. t2 vs t4 and t4 vs t5).
+
+The bottom of the table shows the weights s in Eq.() for the target tasks with the largest improvement. It confirms that our algorithm accurately adapts multiple metrics for the target tasks.
+
+Related Work
+
+Few Shot Learning FSL miller2000learning,li2006one,lake2015human aims to learn classifiers for new classes with only a few training examples per class. 
+Recent deep learning based FSL approaches mainly fall into two categories:
+(1) metric-based approaches, which aims to learn 
+generalizable metrics and corresponding matching functions from multiple training tasks.
+
+These approaches essentially learn one metric for all tasks, which is sub-optimal when the tasks are diverse.
+(2) optimization-based approaches , which aims to learn to optimize model parameters (by either predicting the parameter updates or directly predicting the model parameters) given the gradients computed from few-shot examples.
+
+
+
+
+
+
+
+
+
+
+Previous FSL research usually adopts the -shot, -way setting, where all the few-shot tasks have the same number of  class labels, and each label has  training instances.
+Moreover, these few-shot tasks are usually constructed by sampling from one huge dataset, thus all the tasks are guaranteed to be related to each other.
+However, in real-world applications, the few-shot learning tasks could be diverse: there are different tasks with varying number of class labels and they are not guaranteed to be related to each other.
+As a result, a single meta-model or metric-model is usually not sufficient to handle all the few-shot tasks.
+
+
+Task Clustering Previous task clustering methods measure the
+task relationships in terms of similarities among single-task model parameters kumar2012learning,kang2011learning;
+or jointly assign task clusters and train model parameters for each cluster to minimize the overall training loss.
+These methods usually work on convex models but do not fit the deep networks, mainly because of (i) the parameters of deep networks are very high-dimensional and their similarities are not necessarily related to the functional similarities; and (ii) deep networks have flexible representation power so they may overfit to arbitrary cluster assignment if we consider training loss alone.
+Moreover, these methods require identical class label sets across different tasks, which does not hold in most of the realistic settings. 
+
+Conclusion
+We propose a few-shot learning approach for diverse tasks based on task clustering.
+The proposed method can use multiple metrics, and performs significantly better compared to previous single-metric methods when the few-shot tasks come from diverse domains.
+Future work includes applying the task-clustering idea to other FSL algorithms, and exploring more advanced composition methods of cluster-encoders beyond linear combination . 
+
+acl_natbib
+
+
+

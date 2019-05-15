@@ -1,0 +1,637 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+TheoremTheorem
+LemmaLemma
+PropositionProposition
+DefinitionDefinition
+
+
+
+
+
+
+
+
+
+Optimal Packet Scheduling in an Energy Harvesting Communication SystemThis work was supported by NSF Grants CCF 04-47613, CCF 05-14846, CNS
+07-16311, CCF 07-29127, CNS 09-64632 and presented in part at the th Annual Conference on Information Sciences and Systems, Princeton, NJ, March 2010.
+
+Jing Yang Sennur Ulukus 
+
+Department of Electrical and Computer Engineering 
+
+University of Maryland, College Park, MD 20742 
+
+yangjing@umd.edu ulukus@umd.edu 
+
+
+
+
+We consider the optimal packet scheduling problem in a single-user energy harvesting wireless communication system. In this system, both the data packets and the harvested energy are modeled to arrive at the source node randomly. Our goal is to adaptively change the transmission rate according to the traffic load and available energy, such that the time by which all packets are delivered is minimized. Under a deterministic system setting, we assume that the energy harvesting times and harvested energy amounts are known before the transmission starts. For the data traffic arrivals, we consider two different scenarios. In the first scenario, we assume that all bits have arrived and are ready at the transmitter before the transmission starts. In the second scenario, we consider the case where packets arrive during the transmissions, with known arrival times and sizes. We develop optimal off-line scheduling policies which minimize the time by which all packets are delivered to the destination, under causality constraints on both data and energy arrivals.
+
+
+
+
+
+arabic
+
+Introduction
+We consider wireless communication networks where nodes are able to harvest energy from nature. The nodes may harvest energy through solar cells, vibration absorption devices, water mills, thermoelectric generators, microbial fuel cells, etc. In this work, we do not focus on how energy is harvested, instead, we focus on developing transmission methods that take into account the randomness both in the arrivals of the data packets as well as in the arrivals of the harvested energy. As shown in Fig. , the transmitter node has two queues. The data queue stores the data arrivals, while the energy queue stores the energy harvested from the environment. In general, the data arrivals and the harvested energy can be represented as two independent random processes. Then, the optimal scheduling policy becomes that of adaptively changing the transmission rate and power according to the instantaneous data and energy queue lengths.
+
+
+
+system1.eps
+
+An energy harvesting communication system model.
+
+
+
+
+While one ideally should study the case where both data packets and energy arrive randomly in time as two stochastic processes, and devise an on-line algorithm that updates the instantaneous transmission rate and power in real-time as functions of the current data and energy queue lengths, this, for now, is an intractable mathematical problem. Instead, in order to have progress in this difficult problem, we consider an idealized version of the problem, where we assume that we know exactly when and in what amounts the data packets and energy will arrive, and develop an optimal off-line algorithm. We leave the development of the corresponding on-line algorithm for future work.
+
+Specifically, we consider a single node shown in Fig. . We assume that packets arrive at times marked with  and energy arrives (is harvested) at points in time marked with . In Fig. ,  denotes the number of bits in the th arriving data packet, and  denotes the amount of energy in the th energy arrival (energy harvesting). Our goal then is to develop methods of transmission to minimize the time, , by which all of the data packets are delivered to the destination. The most challenging aspect of our optimization problem is the causality constraints introduced by the packet and energy arrival times, i.e., a packet may not be delivered before it has arrived and energy may not be used before it is harvested.
+
+
+
+minDeadline.eps
+
+System model with random packet and energy arrivals. Data packets arrive at points denoted by  and energies arrive (are harvested) at points denoted by .
+
+
+
+
+The trade-off relationship between delay and energy has been well investigated in traditional battery powered (unrechargeable) systems. References investigate energy minimization problems with various deadline constraints. Reference considers the problem of minimizing the energy in delivering all packets to the destination by a deadline. It develops a lazy scheduling algorithm, where the transmission times of all packets are equalized as much as possible, subject to the deadline and causality constraints, i.e., all packets must be delivered by the deadline and no packet may be transmitted before it has arrived. This algorithm also elongates the transmission time of each packet as much as possible, hence the name, lazy scheduling.
+Under a similar system setting, proposes an interesting novel calculus approach to solve the energy minimization problem with individual deadlines for each packet. Reference develops dynamic programming formulations and determines optimality conditions for a situation where channel gain varies stochastically over time. Reference considers energy-efficient packet transmission
+with individual packet delay constraints over a fading channel, and develops a recursive algorithm to find an optimal off-line schedule. This optimal off-line scheduler equalizes the energy-rate derivative function as much as possible subject to the deadline and
+causality constraints. References and extend the single-user problem to multi-user scenarios. Under a setting similar to, we investigate the average delay minimization problem with a given amount of energy, and develop iterative algorithms and analytical solutions under various data arrival assumptions in. References investigate delay optimal resource allocation problems under various different settings. References
+consider average power constrained delay minimization problem for a single-user system, while minimize the average delay through rate allocation in a multiple access channel.
+
+In this paper, we consider a single-user communication channel with an energy harvesting transmitter. We assume that an initial amount of energy is available at . As time progresses, certain amounts of energies will be harvested. While energy arrivals should be modeled as a random process, for the mathematical tractability of the problem, in this paper, we assume that the energy harvesting procedure can be precisely predicted, i.e., that, at the beginning, we know exactly when and how much energy will be harvested. For the data arrivals, we consider two different scenarios. In the first scenario, we assume that packets have already arrived and are ready to be transmitted at the transmitter before the transmission starts. In the second scenario, we assume that packets arrive during the transmissions. However, as in the case of energy arrivals, we assume that we know exactly when and in what amounts data will arrive. Subject to the energy and data arrival constraints, our purpose is to minimize the time by which all packets are delivered to the destination through controlling the transmission rate and power.
+
+This is similar to the energy minimization problem in, where the objective is to minimize the energy consumption with a given deadline constraint. In this paper, minimizing the transmission completion time is akin to minimizing the deadline in. However, the problems are different, because, we do not know the exact amount of energy to be used in the transmissions, even though we know the times and amounts of harvested energy. This is because, intuitively, using more energy reduces the transmission time, however, using more energy entails waiting for energy arrivals, which increases the total transmission time. Therefore, minimizing the transmission completion time in the system requires a sophisticated utilization of the harvested energy. To that end, we develop an algorithm, which first obtains a good lower bound for the final total transmission duration at the beginning, and performs rate and power allocation based on this lower bound. The procedure works progressively until all of the transmission rates and powers are determined. We prove that the transmission policy obtained through this algorithm is globally optimum.
+
+Scenario I: Packets Ready Before Transmission Starts
+
+We assume that there are a total of  bits available at the transmitter at time . We also assume that there is  amount of energy available at time , and at times , , , , we have energies harvested with amounts , , , , respectively. This system model is shown in Fig. . Our objective is to minimize the transmission completion time, .
+
+
+
+ener_arri.eps
+
+System model with all bits available at the beginning. Energies arrive at points denoted by .
+
+
+
+
+We assume that the transmitter can adaptively change its transmission power and rate according to the available energy and the remaining number of bits. We assume that the transmission rate and transmit power are related through a function, , i.e., . We assume that  satisfies the following properties: i)  and  as , ii)
+ increases monotonically in , iii)  is strictly
+concave in ,  iv)  is continuously differentiable, and v)  decreases monotonically in . Properties i)-iii) guarantee that  exists and is strictly convex. Property  v) implies that for a fixed amount of energy, the number of bits that can be transmitted increases as the transmission duration increases. It can be verified that these properties are satisfied in many systems with realistic encoding/decoding schemes, such as optimal random coding in single-user additive white Gaussian noise channel, where .
+
+Assuming the transmitter changes its transmission power  times before it finishes the transmission, let us denote the sequence of transmission powers as , , , , and the corresponding transmission durations of each rate as , , , , respectively; see Fig. . Then, the energy consumed up to time , denoted as , and the total number of bits departed up to time , denoted as , can be related through the function  as follows:
+
+E(t)&=_i=1^ip_il_i+p_i+1(t-_i=1^il_i)
+
+
+B(t)&=_i=1^ig(p_i)l_i+g(p_i+1)(t-_i=1^il_i)
+
+
+where .
+
+
+
+ener_arri2.eps
+
+The sequence of transmission powers and durations.
+
+
+
+
+Then, the transmission completion time minimization problem can be formulated as:
+
+First, we determine the properties of the optimum solution in the following three lemmas.
+
+
+Under the optimal solution, the transmit powers increase monotonically, i.e., .
+
+
+Assume that the powers do not increase monotonically, i.e., that we can find two powers such that . The total energy consumed over this duration is . Let
+
+    p_i'&=p'_i+1=p_il_i+p_i+1l_i+1l_i+l_i+1
+
+    r_i'&=r'_i+1=g(p_il_i+p_i+1l_i+1l_i+l_i+1)
+
+Then, we have , . Since , the energy constraint is still satisfied, and thus, the new energy allocation is feasible.  We use  to replace  in the transmission policy, and keep the rest of the rates the same. Then, the total number of bits transmitted over the duration  becomes
+
+ r_i'l_i+r_i+1'l_i+1
+&=g(p_il_i+p_i+1l_i+1l_i+l_i+1)(l_i+l_i+1)
+
+&g(p_i)l_il_i+l_i+1(l_i+l_i+1)+g(p_i+1)l_i+1l_i+l_i+1(l_i+l_i+1)
+
+    &=r_il_i+r_i+1l_i+1
+
+where the inequality follows from the fact that  is concave in .
+Therefore, the new policy departs more bits by time . Keeping the remaining transmission rates the same, the new policy will finish the entire transmission over a shorter duration. Thus, the original policy could not be optimal. Therefore, the optimal policy must have monotonically increasing powers (and rates).
+
+
+
+The transmission power/rate remains constant between energy harvests, i.e., the power/rate only potentially changes when new energy arrives.
+
+
+Assume that the transmitter changes its transmission rate between two energy harvesting instances , . Denote the rates as , , and the instant when the rate changes as , as shown in Fig. . Now, consider the duration . The total energy consumed during the duration is .  Let
+   
+   p'&=p_n(s_i'-s_i)+p_n+1(s_i+1-s_i')s_i+1-s_i
+
+   r'&=g(p_n(s_i'-s_i)+p_n+1(s_i+1-s_i')s_i+1-s_i)
+   
+Now let us use  as the new transmission rate over , and keep the rest of the rates the same. It is easy to check that the energy constraints are satisfied under this new policy, thus this new policy is feasible. On the other hand, the total number of bits departed over this duration under this new policy is
+
+  r'(s_i+1-s_i) 
+  &=g(p_n(s_i'-s_i)+p_n+1(s_i+1-s_i')s_i+1-s_i)(s_i+1-s_i)
+
+    &(g(p_n)s_i'-s_is_i+1-s_i+g(p_n+1)s_i+1-s_i's_i+1-s_i)(s_i+1-s_i)
+
+    &=r_n(s_i'-s_i)+r_n+1(s_i+1-s_i')
+  
+where the inequality follows from the fact that  is concave in . Therefore, the total number of bits departed under the new policy is larger than that under the original policy. If we keep all of the remaining rates the same, the transmission will be completed at an earlier time. This conflicts with the optimality of the original policy.
+
+
+
+
+const_rate2.eps
+
+The rate must remain constant between energy harvests.
+
+
+
+
+
+Whenever the transmission rate changes, the energy consumed up to that instant equals the energy harvested up to that instant.
+
+
+From Lemma , we know that the transmission rate can change only at certain energy harvesting instances. Assume that the transmission rate changes at , however, the energy consumed by , which is denoted by , is less than . We denote the energy gap by . Let us denote the rates before and after  by , . Now, we can always have two small amounts of perturbations ,  on the corresponding transmit powers, such that
+
+    p'_n&=p_n+_n
+
+    p'_n+1&=p_n+1-_n+1
+
+    _nl_n&=_n+1 l_n+1
+
+
+We also make sure that  and  are small enough such that , and . If we keep the transmission rates over the rest of the duration the same, under the new transmission policy, the energy allocation will still be feasible. The total number of bits departed over the duration  is
+
+    g(p'_n)l_n+g(p'_n+1)l_n+1g(p_n)l_n+g(p_n+1)l_n+1
+
+where the inequality follows from the concavity of  in , and the fact that , , as shown in Fig. . This conflicts with the optimality of the original allocation.
+
+
+
+
+
+concave.eps
+
+ is concave in .
+
+
+
+
+We are now ready to characterize the optimum transmission policy. In order to simplify the expressions, we let , and let  if the transmission completion time  lies between  and .
+
+Based on Lemmas ,  and , we can characterize the optimal policy in the following way. For given energy arrivals, we plot the total amount of harvested energy as a function of , which is a staircase curve as shown in Fig. . The total energy consumed up to time  can also be represented as a continuous curve, as shown in Fig. . In order to satisfy the feasibility constraints on the energy, energy consumption curve must lie below the energy harvesting curve at all times. Based on Lemma , we know that the optimal energy consumption curve must be linear between any two consecutive energy harvesting instants, and the slope of the segment corresponds to the transmit power level during that segment. Lemma  implies that whenever the slope changes, the energy consumption curve must touch the energy harvesting curve at that energy harvesting instant. Therefore, the first linear segment of the energy consumption curve must be one of the lines connecting the origin and any corner point on the energy harvesting curve before . Because of the monotonicity property of the power given in Lemma , among those lines, we should always pick the one with the minimal slope, as shown in Fig. . Otherwise, either the feasibility constraints on the energy will not be satisfied, or the monotonicity property given in Lemma 1 will be violated. For example, if we choose the line ending at the corner point at , this will violate the feasibility constraint, as the energy consumption curve will surpass the energy arrival curve. On the other hand, if we choose the line ending at the corner point at , then the monotonicity property in Lemma  will be violated, because in that case, the slope of the following segment would be smaller. These properties must hold similarly for , , , . We also observe that, for given , the optimal transmission policy is the tightest string below the energy harvesting curve connecting the origin and the total harvested energy by time . This is similar to the structure in.
+
+
+
+
+thm1.eps
+
+An interpretation of transmission policies satisfying Lemmas 1, 2 and 3.
+
+
+
+
+We state the structure of the optimal policy formally in the following theorem.
+
+For a given , consider a transmission policy with power vector  and corresponding duration vector . This policy is optimal if and only if it has the following structure:
+
+    _n=1^N g(p_n)l_n&=B_0
+    
+ and  for ,
+    
+    i_n&= _i:
+      s_iT
+ s_i>s_i_n-1
+    ^i-1_j=i_n-1E_js_i-s_i_n-1
+
+    p_n&=^i_n-1_j=i_n-1E_js_i_n-s_i_n-1
+
+    l_n&=s_i_n-s_i_n-1
+
+where  is the index of the energy arrival epoch when the power  switches to , i.e., at ,  switches to .
+
+The proof of this theorem is given in Appendix .
+
+Therefore, we conclude that if the overall transmission duration  is known, then the optimal transmission policy is known via Theorem . In particular, optimal transmission policy is the one that yields the tightest piecewise linear energy consumption curve that lies under the energy harvesting cure at all times and touches the energy harvesting curve at . On the other hand, the overall transmission time  is what we want to minimize, and we do not know its optimal value up front. Consequently, we do not know up front which energy harvests will be utilized. For example, if the number of bits is small, and  is large, then, we can empty the data queue before the arrival of , thus, the rest of the energy arrivals are not necessary. Therefore, as a first step, we first obtain a good lower bound on the optimal transmission duration.
+
+
+We first illustrate our algorithm through an example in Fig. . We first compute the minimal energy required to finish the transmission before . We denote it as , and it equals
+
+  A_1&=g^-1(B_0s_1)s_1
+
+Then, we compare it with . If , it implies that we can complete the transmission before the arrival of the first energy harvest, thus  is not necessary for the transmission. We allocate  evenly to  bits, and the duration  is the minimum transmission duration. On the other hand, if , which is the case in the example, the final transmission completion time should be longer than . Thus, we move on and compute , , , and find that ,  and . This means that the total transmission completion time will be larger than  and energies , ,  will surely be utilized. Then, we allocate  evenly to  bits and obtain a constant transmission power , which is the dotted line in the figure. The corresponding transmission duration is . Based on our allocation, we know that the final optimal transmission duration  must be greater than . This is because, this allocation assumes that all , ,  are available at the beginning, i.e., at time , which, in fact, are not. Therefore, the actual transmission time will only be larger. Thus,  is a lower bound for .
+
+Next, we need to check the feasibility of . Observing the figure, we find that  is not feasible since it is above the staircase energy harvesting curve for some duration. Therefore, we connect all the corner points on the staircase curve before  with the origin, and find the line with the minimum slope among those lines. This corresponds to the red solid line in the figure. Then, we update  with the slope , and the duration for  is . We repeat this procedure at  and obtain , and continue the procedure until all of the bits are finished.
+
+
+
+proof.eps
+
+An illustration of the algorithm.
+
+
+
+
+We state our algorithm for the general scenario as follows:
+First, we compute the amounts of energy required to finish the entire transmission before , , , , respectively, at a constant rate. We denote these as :
+
+  A_i&=g^-1(B_0s_i)s_i, i=1,2,,K
+
+Then, we compare  with , and find the smallest  such that . We denote this  as . If no such  exists, we let .
+
+Now, we assume that we can use  to transmit all  bits at a constant rate. We allocate the energy evenly to these bits, and the overall transmission time  is the solution of
+
+ g(_j=0^i_1-1E_jT_1)T_1&=B_0
+
+and the corresponding constant transmit power is
+
+ p_1&=_j=0^i_1-1E_jT_1
+
+Next, we compare  with  for every . If  is smaller than every term, then, maintaining  is feasible, and the optimal policy is to transmit at a constant transmission rate  with duration , which gives the smallest possible transmission completion time,  . Otherwise, maintaining  is infeasible under the given energy arrival realization. Thus, we update
+
+  i_1&= _i<i_1 _j=0^i-1E_js_i
+
+  p_1&=_j=0^i_1-1E_js_i_1
+
+i.e., over the duration , we choose to transmit with power  to make sure that the energy consumption is feasible. Then, at time , the total number of bits departed is , and the remaining number of bits is . Subsequently, with initial number of bits , we start from , and get another lower bound on the overall transmission duration , and repeat the procedure above. Through this procedure, we obtain , and the corresponding , until we finish transmitting all of the bits.
+
+
+Based on our allocation algorithm, we know that  is optimum up to time , since it corresponds to the minimal slope line passing through the origin and any corner point before . However, the algorithm also implies that the final transmission duration  will be larger than . The question then is, whether  is still the minimum slope line up to time . If we can prove that  is lower than the slopes of the lines passing through the origin and any corner point in , then, using Theorem , we will claim that  is the optimal transmission policy, not only between , but also between .
+
+The fact that this will be the case can be illustrated through the example in Fig. . We note that, clearly,  is a lower bound on the eventual . If we keep transmitting at power , if no additional energy arrives, the energy harvested up until , i.e., , will be depleted by time . We will next prove that  is an upper bound on . Because of the concavity of the function  in , we can prove that under this policy, the number of bits departed up to time  is greater than . Therefore, since potentially additional energy will arrive,  provides an upper bound. Thus, we know that the optimal  lies between  and . We next note that if we connect the origin with any corner point of the staircase curve between  and , the slope of the resulting line will be larger than , thus,  will be the smallest slope not only up to time , which is a lower bound, but also up to time , which is an upper bound. This proves that while we do not know the optimal , if we run the algorithm with respect to the lower bound on , i.e., , it will still yield an optimal policy, in that the resulting policy will satisfy Theorem .
+
+We prove the optimality of the algorithm formally in the following theorem.
+
+
+The allocation procedure described above gives the optimal transmission policy.
+
+The proof of this theorem is given in Appendix .
+
+Scenario II: Packets Arrive during Transmissions
+In this section, we consider the situation where packets arrive during transmissions. We assume that there is an  amount of energy available at time , and at times , , , , energy is harvested in amounts , , , , respectively, as in the previous section. We also assume that at , we have  bits available, and at times , , , , bits arrive in amounts , , , , respectively. This system model is shown in Fig. . Our objective is again to minimize the transmission completion time, , which again is the time by which the last bit is delivered to the destination.
+
+Let us denote the sequence of transmission powers by , , , , and the corresponding transmission durations by , , , . Then, the optimization problem becomes:
+
+where ,  are defined in () and (). We again determine the properties of the optimal transmission policy in the following three lemmas.
+
+
+Under the optimal solution, the transmission rates increase in time, i.e., .
+
+
+First, note that since the relationship between power and rate, , is monotone, stating that the rates increase monotonically is equivalent to stating that the powers increase monotonically.
+ We follow steps  similar to those in the proof of Lemma  to prove this lemma. Assume that the rates do not increase monotonically, i.e., that we can find two rates such that , with duration , , respectively. If , then, let
+
+    r_i'&=r'_i+1=r_il_i+r_i+1l_i+1l_i+l_i+1
+
+    p_i'&=p'_i+1=g^-1(r_il_i+r_i+1l_i+1l_i+l_i+1)
+
+Since , , it is easy to verify that the new policy is feasible up to the end of , from both the data and energy arrival points of view.  On the other hand, based on the convexity of , the energy spent over the duration  is smaller than . If we allocate the saved energy over to the last transmission duration, without conflicting any energy or data constraints, the transmission will be completed in a shorter duration. If , then, we let
+
+p_i'&=p'_i+1=p_il_i+p_i+1l_i+1l_i+l_i+1
+
+r_i'&=r'_i+1=g(p_il_i+p_i+1l_i+1l_i+l_i+1)
+
+Then, from (), under the new policy, the last bit will depart before the end of . The energy and data arrival constraints are satisfied over the whole transmission duration. Consequently, the original policy could not be optimal. Therefore, the optimal policy must have monotonically increasing rates (and powers).
+
+
+
+The transmission power/rate remains constant between two event epoches, i.e., the rate only potentially changes when new energy is harvested or a new packet arrives.
+
+
+  This lemma can be proved through a procedure similar to that in Lemma . If power/rate is not constant between two event epoches, then, by equalizing the rate over the duration while keeping the total departures fixed, we can save energy. Allocating this saved energy to the last transmission duration, we can shorten the whole transmission duration. Thus, if power/rate is not constant between two event epoches, the policy cannot be optimal.
+
+
+
+If the transmission rate changes at an energy harvesting epoch, then the energy consumed up to that epoch equals the energy harvested up to that epoch; if the transmission rate changes at a packet arrival epoch, then, the number of packets departed up to that epoch equals the number of packets arrived up to that epoch; if the event epoch has both energy and data arrivals at the same time, then, one of the causality constraints must be met with equality.
+
+
+This lemma can be proved through contradiction using techniques similar to those used in the proof of Lemma . When the transmission rate changes at an energy harvesting epoch, if the energy consumed up to that time is not equal to the total amount harvested, then, without conflicting the energy causality constraint, we can always increase the rate before that epoch a little and decrease the rate after that epoch a little while keeping the total departures fixed. This policy would save some energy which can be used to shorten the transmission durations afterwards. Thus, the energy constraint at that epoch must be satisfied as an equality. The remaining situations can be proved similarly.
+
+
+
+Based on Lemmas ,  and  , we can identify the structure of the unique optimal transmission policy as stated in the following theorem. In order to simplify the notation, we define  to be the time epoch when the th arrival (energy or data) happens, i.e.,
+
+  u_1&=s_1, t_1
+
+  u_2&=s_i,t_j:s_i>u_1, t_j>u_1
+
+and so on, until the last arrival epoch.
+
+For a given energy harvesting and packet arrival profile, the transmission policy with a transmission rate vector  and the corresponding duration vector  is optimal, if and only if it has the following structure:
+
+_i=1^N r_il_i&=_i=0^MB_i
+
+  r_1&=_i:u_iTg(_j:s_j< u_iE_ju_i), _j:t_j<u_iB_ju_i
+
+Let  be the index of  associated with . Then, with updated amount of bits and energy remaining in the system at  ,  is the smallest feasible rate starting from , and so on.
+
+The proof of this theorem is given in Appendix .
+
+For a given optimal transmission duration, , the optimal policy which has the structure in Theorem  is unique. However, since we do not know the exact transmission duration up front, we obtain a lower bound on  first, as in the previous section. In this case also, we develop a similar procedure to find the optimal transmission policy. The basic idea is to keep the transmit power/rate as constant as possible throughout the entire transmission duration. Because of the additional casuality constraints due to data arrivals, we need to consider both the average data arrival rate as well as the average power the system can support for feasibility.
+
+If , i.e., bits have arrived after the last energy harvest, then, all of the harvested energy will be used. First, we assume that we can use these energies to maintain a constant rate, and the transmission duration will be the solution of
+
+   g(_j=0^KE_jT)T&=_j=0^MB_j
+
+Then, we check whether this constant power/rate is feasible. We check the availability of the energy, as well as the available number of bits. Let
+
+i_1e&=_u_i< T _j=0^i-1E_ju_i,p_1=_j=0^i_1e-1E_ju_i
+
+i_1b&=_u_i< T _j=0^i-1B_ju_i,
+r_1=_j=0^i_1b-1B_ju_i
+
+We compare  with . If the former is greater than the latter, then the constant transmit power  is feasible. Thus, we achieve the minimum possible transmission completion time . Otherwise, constant-power transmission is not feasible. We choose the transmit power to be the smaller of  and , and the duration to be the one associated with the smaller transmit power. We repeat this procedure until all of the bits are transmitted.
+
+If , then, as in the first scenario where packets have arrived and are ready before the transmission starts, some of the harvested energy may not be utilized to transmit the bits. In this case also, we need to get a lower bound for the final transmission completion time. Let  be the energy harvesting epoch right after . Then, starting from , we compute the energy required to transmit  bits at a constant rate by , , and compare them with the total energy harvested up to that epoch, i.e., . We identify the smallest  such that the required energy is smaller than the total harvested energy, and denote it by . If no such  exists, we let .
+
+Now, we assume that we can use  to transmit  bits at a constant rate. We allocate the energy evenly to these bits, and the overall transmission time  is the solution of
+
+ g(_j:s_j<u_i_1E_jT_1)T_1&=_j=0^MB_j
+
+and the corresponding constant transmit power is
+
+ p_1&=_j:s_j<u_i_1E_jT_1
+
+Next, we compare  with  and  for every . If  is smaller than all of these terms, then, maintaining  is feasible from both energy and data arrival points of view. The optimal policy is to keep a constant transmission rate at  with duration , which yields the smallest possible transmission completion time,  .
+Otherwise, maintaining  is not feasible under the given energy and data arrival realizations. This infeasibility is due to the causality constraints on either the energy or the data arrival, or both. Next, we identify the tightest constraint, and update the transmit power to be the power associated with that constraint. We repeat this procedure until all of the bits are delivered.
+
+
+
+The transmission policy obtained through the algorithm described above is optimal.
+
+The proof of this theorem is given in Appendix .
+
+
+Simulation Results
+We consider a band-limited additive white Gaussian noise channel, with bandwidth MHz and the noise power spectral density W/Hz. We assume that the distance between the transmitter and the receiver is 1km, and the path loss is about dB. Then, we have Mbps. It is easy to verify that this function has the properties assumed at the beginning of Section . For the energy harvesting process, we assume that at times s, we have energy harvested with amounts mJ, as shown in Fig. . We assume that at , we have Mbits to transmit. We choose the numbers in such a way that the solution is expressable in simple numbers, and can be potted conveniently. Then, using our algorithm, we obtain the optimal transmission policy, which is shown in Fig. . We note that the powers change only potentially at instances when energy arrives (Lemma ); when the power changes, energy consumed up to that point equals energy harvested (Lemma ); and power sequence is monotonically increasing (Lemma ). We also note that, for this case, the active transmission is completed by time s, and the last energy harvest at time s is not used.
+
+
+Next, we consider the scenario where data packets arrive during the transmissions. We consider a smaller time scale, where each unit consists of ms. We assume that at times , energies arrive with amounts mJ, while at times , packets arrive with equal size kbits,  as shown in Fig. . We observe that the transmitter changes its transmission power during the transmissions. The first change happens at  when energy arrives, and the energy constraint at that instant is satisfied with equality, while the second change happens at  when new bits arrive, and the traffic constraint at that time is satisfied with equality.
+
+
+
+example.eps
+
+Optimal transmit powers mW, with durations s. 
+
+
+
+
+example2.eps
+
+Optimal transmit powers mW, with durations s.  
+
+
+
+Conclusions
+In this paper, we investigated the transmission completion time minimization problem in an energy harvesting communication system. We considered two different scenarios, where in the first scenario, we assume that packets have already arrived and are ready to be transmitted at the transmitter before the transmission starts, and in the second scenario, we assume that packets may arrive during the transmissions. We first analyzed the structural properties of the optimal transmission policy, and then developed an algorithm to obtain a globally optimal off-line scheduling policy, in each scenario.
+
+
+
+The Proof of Theorem 
+We will prove the necessariness and the sufficiency of the stated structure separately. First, we prove that the optimal policy must have the structure given above. We prove this through contradiction. Assume that the optimal policy, which satisfies Lemmas ,  and , does not have the structure given above. Specifically, assume that the optimal policy over the duration  is the same as the policy described in Theorem 1, however, the transmit power right after , which is , is not the smallest average power possible starting from , i.e., we can find another , such that
+
+    p_n&>^i'-1_j=i_n-1E_js_i'-s_i_n-1p'
+
+Based on Lemma , the energy consumed up to  is equal to , i.e., there is no energy remaining at .
+
+We consider two possible cases here. The first case is that , as shown in Fig. . Under the optimal policy, the energy required to maintain a transmit power  over the duration  is .  Based on (), this is greater than the total amount of energy harvested during , which is . Therefore, this energy allocation under this policy is infeasible.
+
+On the other hand, if , as shown in Fig. , then the total amount of energy harvested  over  is . From (), we know
+
+p_n&=^i_n-1_j=i_n-1E_js_i_n-s_i_n-1>^i'-1_j=i_n-1E_js_i'-s_i_n-1>^i'-1_j=i_nE_js_i'-s_i_n
+
+Thus, under any feasible policy, there must exist a duration , such that the transmit power over this duration is less than . This contradicts with Lemma . Therefore, this policy cannot be optimal.
+
+
+[]
+  
+thm1_1.eps
+
+
+
+[ ]
+  
+thm1_2.eps
+
+
+Two different cases in the proof of Theorem 1.
+
+
+Next, we prove that if a policy with power vector  and duration vector  has the structure given above, then, it must be optimal. We prove this through contradiction. We assume that there exists another policy with power vector  and duration vector , and the transmission completion time  under this policy is smaller.
+
+We assume both of the policies are the same over the duration , however, the transmit policies right after , which are  and , with durations  and , respectively, are different. Based on the assumption, we must have .
+
+If , from Lemma , we know that the total energy available over  is equal to . Since ,  is infeasible over . Thus, policy  cannot be optimal.
+Then, we consider the case when . If , then, the total energy spent over  under  is greater than , since , and  based on Lemma . If , since the power-rate function  is concave, the total number of bits departed over   under  is greater than that under . Thus, policy  cannot depart  bits over , and it cannot be optimal.
+
+In summary, a policy is optimal if and only if it has the structure given above, completing the proof.
+
+
+The Proof of Theorem 
+Let  be the final transmission duration given by the allocation procedure. Then, we have . In order to prove that the allocation is optimal, we need to show that the final transmission policy has the structure given in Theorem . We first prove that  satisfies (). Then, we can similarly prove that , ,  satisfy ().
+
+We know that if , then it is the minimum possible transmission completion time. We know that this transmit policy will satisfy the structural properties in Theorem . Otherwise, the final optimal transmission time  is greater than , and more harvested energy may need to be utilized to transmit the remaining bits. From the allocation procedure, we know that
+
+  p_1^i-1_j=0E_js_i,  i< i_1
+
+In order to prove that  satisfies (), we need to show that
+
+  p_1&_j=0^i-1E_js_i, i: s_i_1s_iT
+
+
+
+If we keep transmitting with power , then at , the total number of bits departed will be
+
+  g(p_1)T'_1g(_j=0^i_1-1E_jT_1)T_1=B_0
+
+where the inequality follows from the assumption that  decreases in . Then, () guarantees that this is a feasible policy. Thus, under the optimal policy, the transmission duration  will be upper bounded by , i.e.,
+
+  T_j=0^i_1-1E_jp_1
+
+which implies
+
+  p_1_j=0^i_1-1E_jT
+
+If , as shown in Fig. , no future harvested energy is utilized for the transmissions. Then, () guarantees that () is satisfied.
+
+If , as shown in Fig. , additional energy harvested after  should be utilized to transmit the data. We next prove that () still holds through contradiction. Assume that there exists  with , such that () is not satisfied, i.e.,
+
+   p_1>_j=0^i'-1 E_js_i'p'
+
+Then,
+
+  _j=0^i'-1 E_jp_1&< s_i'
+
+Combining this with (), we have , which contradicts with the assumption that . Thus, () holds,  satisfies the requirement of the optimal structure in ().
+
+We can then prove using similar arguments that , ,  also satisfy the properties of the optimal solution. Based on Lemma , this procedure gives us the unique optimal policy.
+
+
+[]
+  
+thm2_1.eps
+
+
+
+[ ]
+  
+thm2_2.eps
+
+
+Two different cases in the proof of Theorem 2.
+
+
+The Proof of Theorem 
+  First, we prove that for the optimal transmission policy,  must satisfy (). We prove this through contradiction. If  does not satisfy (), then, we can always find another , such that
+  
+    r_1&>g(_j:s_j< u_i'E_ju_i'), _j:t_j<u_i'B_ju_i'
+  
+   First, we assume that . Then, if , clearly  is not feasible over the duration , because of the energy constraint. If , then, the transmitter cannot maintain a transmission rate that is always greater than  over , from the energy point of view. This contradicts with Lemma . Similarly, if , the "bottleneck" is the data constraint. We can prove that  is not feasible. Thus,  must be the smallest feasible rate starting from , as in (). We can also prove that , ,  must have the same structure, in the same way. Next, we can prove that any policy has the structure described above is optimal. We can prove this through contradiction. Assume that there exists another policy with a shorter transmission completion time. Based on Lemmas  and  , we can prove that this policy could not be feasible.
+
+ The Proof of Theorem 
+  First we prove that  obtained through this procedure satisfies (). If , i.e., the constant rate is achievable throughout the transmission, then it is the shortest transmission duration we can get, thus, it is optimal. If , from the procedure, we have
+  
+    r_1&_1ii_1g(_j:s_j< u_iE_ju_i), _j:t_j<u_iB_ju_i
+  
+  We need to prove that
+  
+     r_1&g(_j:s_j< u_iE_ju_i), _j:t_j<u_iB_ju_ifor  u_i_1<u_iT.
+  
+  Considering the policy with a constant power , then, at , the total number of bits departed will be
+
+  g(p_1)T'_1g(_j=0^i_1-1E_jT_1)T_1=_j=0^MB_j
+
+while at , the total energy required will be
+
+  p_1T"_1_j=0^i_1-1E_jT_1_j=0^i_1-1B_jg(_j=0^i_1-1E_jT_1)=_j=0^i_1-1E_j
+
+where the inequality follows from the assumption that  decreases in . Therefore, maintaining a transmission rate  until the last bit departs the system is feasible from both the energy and data arrival points of view. Thus, under the optimal policy, the transmission duration  will be upper bounded by  and , i.e.,
+
+  T_j=0^i_1-1E_jp_1, T_j=0^i_1-1B_jr_1
+
+which implies
+
+  p_1_j=0^i_1-1E_jT, r_1_j=0^i_1-1B_jT
+
+If no future harvested energy is utilized for the transmissions, () guarantees that () is satisfied.
+
+If , additional energy harvested after  should be utilized to transmit the data. We next prove that () still holds through contradiction. Assume that there exists  with , such that () is not satisfied, i.e.,
+
+   p_1>_j=0^i'-1 E_ju_i'or r_1>_j=0^i'-1 B_ju_i'
+
+Then, we have
+
+  _j=0^i'-1 E_jp_1< u_i' or _j=0^i'-1 B_jr_1< u_i'
+
+Combining this with (), we have , which contradicts with the assumption that . Thus, () holds,  satisfies the requirement of the optimal structure in (). We can then prove using a similar argument that , ,  also satisfy the structure of the optimal solution. Based on Theorem , this procedure gives us the unique optimal transmission policy.
+
+
+
+E. Uysal-Biyikoglu, B. Prabhakar, and A. El Gamal, "Energy-efficient packet
+  transmission over a wireless link," IEEE/ACM Transactions on
+  Networking, vol. 10, pp. 487-499, 2002.
+
+
+M. A. Zafer and E. Modiano, "A calculus approach to energy-efficient data
+  transmission with quality of service constraints," IEEE/ACM
+  Transactions on Networking, vol. 17, pp. 898-911, June 2009.
+
+
+--, "Delay-constrained energy efficient data transmission over a wireless
+  fading channel," Information Theory and Applications Workshop, pp.
+  289-298, Jan/Feb 2007.
+
+
+W. Chen, U. Mitra, and M. Neely, "Energy-efficient scheduling with individual
+  delay constraints over a fading channel," WiOpt, pp. 1-10, Apr 2007.
+
+
+A. El Gamal, C. Nair, B. Prabhakar, E. Uysal-Biyikoglu, and S. Zahedi,
+  "Energy-efficient scheduling of packet transmissions over wireless
+  networks," IEEE Infocom, vol. 3, pp. 1773-1782, Nov 2002.
+
+
+E. Uysal-Biyikoglu and A. El Gamal, "On adaptive transmission for energy
+  efficiency in wireless data networks," IEEE Transactions on
+  Information Theory, vol. 50, pp. 3081-3094, Dec 2004.
+
+
+J. Yang and S. Ulukus, "Delay-minimal transmission for energy constrained
+  communication channels," IEEE ICC, 2008.
+
+
+R. A. Berry and R. G. Gallager, "Communication over fading channels with delay
+  constraints," IEEE Transactions on Information Theory, vol. 48, pp.
+  1135-1149, May 2002.
+
+
+I. Bettesh and S. Shamai, "Optimal power and rate control for minimal average
+  delay: The single-user case," IEEE Transactions on Information
+  Theory, vol. 52, pp. 4115-4141, Sep 2006.
+
+
+M. Goyal, A. Kumar, and V. Sharma, "Power constrained and delay optimal
+  policies for scheduling transmission over a fading channel," IEEE
+  Infocom, vol. 1, pp. 311- 320, March/Apr 2003.
+
+
+E. Yeh, "Delay-optimal rate allocation in multiaccess communications: A
+  cross-layer view," Multimedia Signal Processing, 2002 IEEE Workshop
+  on, pp. 404- 407, Dec 2002.
+
+
+N. Ehsan and T. Javidi, "Delay optimal transmission policy in a wireless
+  multi-access channel," IEEE Transactions on Information Theory,
+  no. 8, pp. 3745-3751, Aug 2008.
+
+
+E. Yeh, "Minimum delay multi-access communication for general packet length
+  distributions," 42th Annual Allerton Conference on Communication,
+  Control, and Computing, pp. 1536-1545, Sep/Oct 2004.
+
+
+S. Musy, "Delay and coding in multiple-user communications," Ph.D.
+  dissertation, EPFL, 2007.
+
+
+
+
+

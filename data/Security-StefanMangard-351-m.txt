@@ -1,0 +1,1195 @@
+[utf8]inputenc
+
+amssymb
+array
+arydshln
+booktabs
+collcell
+comment
+filecontents
+float
+ifthenx
+lipsum
+makecell
+multirow
+nicefrac
+paralist
+upgreek
+siunitx
+group-separator = 
+todonotes
+threeparttable
+hyphensurlurl
+xspace
+placeins
+
+#1 
+
+
+
+
+tikz
+external
+
+pgfplots
+pgfplots.groupplots
+arrows
+patterns
+positioning
+decorations.pathreplacing
+shapes.arrows
+pgfplots.groupplots
+compat=1.8
+
+
+
+
+
+subcaption
+compatibility=false
+
+
+
+
+
+letltxmacro
+1.5cm
+todonotes
+marginnote 
+
+
+
+
+
+
+
+
+listingtbhplst
+listingListing
+ 
+  backgroundcolor=,   
+  basicstyle=,        
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  escapeinside=**),          
+  extendedchars=true,              
+  frame=single,                    
+  keepspaces=true,                 
+  language=C,                      
+  numbers=left,                    
+  numbersep=5pt,                   
+  numberstyle=,               
+  rulecolor=,         
+  showspaces=false,                
+  showstringspaces=false,          
+  showtabs=false,                  
+  tabsize=2                       
+  
+
+   [x64]Assembler     
+   [x86masm]Assembler 
+   
+   morekeywords=CDQE,CQO,CMPSQ,CMPXCHG16B,JRCXZ,LODSQ,MOVSXD, 
+                  POPFQ,PUSHFQ,SCASQ,STOSQ,IRETQ,RDTSCP,SWAPGS, 
+                  rax,rdx,rcx,rbx,rsi,rdi,rsp,rbp, 
+                  r8,r8d,r8w,r8b,r9,r9d,r9w,r9b 
+
+
+
+
+
+KB
+*argmax
+*argmin
+ 
+ 
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+op-tical net-works semi-conduc-tor
+
+10000
+10000
+
+
+
+
+
+
+
+
+KeyDrown: Eliminating Keystroke Timing Side-Channel Attacks
+
+
+Michael Schwarz, Moritz Lipp, Daniel Gruss, Samuel Weiser, 
+ Clémentine Maurice, Raphael Spreitzer, and Stefan Mangard
+
+Graz University of Technology, Austria 
+
+
+
+
+
+XX.XXX/XXX_X
+
+
+XXX-XXXX-XX-XXX/XX/XX
+
+
+
+
+[Pre-print]arXiv2017
+2017
+2017
+15.00
+
+
+
+
+
+<ccs2012>
+<concept>
+<concept_id>10002978</concept_id>
+<concept_desc>Security and privacy</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10002978.10003001.10010777.10011702</concept_id>
+<concept_desc>Security and privacy Side-channel analysis and countermeasures</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10002978.10003006</concept_id>
+<concept_desc>Security and privacy Systems security</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+<concept>
+<concept_id>10002978.10003006.10003007</concept_id>
+<concept_desc>Security and privacy Operating systems security</concept_desc>
+<concept_significance>500</concept_significance>
+</concept>
+</ccs2012>
+
+[500]Security and privacy Side-channel analysis and countermeasures
+[500]Security and privacy Systems security
+[500]Security and privacy Operating systems security
+
+
+
+Besides cryptographic secrets, side-channel attacks also leak sensitive user input.
+The most accurate attacks exploit cache timings or interrupt information to monitor keystroke timings and subsequently infer typed words and sentences. 
+Previously proposed countermeasures fail to prevent keystroke timing attacks as they 
+do not protect keystroke processing among the entire software stack. 
+
+We close this gap with , a new defense mechanism against keystroke timing attacks.
+injects a large number of fake keystrokes in the kernel to prevent interrupt-based attacks and attacks on the kernel. 
+All keystrokes, including fake keystrokes, are carefully propagated through the shared library in order to hide any cache activity and thus to 
+prevent attacks. Finally, we provide additional protection against for password input in user space programs. 
+We show that attackers cannot distinguish fake keystrokes from real keystrokes anymore and we evaluate on a commodity notebook as well as on two Android smartphones. 
+We show that eliminates any advantage an attacker can gain from using interrupt or cache side-channel information.
+
+
+
+Introduction
+
+
+Modern computer systems leak sensitive user information through side channels.
+Among software-based side channels, information can leak, for example, from the system or from microarchitectural components such as the CPU cache  or the DRAM . 
+Historically, side-channel attacks have exploited these information leaks to infer cryptographic secrets , whereas more recent attacks even target keystroke timings and sensitive user input directly .
+
+In general, keystroke attacks aim to monitor when a keyboard input occurs, which either allows inferring user input directly or launching follow-up attacks .
+In particular, mobile devices may expose this information through sensor data, but practical mitigations are being deployed .
+Consequently, attackers are left with two different ways to obtain keystroke timings in a generic way. 
+First, the procfs interface provides 
+statistics for all interrupt sources, which allows monitoring the occurrence of keyboard interrupts. 
+Second, microarchitectural attacks allow monitoring memory accesses with a granularity of single cache lines, and thus also allow recovering keystroke timings with a high accuracy.
+
+Keystroke timing attacks are hard to mitigate, compared to side-channel attacks on cryptographic implementations.
+Indeed, attacks on cryptographic implementations can be mitigated with changes in the algorithms, such as making execution paths independent of secret data.
+On the contrary, user input travels a long way, from the hardware interrupt through the operating system and shared libraries up to the user space application. 
+In order to detect a keystroke, an attacker just needs to probe a single spot in the keystroke path for activity. 
+
+In the general case, keystrokes are non-repeatable low-frequency events, if the attacker misses a keystroke, there is no way to repeat the measurement.
+However, an attacker that explicitly targets a password field can record more timing traces when the user enters the password again.
+While these traces have variations in timing, due to the variance of the typing behavior, it allows an attacker to combine multiple traces and to perform a more sophisticated attack. 
+This makes attacks on password fields even harder to mitigate.
+
+
+State-of-the art defense mechanisms only restrict access to the system interfaces providing interrupt statistics , and do not address all the layers involved in keystroke processing. 
+Therefore, this does not prevent keystroke attacks at all. 
+We first investigate interrupt-based attacks in a setting where the operating system does not provide any interface for interrupt statistics to the user. 
+In such a restricted setting, we demonstrate two novel side-channel attacks to infer keystroke timings. 
+The first attack uses the rdtsc instruction to determine the execution time of an interrupt service routine (ISR), which is then used to determine whether or not the interrupt was caused by the keyboard.
+The second attack uses on the kernel to determine when a keystroke is being processed in the kernel.
+
+Based on these investigations and on state-of-the-art attacks, we identify three essential requirements for successful elimination of keystroke timing attacks on the entire software stack. In presence of the countermeasure:
+
+	Any classifier based on a single-trace side-channel attack may not provide any advantage over a random classifier.
+	The number of side-channel traces a classifier requires to detect all keystrokes correctly must be impractically high.
+	The implementation of the countermeasure may not leak information about its activity or computations.
+
+
+Based on the identified requirements, we present , a new defense mechanism against keystroke timing attacks exploiting microarchitectural side channels and interrupt side channels. 
+covers the entire software stack, from the interrupt source to the user space buffer storing the keystroke, both on x86 systems and on ARM devices.
+We cover both the general case where an attacker can only obtain a single trace, and the case of password input where an attacker can obtain multiple traces.
+
+works in three layers:
+
+	To mitigate interrupt-based attacks, injects a large number of fake keyboard interrupts. 
+	attacks on the kernel module are mitigated by unifying the control flow and data accesses of real and fake keystrokes such that there is no difference visible in the cache or in the execution time.
+	To mitigate , and attacks on shared libraries, runs through the same code path in the shared library for every fake and real keystroke.
+	To mitigate attacks on password entry fields, updates the widget buffer for every fake and real keystroke.
+
+We evaluate on several state-of-the-art attacks as well as our two novel attacks. 
+In all cases, eliminates any advantage an attacker can gain from the side channels, the attacker cannot deduce sensitive information from the side channel.
+
+We provide a proof-of-concept implementation, which can be installed as a Debian package compatible with the latest long-term support release of Ubuntu. 
+It runs on commodity operating systems with unmodified applications and unmodified compilers.
+is started automatically and is entirely transparent to the user, requires no user interaction.
+Although our countermeasure inherently executes more code than an unprotected system, it has no noticeable effect on keystroke latency.
+Finally, we also define what cannot protect against, such as word completion lookups or immediate forwarding of single keystrokes over the network.
+
+Contributions. The contributions of this work are:
+
+	We present two novel attack vectors to recover keystroke timings with fewer prerequisites than previous attacks.
+	We identify three essential requirements for an effective countermeasure against keystroke attacks.
+	We propose , a multi-layered solution to mitigate keystroke timing attacks.(The project is open-source and is available on GitHub: https://github.com/keydrown/keydrown.)
+	We evaluate and show that it eliminates all known
+	attacks.
+
+Outline.
+The remainder of the paper is organized as follows. 
+In Section , we provide background information. 
+In Section , we introduce our novel attacks and define requirements a defense mechanism has to provide to successfully mitigate attacks.
+In Section , we describe the three layers of .
+In Section , we demonstrate that successfully mitigates keystroke timing attacks.
+In Section , we discuss limitations and future work.
+We conclude in Section .
+
+
+Background
+In this section, we provide background information on interrupt handling as well as on software side channels that leak keystroke timing information. 
+
+	Linux Interrupt Handling
+
+Interrupt handling is one of the low-level tasks of an operating system and thus highly architecture and machine dependent. 
+This section covers the general design of how interrupts and their handling within the Linux kernel work on both x86 PCs and ARMv7 smartphones. 
+
+	Interrupts on x86 and x8664
+Figure  shows a high-level overview of interrupt handling on a dual-core x86 CPU. 
+Interrupts are handled by the Advanced Programmable Interrupt Controller (APIC) .
+The APIC receives interrupts from different sources: locally and externally connected I/O devices, inter-processor interrupts, APIC internal interrupts, performance monitoring interrupts, and thermal sensor interrupts.
+On multi-core systems, every CPU core has a local APIC (LAPIC) to handle interrupts. 
+All LAPICs are connected to one or more I/O APICs which handle the actual hardware interrupts. 
+The I/O APICs are part of the chipset and provide multi-core interrupt management by distributing the interrupts to the LAPICs as described in the ACPI system description tables .
+
+
+ 
+ Linux interrupt handling on x86.
+ 
+Interrupt-generating hardware, such as the keyboard, is connected to an I/O APIC pin (1). 
+The I/O APIC uses a redirection table to redirect hardware interrupts and the raised interrupt vector to the destination LAPIC (2) .
+In the case of multiple configured LAPICs for one interrupt, the I/O APIC chooses a CPU based on task priorities in a round-robin fashion .
+
+The LAPIC receiving the interrupt vector fetches the corresponding entry from the Interrupt Descriptor Table (IDT) (3) which is set up by the operating system. 
+The IDT contains an offset to the Interrupt Service Routine (ISR) for every interrupt vector. 
+The CPU saves the current CPU flags and jumps to the interrupt service routine (4) which then handles the interrupt. 
+
+After processing, the interrupt service routine acknowledges the interrupt by sending an end-of-interrupt (EOI) to the LAPIC (5). 
+It then returns using the iret instruction to restore the CPU flags and to enable interrupts again. 
+The LAPIC forwards the EOI to the I/O APIC (6) which then resets the interrupt line to enable the corresponding interrupt again. 
+
+	Interrupts on ARM
+
+
+Figure  shows a high-level overview of interrupt handling on a dual-core ARMv7 CPU.
+On ARM, interrupts are handled by the General Interrupt Controller (GIC). 
+The GIC is divided into two parts, the distributor, and a CPU interface for every CPU core . 
+Every interrupt-generating device is connected to the distributor of the GIC (1). 
+The distributor (2) schedules between CPU interfaces according to the interrupt's affinity mask.
+
+
+  
+ Linux interrupt handling on ARM.
+ 
+When a CPU interface receives an interrupt, it signals it to the corresponding CPU core (3). 
+The core reads the interrupt number from the interrupt acknowledge register to acknowledge it. 
+If the interrupt was sent to multiple CPU interfaces, all other CPU cores receive a spurious interrupt, as there is no more pending interrupt.
+
+When receiving an interrupt, the CPU finishes executing the current instruction, switches to IRQ mode, and jumps to the IRQ entry of the Interrupt Vector Table (IVT) (4).
+The IVT contains exactly one instruction to jump to a handler function (5).
+In this handler function, the OS branches to the Interrupt Service Routine (ISR) corresponding to the interrupt number (6). 
+
+When the CPU is done servicing the interrupt, it writes the interrupt number to the End Of Interrupt register (7) to signal that it is ready to receive this interrupt again . 
+
+
+	Microarchitectural AttacksCPU caches are a small and fast type of memory, buffering frequently used data to speed-up subsequent accesses.
+There are typically three levels of caches in modern x86 CPUs, and two levels in modern ARM CPUs.
+The last-level cache is typically shared across cores of the same CPU, which makes it a target for cross-core side-channel attacks.
+On Intel x86 CPUs, the last-level cache is divided into one slice per core. 
+The smallest unit managed by a cache is a cache line (typically 64B).
+Modern caches are set-associative, multiple cache lines are considered a set of equivalent storage locations.
+A memory location maps to a cache set and slice based on the physical address .
+
+	.
+  is a technique that allows an attacker to monitor a victim's cache accesses at a granularity of a single cache line. 
+The attacker flushes a cache line, lets the victim perform an operation, and then reloads and times the access to the cache line. 
+A low timing indicates that the victim accessed the cache line. 
+While very accurate, it can only be performed on shared memory, shared libraries or binary code.
+can neither be performed on dynamic buffers in a user program nor on code or data in the kernel.
+Gruss Gruss2015Template presented cache template attacks as a technique based on to automatically find and exploit cache-based leakage in programs.
+
+
+	.
+  is a technique that allows an attacker to monitor a victim's cache accesses at a granularity of a cache set. 
+The attacker primes a cache set, fills the cache set with its own cache lines. 
+It then lets the victim perform an operation. 
+Finally, it probes its own cache lines measures the access time to them.
+This technique does not require any shared memory between the attacker and the victim, but it is difficult due to the mapping between physical addresses and cache sets and slices. 
+As only relies on measuring the latency of memory accesses, it can be performed on any part of the software stack. It is possible to perform on dynamically generated data  as well as kernel memory .
+Preventing attacks is difficult due to the huge attack surface and the fact that uses only innocuous operations such as memory accesses on legitimately allocated memory, as well as timing measurements.
+
+	DRAMA
+Besides the cache, the DRAM design also introduces side channels , timing differences caused by the DRAM row buffer. 
+A DRAM bank contains a row buffer caching an entire DRAM row (8KB). 
+Requests to the currently active row are served from this buffer, resulting in a fast access, whereas other requests are significantly slower.
+DRAM side-channel attacks do not require shared memory and work across CPUs of the same machine sharing a DRAM module.
+
+
+	Keystroke Timing Attacks	
+	Keystrokes from Keystroke Timing.
+Keystroke timing attacks attempt to recover what was typed by the user by analyzing keystroke timing measurements.
+These timings show characteristic patterns of the user, which depend on several factors such as keystroke sequences on the level of single letters, bigrams, syllables or words as well as keyboard layout and typing experience . Existing attacks train probabilistic classifiers like hidden Markov models or neural networks to infer known words or to reduce the password-guessing complexity .
+
+
+Most keystroke timing attacks exploit the inter-keystroke timing, the timing difference between two keystrokes, but according to Idrus Idrus2014 combinations of key press and key release events could also be exploited.
+Pinet Pinet2016 report inter-keystroke interval values between 160 and 200 for skilled typists. 
+Lee Lee2015 define the values depending on whether a text sequence was trained or entered for the first time, resulting in inter-keystroke intervals between 125 and 215 with a variance between 43 and 106, again for trained and untrained text sequences. 
+
+	Keystroke Timing from Software.
+A direct software side channel for keystroke timings is provided through OS interfaces .
+This includes instruction pointer and stack pointer information leaked through /proc/stat, interrupt statistics leaked through /proc/interrupts, and network packet statistics leaked through /proc/net .
+As the instruction pointer and stack pointer information became too unpredictable, Jana and Shmatikov  showed that CPU usage yields much more reliable information on keystroke timings. 
+Diao Diao2016 demonstrated high-precision keystroke timing attacks based on /proc/interrupts.
+Vila Vila2017 recovered keystroke timings from timing differences caused by the event queue in the Chrome browser.
+
+	Keystroke Timing from Microarchitectural Attacks.
+Gruss Gruss2015Template demonstrated that allows distinguishing specific keys or groups of keys based on key-dependent data accesses in shared libraries.  
+Ristenpart Ristenpart2009 demonstrated a keystroke timing attack using with a false-negative rate of 5 while measuring 0.3 false positive keystrokes per second. 
+Pessl Pessl2016 showed that it is possible to use DRAM attacks to monitor keystrokes, in the address bar of Firefox.
+However, this attack only works if the target application performs a massive amount of memory accesses to thrash the cache reliably on its own. 
+
+
+
+Keystroke Timing Attacks  Defenses
+Due to the amount of code executed for every keystroke, there are many different side channels for keystroke timings.
+In this section, we introduce our two novel attacks and compare them to state-of-the-art keystroke timing attack vectors, in order to understand the requirements for effective countermeasures. 
+Finally, we derive three requirements for countermeasures to be effective against keystroke timing attacks.
+
+The requirements are defined based on precision and recall of side-channel attacks.
+The precision is the fraction of true positive detected keystrokes in all detected keystrokes. 
+If the precision is low, the side channel yields too many false positives to derive the correct keystroke timings.
+The recall is the fraction of true positive detected keystrokes in all real keystrokes. 
+If the recall is low, the side channel misses too many true positives, inter-keystroke timings are corrupted too.
+A standard measure for accuracy is the , the geometric mean of precision and recall.
+An of 1 describes a perfect side channel.
+An of 0 describes that a side channel provides no information at all.
+
+Note that there is only a limited number of keystroke time frames that can be reliably distinguished by an attacker, due to the number of keystrokes a user performs and the variance of inter-keystroke timing (Section ).
+A keystroke timing attack providing nanosecond-accurate timestamps is actually only providing the binary information in which time frames a keystroke occurred.
+Hence, we can compare side-channel-based classifiers to binary decision classifiers for these time frames.
+
+An always-zero oracle which never detects any event has an of 0.
+An always-one oracle which "detects" an event in every possible time frame, a large number of false positives, no false negatives, and no true negatives, is a channel which provides zero information.
+Similarly, a random-guessing oracle, which decides for every possible time frame whether it "detects" an event based on an apriori probability, also provides zero information.
+For 8 keystrokes and 100 possible time frames per second, the for the always-one oracle is  which is strictly better than the of the random-guessing oracle ().
+An attacker relying on any side-channel-based classifier with a lower could achieve better results by simply using an always-one oracle, in such a case it would not make sense to use the side-channel-based classifier in the first place.
+In the remainder of the paper we assume that an attacker wants to find the real 8 keystrokes in 100 possible time frames per second.
+
+	Keystroke Timing Attack Surface
+Keystroke processing involves computations on all levels of the software stack. 
+The keyboard interrupt is handled by one of the CPU cores, which interrupts the currently executed thread.
+A significant amount of code is executed in the operating system kernel and the keyboard driver until the preprocessed keystroke event is handed over to a user space shared library that is part of the user interface.
+The shared library distributes the keystroke event to all user interface elements listening for the event.
+Finally, the shared library hands over the keyboard input to the active user space process which further processes the input, store a password character in a buffer.
+This abundance of code and data that is executed and accessed upon a keystroke provides a multitude of possibilities to measure keystroke timings.
+
+
+	Comparison of keystroke timing attacks.
+2whitelightgray!40
+ 
+
+
+	New Attack VectorsSoftware side channels through procfs interfaces can be mitigated by restricting access to them .
+However, such restrictions do not prevent keystroke timing attacks. 
+We demonstrate two new attacks to infer keystroke timings: the first one exploits interrupt timings to detect keystrokes, and the second one relies on to attack a kernel module.
+Table  compares the novel attacks we describe in the following with the state-of-the-art attack vectors (Section )
+in terms of attack techniques and the exploited attack surface.
+
+
+	Low-Requirement Interrupt Timing Attack.
+We propose a new timing-based attack that only requires unprivileged sand-boxed code execution on the targeted platform and an accurate timing source, the rdtsc instruction or a counter thread.
+The basic idea is to monitor differences in the execution time of acquiring high-precision time stamps, the rdtsc instruction, as outlined in Algorithm .
+While small differences between successive time stamps allow us to infer the CPU utilization, larger differences indicate that the measurement process was interrupted. 
+In particular, I/O events like keyboard interrupts lead to clearly visible peaks in the execution time, due to the interaction of the keyboard ISR with hardware and the subsequent processing of keystrokes.
+
+[t]
+	KwStepstep
+	InputinputOutputoutput
+	, 
+	, 
+		
+	
+	
+	  
+	   
+	    i
+   	    i
+	  
+	
+	Recording interrupt timing
+every pin=[fill=white, draw=black, font=]
+
+
+  
+ Measured delta between continuous rdtsc calls while entering a password. Keystroke events interrupt the attacker and thus cause higher deltas.
+ 
+Figure  illustrates these observations in a timing trace recorded while the user was typing a password. 
+The bars indicate actual keystroke events, which almost perfectly match certain measurement points. 
+Based on this plot, we can clearly distinguish keyboard interrupts (around 60000 cycles) from other interrupts. 
+For example, rescheduling interrupts can be observed with a difference of about 155000 cycles. 
+In this attack, we achieve a precision of  and a recall of 1, resulting in an of , which means a significant advantage over an always-one oracle of +537.4. 
+
+	Attack on the Kernel.
+Our second attack relies on to attack the keyboard interrupt handler within the kernel. 
+More specifically, we target the code in the keyboard interrupt handler that is executed each time a key is pressed. 
+Thereby, keystroke events can be inferred by observing cache activity in the cache set used by the keyboard interrupt handler. 
+
+To find the cache sets that are accessed by the keyboard interrupt handler, we first need to find the physical addresses where the code is located. 
+We can either use the prefetch side-channel attack by Gruss Gruss2016CCS or the TSX-based side channel by Jang Jang2016 to locate the code within the kernel.
+Kernel Address-Space-Layout Randomization was not enabled by default until Ubuntu 16.10.
+Thus, an attacker can also just use known physical addresses from an attacker-controlled system.
+
+To reduce the influence of system noise, we developed a new form of attack called . combines the information from multiple simultaneous attacks on different addresses.
+Figure  shows the result of such a attack on the keyboard interrupt handler.
+In a post-processing step we smoothed the trace with a 500 sliding window.
+The keystroke events cause higher activity in the targeted cache sets and thus produce clearly recognizable peaks for every key event.
+Despite doubts that such an attack can be mounted , our attack is the first highly accurate keystroke timing attack based on on the last-level cache. 
+More specifically, we achieve a precision of  and a recall of , resulting in an of , which is significantly better than state-of-the-art attacks. 
+
+
+  
+ attack on password input. Keystrokes cause higher activity in more cache sets.
+ 
+	Requirements for Effective Elimination of Keystroke Timing AttacksAs demonstrated in the previous section, we are able to craft new attacks with fewer requirements than state-of-the-art attacks. 
+Hence, countermeasures against keystroke timing attacks must be designed in a generic way, in all affected layers of the software stack, covering known and unknown attacks. 
+
+Attack Model.
+We assume an attacker can run an unprivileged program on the target machine. The attacker is thus able to continuously run a side-channel attack and obtain traces for all user input. We assume the countermeasure was already installed when the attacker gained unprivileged access to the machine. Consequently, the attacker cannot obtain keystroke timing templates and thus cannot perform a template attack.
+
+We assume an attacker can generally obtain only a single trace for any user input sequence, but multiple traces for password input. 
+In contrast to side-channel attacks on algorithms, which can be repeated multiple times, user input sequences are generally not (automatically) repeatable and thus an attacker cannot obtain multiple traces. An exception are phrases that are repeatedly entered in the same way, such as login credentials and especially passwords. A countermeasure must address both cases.
+
+To effectively eliminate keystroke timing attacks, we identify the three following requirements a countermeasure must fulfill.
+
+: Minimize Side Channel Accuracy.
+As user input sequences are in general not (automatically) repeatable, keystroke timing attacks require a high precision and high recall to succeed.
+To be effective, a countermeasure must reduce the enough so that the attacker does not gain any advantage from using the side channel over an always-one oracle. 
+More specifically, the of the side-channel based classifier may not be above the of the always-one oracle (). 
+Ristenpart Ristenpart2009 reported a false-negative rate of 5 with 0.3 false positives per second.
+At an average typing speed for a skilled typist of 8 keystrokes per second , the is thus , which is an advantage over an always-one oracle of +545.3.
+Gruss Gruss2015Template,Gruss2016Flush reported false-negative rates  8 with no false positives, resulting in an of  , which is an advantage over an always-one oracle of +546.9. 
+Thus, we assume a countermeasure is effective if it reduces the of 
+side channels significantly, such that using the side channel gives an advantage over an always-one oracle of 0.0.
+
+: Reduction of Statistical Characteristics in Password Input.
+In case of a password input, we assume that an attacker can combine information from multiple traces, exploit statistical characteristics.
+A countermeasure is effective if the attacker requires an impractical number of traces to reach the of state-of-the-art attacks, higher than . 
+
+Specifically, if the side-channel attack requires more traces than can be practically obtained, we consider the side-channel attack not practical.
+Studies  estimate that most users have 1-5 different passwords and enter 5 passwords per day on average.
+It is also estimated that  of users change their password at least once every 6 months. 
+Thus, even if we assume that we attack a user with a single password that is entered 5 times per day, the expected number of measurement traces that an attacker is able to gather after 6 months is 913. 
+Assuming that attackers might come up with new side-channel attacks, a generous security margin must be applied.
+We consider a countermeasure effective if it requires more than  traces, traces for a whole year, to reach an of 0.95. 
+
+: Implementation Security.
+and define how the countermeasure must be designed to be effective. 
+However, the implementation itself can indirectly violate or by leaking side-channel information on computations of the countermeasure itself. Consequently, an attacker may be able to filter the true positive keystrokes.
+We thus require that the countermeasure may not have distinguishable code paths or data access patterns to guarantee that it is free from leakage.
+
+If the implementation does not leak by itself, an attacker is only left with the low s from and . If all requirements are met, classical password recovery attacks like brute force and more sophisticated attacks using Markov -grams , probabilistic context-free grammars (PCFG) , or neural networks , are more practical than a side-channel attack in the presence of the countermeasure.
+
+In the following section we describe the design of a countermeasure that fulfills all three requirements.
+
+
+Multi-layer Design
+
+
+  
+ Multi-layered design of .
+ 
+We designed as a multi-layered countermeasure.(The project is open-source and is available on GitHub: https://github.com/keydrown/keydrown.)
+Each layer builds up on the layer beneath and adds additional protection. 
+Figure  shows how the layers are connected to each other. 
+The first layer implements a protection mechanism against interrupt-based attacks and timing-based attacks by artificially injecting interrupts.
+The injected interrupts mimic user behavior to hide the real interrupt within a multitude of fake interrupts.  
+All keystrokes, real keystrokes and fake keystrokes, are passed to the library in a way which is indistinguishable for an attacker. 
+The second layer protects the library handling the user input against attacks, including cache template attacks, and attacks. 
+For every keystroke event received from the kernel, a random keystroke is sent to a hidden window. The library cannot distinguish between real and fake keystrokes and thus both have the same execution path.
+In the third layer, the actual password entry field is protected against attacks by accessing the underlying buffer whenever a real or a fake keystroke is received. 
+
+	First Layer
+
+ 
+ General flowchart of the kernel module.
+ 
+Basic Concept.
+Figure  shows the program flow for the kernel part of for both x86 and ARM.
+We use recurrent timer interrupts with random delays to inject fake keystrokes.
+Note that this leads to a uniform random distribution of keystrokes over time.
+The kernel module handles two types of events, namely hardware interrupts from the input device, and the recurrent timer interrupt.
+If the kernel module receives a timer interrupt, it injects a keyboard interrupt.
+If it receives a keyboard interrupt, it injects a timer interrupt. Thus, for real and fake keystrokes both interrupts occur.
+To minimize the effect of the real keyboard interrupt on the interrupt density, the next recurrent timer interrupt is rescheduled with a random delay. 
+This guarantees that overall, the keystroke interrupt density remains uniform and real keystrokes cannot be distinguished from fake keystrokes.
+
+For the fake keystrokes, the kernel uses a typically unused key value. 
+The kernel does not have varying code paths and data accesses based on the key value, hence, the same code is executed for both real and fake keystrokes.
+In both cases, the keystroke handler is delayed by a small random delay to hide timing differences from interrupt runtimes.
+Finally, all keystrokes are passed to the library through the same data structures (Figure ).
+Consequently, the attacker cannot use a or attack on the kernel to distinguish real and fake keystrokes.
+
+
+  
+ Linux kernel module design for x86 and the Snapdragon SoC. Snapdragon specific functions are marked in blue.
+ 
+Implementation Details.
+The first layer of is implemented as a Linux kernel module that aims to prevent interrupt-based attacks on keystrokes. 
+We do not require a custom kernel or any patches to the Linux kernel itself. 
+All functionality is implemented in one generic kernel module that can be loaded into any Linux kernel from version 3.4 to 4.10, the newest release at the time of writing. 
+The interrupt hardware and handling mechanism is compatible with all personal computers, thus there is no further limitation on PC hardware or Linux distributions. 
+
+Figure  shows the implementation details of the kernel module.
+The recurrent timer interrupts are implemented using the Linux platform-independent high-resolution timer API .
+On Linux, a driver can register an interrupt handler for a specific interrupt which is called whenever the CPU receives the interrupt. 
+The interrupt service routine doIRQ calls the general handleirq function which subsequently calls generichandleirqdesc to execute the correct handler for every interrupt.
+To receive all hardware interrupts, we change the input device's interrupt handler to a function within our kernel module. 
+Afterwards we forward the interrupt to the actual input device driver (i8042interrupt on x86, and irqtouchhandler on the ).
+Every time the kernel receives a recurrent timer interrupt or a real hardware interrupt, we restart the recurrent timer with a new random delay to maintain the uniform random distribution over time.
+
+The kernel module triggers a hardware interrupt for every recurrent timer interrupt.
+On x86, we can simply execute the int assembly instruction with the corresponding interrupt number. 
+This spurious keyboard interrupt travels up until the point where the keyboard driver tries to read the scancode from the hardware.
+As the driver does not execute the entire i8042interrupt function for spurious interrupts, we access the remaining function to fetch it into the cache as if it was executed.
+In contrast, for real keys we access the code that injects the keys to fetch it into the cache as if it was executed.
+From an attacker's point of view, there is no difference in cache activity between a data fetch and a code fetch, a attack cannot determine the difference.
+
+We inject a scancode of a typically unused key, such as F16 or a Windows multimedia key using the standard seriointerrupt interface. 
+Thus, from this point on the only difference between real and fake keystrokes is the scancode. 
+Finally, all scancodes are sent to the upper software layers and run through the same execution path.
+
+On the ARM platform, hardware interrupts and device drivers are hardware dependent. 
+We decided to implement our proof-of-concept on the widespread Qualcomm Snapdragon Mobile Station Modem (MSM) SoC . 
+
+ARM processors generally do not provide an assembly instruction to generate arbitrary interrupts from supervisor mode. 
+Instead, we have to communicate with the interrupt controller directly. 
+The Snapdragon MSM SoC implements its own intermediate I/O interrupt controller. 
+All interrupt generating hardware elements are connected to this interrupt controller and not directly to the GIC. 
+Therefore, if we want to inject an interrupt, we write the interrupt state of the touchscreen interrupt via memory mapped I/O registers to the MSM I/O interrupt controller.
+The remaining execution path is analogous to the x86 module. 
+When the driver aborts due to a spurious interrupt, we fetch the irqtouchhandler to produce the same cache footprint as if it is executed.
+We inject an out-of-bounds touch event using the inputevent, inputreportabs, and inputsync functions, which is then handed to the upper layers.
+
+	Second Layer
+Basic Concept.
+The second layer countermeasure ensures that the control flow within the key-handling library is exactly the same for both real and injected keystrokes.
+The fundamental idea of the second layer is that real and injected keystrokes should have the same code paths and data accesses in the library. 
+We rely on the events injected in the first layer to propagate them further through the key-handling library.
+The injected keys sent by our first layer are valid, but typically unused keys, thus they travel all the way up to the user space and are received by the userspace application. 
+However, these unused keys might not have the exact same path within the library. 
+
+Gruss showed that an attacker can build cache template attacks based on   to detect keystrokes and even distinguish groups of keys. 
+This cache leakage can also be measured with .
+Both attacks exploit the cache activity of certain functions that are only called if a keystroke is handled, varying execution paths and access patterns .
+We mitigate these attacks by duplicating every key event (Figure ) running through multiple execution paths and access sequences simultaneously. 
+The key value of the duplicated key event is replaced by a random key value and the key event is sent to a hidden window.
+Hence, the two key events, the real and the duplicated one, are processed simultaneously by the remainder of the library and the two applications.
+This introduces a significant amount of noise on cache template attacks on the library layer.
+
+The real key event at this point may still be a fake keystroke from the kernel.
+However, we duplicate the key event in order to trigger key value processing and key drawing in the library and the hidden window for both fake and real keystrokes.
+Consequently, we cannot distinguish real and fake keystrokes on the library layer using a side channel anymore.
+
+Implementation Details.
+One of the most popular user interface libraries for Linux is  .
+The library handles the user input for many desktop environments and is thus included in most Linux distributions . 
+As we cannot hide cache activity, we have to generate artificial cache activity for the same cache lines that are active when handling real user inputs. 
+
+The kernel provides all events, such as keyboard inputs, through the /dev/input/event* pseudo-files to the user space. 
+The X Window System uses these files to provide all events to the event queue. 
+
+On x86, the second layer is a standalone application. 
+On system startup, we create a hidden window containing a text field. 
+The application uses poll to listen to the /dev/input/event* interface to get notified whenever a keyboard event occurs. 
+This allows to have a very low performance overhead, as the application is not using CPU time as long as it is waiting inside the poll function. 
+Whenever we receive a keystroke event from the kernel, we create an additional keystroke event with a random key that is associated with the text field of the hidden window. 
+For every keystroke - regardless of whether it is a printable character or not - that comes from the kernel, the same path is active within the library. 
+Thus, an attacker cannot distinguish an injected keystroke from a real keystroke anymore. 
+
+The second layer has no knowledge of an event's source. 
+Thus, it cannot violate , as the information whether a keystroke is real or injected is not present within the second layer. 
+
+On Android, the handling of input events is considerably simpler. 
+The injected events travel directly to the foreground application without going to any non-Android library. 
+Thus, all events have exactly the same execution path and it is only necessary to drop our fake event immediately before the registered touch event handler is called.
+To not leak any information through the non-executed touch handler, we access the cache lines in the same way as if the touch handler was executed.
+
+	Third Layer
+Basic Concept.
+While the first layer protects against interrupt-based attacks and the second layer prevents attacks on the library handling the user inputs, the buffer that stores the actual secret is not protected and can still be monitored using a attack. 
+The fake keystrokes sent by the kernel are unused key codes, which do not have any effect on the user interface element or the corresponding buffer.
+We mitigate cache attacks on this layer by generating cache activity on the cache lines that are used when the buffer is processed for any key code received from the kernel.
+More specifically, we access the buffer every time the library receives a keystroke event from the kernel.
+This ensures that the buffer is cached for both real and fake keystrokes. 
+
+An attacker who mounts a attack against the library, or a attack directly on the buffer, sees cache activity for both real and injected events. 
+This is also the case for cache template attacks, as the injected events induce a significant amount of noise in both the profiling and the exploitation phase.
+Therefore, the third layer protects against attacks that are mounted against the Android keyboard as shown by Lipp Lipp2016, or attacks directly on the input field buffer (cf. Section ). 
+
+Implementation Details.
+In the GtkEntry widget is used as a single-line text and password entry field. 
+By setting its visibility flag, entered characters are replaced by a symbol and, thus, hidden from the viewer. 
+The GtkEntry widget implements the GtkEditable interface that describes a text-editing widget. 
+
+Implementing the countermeasure directly in the library would require to rebuild the library and all of its dependencies. 
+As this is highly impractical, we chose a different approach: LDPRELOAD allows listing shared objects that are loaded before other shared objects on execution of the program . 
+By using this environment variable, we can overwrite the gtkentrynew function that is called when a new object of GtkEntry should be created. 
+In our own implementation, we register a key press event handler for the new entry field. 
+This event handler is called on both real and injected keys and accesses the underlying buffer. 
+
+On Android, the basic concept is the same. 
+It is, however, implemented as part of the keyboard and not the library. 
+The keyboard relies on the inotifyd command to detect touch events provided by the kernel. 
+If a password entry field is focused, the keyboard accesses the password entry buffer on every touch event by calling the key handling function with a dummy key. 
+This ensures that both the buffer as well as the keyboard's key handling functions are active for every event. 
+
+
+
+Evaluation
+We evaluate with respect to the requirements , , as well as discuss the performance of our implementation. 
+We evaluate the x86 version of on a Lenovo ThinkPad T460s with an Intel Core i5-6200U and the ARM version on both an LG (ARMv7) and a (ARMv8). 
+A large comparison table can be found in Appendix .
+As the results are very similar for all architectures we provide the results for the LG (ARMv7) in Appendix  and for the (ARMv8) in Appendix . 
+We evaluate four different side channels with and without : procfs, rdtsc, (including cache template attacks), and on the last-level cache.
+We also discuss attacks on the L1 cache and DRAMA side-channel attacks.
+
+To evaluate , we chose a uniform key-injection interval  resulting in one event (either a real or an injected keystroke) every 10 on average.
+Thus, on average we expect 100 events per second.
+
+As described in Section , we compare our results to an always-one oracle and a random-guessing oracle.
+A random-guessing oracle, which chooses randomly-without any information-for every 10 interval whether there was a keystroke based on an apriori probability, would achieve an of .
+The always-one oracle performs slightly better, as it has a higher true positive rate of 100, but it also has a false positive rate of 100, the oracle neither uses nor provides any information.
+The of the always-one oracle is  and thus, higher than the of a random-guessing oracle.
+If a side channel yields an of this value or below, the attacker gains no advantage over the always-one oracle from this side channel.
+
+
+For all evaluated attacks, we provide the precision of the attack with and without , based on the best threshold distinguisher we can find.
+does not influence the recall, as it does not reduce the number of true positives and it also does not increase the number of real keystrokes.
+However, we provide the recall for all attacks with a recall below 1. 
+The harmonic mean of precision and recall-the an indication how well the countermeasure works. 
+We provide the advantage over the always-one oracle as a direct indicator on whether it makes sense to use the side channel or not.
+
+
+	Requirement 
+
+We evaluate with respect to , the elimination of single-trace attacks.
+defines that a side channel may not provide any advantage over an always-one oracle, the advantage measured in the must be 0.0.
+We show that fulfills this requirement by mounting state-of-the-art attacks with and without .
+Table  summarizes the s for all attacks with and without . 
+In all cases, eliminates any advantage that can be gained from the side channel, when considering single-trace attacks only.
+In some cases, the numerous false positives and false negatives lead to an even worse .
+
+
+	without and with and advantage over always-one oracle for state-of-the-art attacks. eliminates any side-channel advantage.
+2whitelightgray!40
+ 
+
+
+	
+.
+allows an attacker to monitor accesses to memory addresses of a shared library with a very high accuracy.
+Figure  shows the result of such an attack against the gdkkeymapgetmodifiermask function at address 0x381c0 of libgdk-3.so (v3.20.4 on Ubuntu Linux), the shared library isolating from the windowing system.
+This function is executed on every keystroke to retrieve the hardware modifier mask of the windowing system.
+
+[t!]
+        [t]0.99
+            
+      Without .
+          
+
+    [t]0.99
+            
+      With .
+          
+
+    attack on address 0x381c0 of
+      libgdk-3.so. (a) The attack allows to clearly detect every single
+      keystroke (). (b) With , the attacker
+      measures cache hits on injected keystrokes () as well as on real events () and cannot distinguish
+    between them.
+    
+Figure  shows the attack when the countermeasure is inactive. 
+The attacker measures cache hits on the monitored address whenever a key is pressed and, thus, can spy on the keystroke timings very accurately.
+If is active, as illustrated in Figure , the attacker measures additional cache hits on every injected keystroke and cannot distinguish between them.
+For other addresses found using cache template attacks, we made the same observation.
+Without , both profiling and exploiting vulnerable addresses is possible.
+With , we still find all addresses that are loaded into the cache upon keystrokes, however, as we cannot distinguish between real and fake keystrokes we cannot exploit this anymore.
+Without , the precision is  and the is , which is a +569.3 advantage over an always-one oracle.
+If is active, the precision is lowered to  and, thus, the resulting is , which is a (negative) advantage of -40.2 over the always-one oracle.
+
+.
+If an attacker cannot use , a fallback to is possible.
+The disadvantage of a attack on the last-level cache is the amount of noise that increases the false-positive rate. 
+Prior to this work, there was no successful keystroke attack using on the last-level cache. 
+We perform the attack presented in Section  to attack keystroke timings. 
+
+[t!]
+        [t]0.99
+            
+      Without .
+          
+
+    [t]0.99
+            
+      With .
+          
+
+    attack on the  cache sets from 0x2514250 to 0x2514390 of i8042interrupt. 
+    (a) Noise negatively affects the detection of single keystrokes (). 
+    (b) With , the attacker measures even more cache misses on injected keystrokes () as well as on real events () and cannot distinguish between them.
+    
+Figure  shows the results of inferring keystrokes by detecting the keyboard interrupt handler's cache activity using .
+We monitored  cache sets in parallel for a higher noise robustness. 
+Without , the precision is already at a quite low value of  with a recall of only , yielding an of , which is an advantage over an always-one oracle of +440.0. 
+Memory accesses to one of the cache sets by any other application cannot be distinguished from a cache set access by the keyboard interrupt handler, causing a high number of false positives.
+If we enable , the precision drops to , as the attacker additionally measures the noise generated by the injected keystrokes. 
+The is then , which is a (negative) advantage over an always-one oracle of -27.7. 
+
+Figure  shows the results of mounting a attack on the buffer of a password field within a application.
+Although there is more noise visible in the traces, we achieve the same precision and as for the attack on the kernel module when is disabled. 
+If we enable , the precision drops to , which is a bit lower than the precision on the kernel, resulting in an of , which is again no advantage over an always-one oracle.
+
+
+
+[t!]
+        [t]0.99
+            
+      Without .
+          
+
+    [t]0.99
+            
+      With .
+          
+    
+    attack on the  cache sets corresponding to a password field's buffer within a demo application.
+    (a) Noise negatively affects the detection of single keystrokes (). 
+    (b) With , the attacker measures even more cache misses on injected keystrokes () as well as on real events () and cannot distinguish between them.
+    
+
+Interrupts.
+also protects against interrupt-based attacks, including our new timing-based attack.
+For the attacks based on the procfs interface , we measure an average reading interval of 980 cycles.
+With our new attack based on rdtsc, we are able to measure every 95 cycles  on average, resulting in a probing frequency that is one order of magnitude higher. 
+
+Figure  and Figure  illustrate the effect of our countermeasure on the procfs-based interrupt attack and the rdtsc-based attack, respectively. 
+Without , we achieve a precision of  for the procfs-based attack and a precision of  for the rdtsc-based attack, resulting in an of  and  respectively. 
+Enabling reduces the precision to  and  respectively.
+Thus, the resulting is , which is exactly the same as the always-one oracle, for the procfs-based attack, and  for the rdtsc-based attack, which is a (negative) advantage over an always-one oracle of -3.8.
+
+
+[t]0.99
+  
+ Without .
+ 
+
+[t]0.99
+  
+ With .
+ 
+
+procfs-based attack. (a) The attack allows to clearly detect every single
+  keyboard interrupt (). (b) With , the attacker
+  measures fake interrupts () as well as real interrupts () and cannot distinguish
+between them.
+
+
+
+[t]0.99
+  
+ Without .
+ 
+
+[t]0.99
+  
+ With .
+ 
+
+rdtsc-based attack. (a) The attack allows to clearly detect every single
+  keyboard interrupt (). (b) With , the attacker
+  measures fake interrupts () as well as real interrupts () and cannot distinguish
+between them.
+
+
+	Requirement 
+
+reduced the of all state-of-the-art attacks such that using the side channel gives an advantage over an always-one oracle of 0.0.
+An attacker might still be able to combine multiple traces from the same user and build a binary classifier, if the user predictably and repeatedly types the same character sequence. 
+Such a classifier may achieve a higher precision and a higher , as long as there is actually meaningful information in the corresponding traces. 
+However, there is a practical limit on the number of traces an attacker can gather from the user, which estimates to be  traces.
+
+In our attack scenario, we model a powerful attacker who can take advantage of the following properties: 
+
+ Noise-free side channel: The used side channel is noise-free, only real and fake keystrokes are recorded, no other system noise.
+ Perfect (re-)alignment: The attacker can detect when a password input starts with a variance as low as the variance of a single inter-keystroke interval.  
+ Additionally, the attacker has an alignment-oracle providing perfect re-alignment for the traces after each guessed keystroke. This leads to the same variance for every key instead of an accumulated variance.
+ Known length: The attacker knows the exact length of the password and expects exactly as many keystrokes. 
+This attacker is far stronger than any practical attacker.
+
+We generate simulated traces that fulfill the properties above and calculate the average of the perfectly (re-)aligned traces. 
+As our attacker knows the length  of the password, he finds the  most likely positions where a Gaussian distribution with the known inter-keystroke interval variance matches. 
+If the expected value  of each Gaussian curve is within the variance of the real keystroke, we assume that the number of traces was sufficient to extract the positions of the real keystrokes.
+
+We set the simulated typing variance to 40 which is a bit less than the value reported by Lee Lee2015 for trained text sequences. 
+In total, we generated 300000 simulated traces, each containing 8 keystrokes within 2. 
+From this set of simulated traces, we evaluated how many randomly chosen traces we have to combine to extract the correct positions of the keystrokes. 
+We found that an attacker requires an average of  traces to extract the correct positions.
+This is significantly more than the  traces deemed to be secure in requirement .
+
+	Requirement 
+	
+As fulfills and , we can be assured that the underlying technique is a working countermeasure. 
+However, as the implementation of a countermeasure itself can leak information, we need to make sure that does not create a new (microarchitectural) side channel in order to satisfy .
+
+First Layer.
+The first layer runs in the kernel and can thus only be attacked using . 
+Figure  shows that, in general, we have the same execution flow and data accesses. 
+For the few deviations, we prevent any potential cache leakage from non-executed code paths by performing the same memory accesses as if they were executed.
+As an attacker cannot distinguish if a cache activity is caused by an execution or a memory read, the module's cache activity does not leak additional information to an attacker. 
+We investigated the cache activity on the cache sets used by the kernel module in a attack and found no leakage from our module.
+
+Second Layer.
+To make use of the same noise as in the first layer, the second layer listens to the /dev/input/event0 pseudo-file containing all keyboard events.
+This file is not world-readable but only readable by users part of the input user group. 
+Thus, this layer runs under a separate keydrown user with default limited privileges and additional access to this file. 
+
+As the second layer is a user space binary, an attacker could theoretically mount a attack against the second layer. 
+However, attacking the second layer does not result in any additional information. 
+The second layer does not know whether an event is generated from a real or an injected keystroke. 
+For every event, a random printable character is sent to the hidden window. 
+Thus, the execution path for printable characters is always active and the attacker cannot learn any additional information from attacking the second layer. 
+The same is also true for , even a successful attack does not provide additional information. 
+We investigated the cache activity of the shared library parts and the user space binary using a template attack and did not find any leakage.
+
+Third Layer.
+
+The third layer builds upon the second layer, and thus the same argumentation as for the second layer holds. 
+An attacker cannot distinguish real and injected keystrokes in the second layer as all events are merged within the kernel. 
+As the third layer relies on the same source as the second layer, there is also no leakage from the third layer. 
+Thus, any attack on the third layer does not give an attacker any advantage over any other attack.
+We investigated the cache activity of the control flow and data accesses up to the point where the input is stored in the buffer in a attack and found no leakage.
+
+
+	Performance
+
+On the x86 architecture, we evaluate the performance impacts of running our implementation on standard Ubuntu 16.10. 
+We use lmbench , a set of micro benchmarks for performance analysis of UNIX systems, and PARSEC 3.0 , a benchmark suite intended to simulate a realistic workload on multicore systems. 
+
+The lmbench results for the latency benchmarks show a performance overhead of . 
+However, as the execution time of the lmbench benchmarks is in the range of microseconds to nanoseconds, the overhead does not allow for definite conclusions about the overall system performance. 
+Still, we can see that the injected interrupts have only a small impact on the kernel performance. 
+
+To measure the overall performance, we run the PARSEC 3.0 benchmark with different numbers of cores. 
+The average performance overhead over all measurements for any number of cores is . 
+For workloads that do not use all cores, the performance impact is only  for one core and  for two cores. 
+Only if the CPU is under heavy load, we observe a higher performance impact of  when running the benchmarks on all cores. 
+
+On ARM, we evaluate the battery consumption of . 
+We measure the power consumption in three different scenarios, always over the timespan of 5. 
+First, if the screen is off, our fake interrupts are completely disabled, and thus, does not increase the power consumption if the mobile phone is not used. 
+Second, if the screen is turned on, but the keyboard is not shown. 
+In this case, increases the power consumption slightly by . 
+Third, if the keyboard is shown, the power consumption with increases by . 
+However, as most of the time the keyboard is not shown, does not have great impacts on the overall power consumption. 
+
+Note that all the performance measurements were done using the proof-of-concept. 
+We expect that the proof-of-concept can be considerably improved in terms of performance overhead and battery usage by not injecting the fake interrupts all the time but only while the user is actually entering text. 
+
+
+Other Attacks
+While we already demonstrated that the most powerful side-channel attacks are mitigated, we discuss three other attacks subsequently.
+The side channel results from the victim program evicting a cache line of the attacker.
+As the last-level cache is inclusive, any eviction from the last-level cache also evicts this line from the L1 cache.
+However, if a cache line is evicted from the L1 cache it may still be in the last-level cache.
+In this case the attacker would miss the eviction and thus the targeted event.
+In our evaluation we find that the recall is very close to 1 in all cases.
+This means that we do not miss any events.
+Hence, there is no additional information that an attacker could gain from a attack on the L1 cache.
+Consequently, evaluating on the last-level cache is sufficient to conclude that on the L1 cache does not leak additional information.
+
+The DRAMA side-channel attack presented by Pessl Pessl2016 results from a massive number of secret-dependent memory accesses that lead to heavy cache thrashing, the victim program accesses lots of memory locations that are mapped to the same cache lines. 
+It is therefore unclear whether or not protects against DRAMA. In particular, it does not protect against the specific attack against keystrokes in the Firefox address bar (Section ). 
+
+Vila Vila2017 showed a keystroke timing attack based on the event queue of the Chrome browser. 
+They state that the leakage is due to the time it takes Chrome to enqueue and dispatch every keystroke event. 
+Thus, this attack is also out-of-scope (Section ) for . 
+Surprisingly, we noticed that adds measurable noise to their attack, which makes it difficult to see the real keystroke timings. 
+Thus, we concluded that the authors do not only detect timing differences in the event queue, but also see hardware interrupts. 
+To confirm our hypothesis, we tested their attack on Firefox, where it-to a lesser extent-also works, and where was able to fully prevent it. 
+
+Limitations and Future Workmitigates interrupt-based attacks as well as microarchitectural attacks on keystrokes and keystroke timings in general. 
+This includes even the application layer without changing an existing application if either:
+[noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt,leftmargin=16pt]
+ the input is processed only after the user finished entering the text, by pressing a button on a login form, and there is no immediate action when a key is pressed, as it is the case in password fields or simple text input fields,
+ the application is designed to remove side-channel information.
+However, does not prevent all possible side-channel attacks on keyboard input. 
+Depending on the implementation of the application, the application layer might still leak timing information. 
+Examples include but are not limited to:
+[noitemsep,topsep=0pt,parsep=0pt,partopsep=0pt,leftmargin=16pt]
+ key press/release handlers reacting on every keystroke and executing code which might be detected due to CPU utilization , network traffic , or screen redraws ,
+ operations that are executed after every text update, such as autocomplete or live search features .
+
+Other side-channel information may allow inferring keyboard input directly. 
+For instance, various sensors like the accelerometer  have been successfully exploited to infer keyboard input on mobile devices. 
+While such specific attacks can be thwarted by restricting access to specific resources and by injecting noise in the sensor values , we consider these attacks out of scope in this paper. 
+
+We demonstrate protection against interrupt-based attacks and microarchitectural attacks on keystrokes as well as touch events. 
+However, swipe movements are not protected as their interrupt rate is too high.
+While this is not a problem in the case of a password input-if a password can be swiped and thus pasted from a dictionary, there is little to protect-it is future work to investigate how to extend to protect swipe movements in general.
+
+Furthermore, our novel side channels emphasize the necessity to deploy widely. 
+attacks provide a significantly higher accuracy than previous attacks on dynamic memory and kernel memory. 
+It is likely that works similarly in cloud systems and thus allows highly accurate attacks like keystroke timing attacks across virtual machine boundaries.
+
+
+Conclusion
+Keystrokes are processed on many different layers of the software stack and are thus not entirely covered by previously proposed defense mechanisms.
+In this article we presented , a novel defense mechanism that mitigates keystroke timing attacks.
+injects a larger number of fake keystrokes on the kernel level and propagates them-through all layers of the software stack-up to the user space application. 
+A careful design and implementation of this countermeasure ensures that all software routines involved in the processing of a keystroke are loaded, 
+irrespective of whether a real or a fake keystroke is processed. 
+Thereby, mitigates interrupt-based attacks, attacks, and attacks on the entire software stack. 
+With , an attacker cannot distinguish fake from real keystrokes in practice anymore.
+Our evaluation shows that eliminates any advantage an attacker can gain from side channels, 0.0 advantage over an always-one oracle, and thus successfully mitigates keystroke timing attacks.
+
+
+ACM-Reference-Format
+
+
+
+        [t]0.99
+            
+      Without .
+          
+
+    [t]0.99
+            
+      With .
+          
+
+    attack on address 0xfb5a of
+      libinput.so on the . (a) The attack allows to clearly detect every single
+      keystroke (). (b) With , the attacker
+      measures cache hits on injected keystrokes () as well as on real events () and cannot distinguish
+    between them.
+    
+
+
+
+1em
+[t]0.99
+  
+ Without .
+ [t]0.99
+  
+ With .
+ procfs-based attack on the . (a) The attack allows to clearly detect every single
+  touchscreen interrupt (). (b) With , the attacker measures fake interrupts () as well as real interrupts () and cannot distinguish
+between them.
+
+
+Effect of on Different ArchitecturesIn this section, we compare the accuracy of four different side channels with and without : procfs, rdtsc, , and on the last-level cache.
+We compare these attacks on three different architectures: a Lenovo ThinkPad T460s with an Intel Core i5-6200U, an LG (ARMv7), and a (ARMv8).
+Table  summarizes the s for all attacks with and without .
+prevents keystroke timing attacks in all cases when considering single-trace attacks only. 
+
+*
+	without and with for state-of-the-art attacks.2whitelightgray!40
+ 
+
+
+
+
+
+
+[t]0.99
+  
+ Without .
+ [t]0.99
+  
+ With .
+ Timing-based attack on the . (a) The attack allows to clearly detect every single
+  touchscreen interrupt (). (b) With , the attacker measures fake interrupts () as well as real interrupts () and cannot distinguish
+between them.
+
+
+We performed our experiments on the touchscreen soft-keyboard of the .
+Figure  shows a attack on
+libinput.so.
+Without , the precision is  and the is thus .
+If is active, the precision is lowered to  and, thus, the resulting of  means a -86.5 advantage over an always-one oracle.
+
+Figure  and Figure  show a procfs-based interrupt attack and a timing-based attack, both on the . 
+Without , we achieve a precision of  for the procfs-based attack and a precision of  for the timing-based attack, resulting in an of  and  respectively. 
+Enabling reduces the precision to only  and  respectively.
+Thus, the resulting is  for the procfs-based attack, and  for the timing-based attack, which is an advantage of 0.0 over an always-one oracle.
+
+Figure  shows the results of inferring keystrokes by detecting the touchscreen interrupt handler's cache activity using on the .
+We monitored  cache sets in parallel for a higher noise robustness.
+Without , the precision is already at a quite low value of  with a recall of only , as an access to one of the cache sets by any other application cannot be distinguished from a cache set access by the touchscreen interrupt handler.
+Thus, this attack has a high number of false positives. 
+If we enable , the precision drops to , as the attacker additionally measures the noise generated by the injected keystrokes. 
+Thus, the is .
+
+[!t]
+        [t]0.99
+            
+      Without .
+          
+
+    [t]0.99
+            
+      With .
+          
+
+    attack on the  cache sets from 0x382659be to 0x38265abe of touchirqhandler on the .
+    (a) Noise negatively affects the detection of single keystrokes (). 
+    (b) With , the attacker measures even more cache misses on injected keystrokes () as well as on real events () and cannot distinguish between them.
+    
+
+We performed our experiments on the touchscreen soft-keyboard of the .
+Figure  shows a attack on libflinger.so on the .
+Without , the precision is  and the is thus .
+If is active, the precision is lowered to  and, thus, the resulting of  means a -32.5 advantage over an always-one oracle.
+
+
+Figure  and Figure  show a procfs-based interrupt attack as well as a timing-based attack, both on the . 
+Without , we achieve a precision of  for the procfs-based attack and a precision of  for the timing-based attack, resulting in an of  and  respectively. 
+Enabling reduces the precision to only  and  respectively.
+Thus, the resulting is  for the procfs-based attack, and  for the timing-based attack, which is a 0.0 advantage over an always-one oracle.
+
+
+
+        [t]0.99
+            
+      Without .
+          
+
+    [t]0.99
+            
+      With .
+          
+
+    attack on address 0x28ec0 of
+      libflinger.so on the . (a) The attack allows to clearly detect every single
+      keystroke (). (b) With , the attacker measures cache hits on injected keystrokes () as well as on real events () and cannot distinguish
+    between them.
+    
+
+
+Figure  shows the results of inferring keystroke timings by detecting the touchscreen interrupt handler's cache activity using on the .
+We monitored  cache sets in parallel for a higher noise robustness.
+Without , the precision is already at a quite low value of  with a recall of only , as an access to one of the cache sets by any other application cannot be distinguished from a cache set access by the touchscreen interrupt handler.
+Thus, this attack has a high number of false positives. 
+If we enable , the precision drops to , as the attacker additionally measures the noise generated by the injected keystrokes. 
+Thus, the is , which is a -52.7 advantage over an always-one oracle.
+
+
+[t]0.99
+  
+ Without .
+ [t]0.99
+  
+ With .
+ procfs-based attack on the . (a) Without , one can clearly see the interrupts occurring on real key events. (b) With enabled, the interrupts () are hidden in the noise of injected interrupts ().
+
+
+
+[t]0.99
+  
+ Without .
+ [t]0.99
+  
+ With .
+ Timing-based attack on the . (a) The attack allows to clearly detect every single
+  touchscreen interrupt (). (b) With , the attacker measures fake interrupts () as well as real interrupts () and cannot distinguish
+between them.
+
+
+[!t]
+        [t]0.99
+            
+      Without .
+          
+
+    [t]0.99
+            
+      With .
+          
+
+    attack on the  cache sets from 0x3fc0355c28 to 0x3fc0355d68 of msmgpioirqhandler of the . 
+    (a) Noise negatively affects the detection of single keystrokes (). 
+    (b) With , the attacker measures even more cache misses on injected keystrokes () as well as on real events () and cannot distinguish between them.
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,711 @@
+
+
+
+
+plain
+thm
+
+
+Theorem
+
+Distributed Compressed Sensing for
+Sensor Networks with Packet
+Erasures
+
+
+Christopher Lindberg, Alexandre Graell i Amat, Henk
+WymeerschDepartment of Signals and Systems, Chalmers
+University of Technology, Gothenburg, Sweden,
+
+Email: chrlin,alexandre.graell,henkw@chalmers.seThis
+research was supported, in part, by the European Research Council,
+under Grant No. 258418 (COOPNET), and the Swedish Research Council,
+ Grant No. 2011-5961.
+
+We study two approaches to distributed compressed sensing for in-network
+data compression and signal reconstruction at a sink. Communication
+to the sink is considered to be bandwidth-constrained due to the large
+number of devices. By using distributed compressed sensing for compression
+of the data in the network, the communication cost (bandwidth usage)
+to the sink can be decreased at the expense of delay induced by the
+local communication. We investigate the relation between cost and
+delay given a certain reconstruction performance requirement when
+using basis pursuit denoising for reconstruction. Moreover, we analyze
+and compare the performance degradation due to erased packets sent
+to the sink.
+
+Introduction
+
+
+
+Wireless sensor networks (WSNs) provide a tool to accurately monitor
+physical phenomena over large areas.
+The WSN is usually considered to be energy-constrained and to comprise
+up to several thousands of nodes. However, smart phones and other
+ devices carrying powerful batteries have
+become ubiquitous. This provides a possible platform for WSNs where
+energy is not a scarce resource. Instead, the sheer number of sensors
+puts a strain on the bandwidth available for communication between
+the sensors and the sink. Consequently, the measurement data acquired
+by the sensors needs to be compressed. Compression should be able
+to operate under unreliable communication conditions and be scalable
+in the number of sensors. Existing techniques, such as Slepian-Wolf
+coding and transform coding (see and references
+therein) require precise statistical models about the phenomena of
+interest. Compressed sensing (CS),
+on the other hand, alleviates the need for precise statistical models
+and is scalable in the number of sensors.
+
+Prior work on CS in WSNs includes.
+In, CS is used for in-network compression,
+but communication to the sink is done by analog phase-coherent transmissions.
+This is not practical for WSNs operating in a cellular network since
+all sensors need to be perfectly synchronized. Inand, CS is considered for networks with multi-hop
+routing towards the sink. In addition, considers
+the delay caused by a medium access control (MAC) protocol. The drawback
+of multi-hop routing is the necessity to form a spanning tree, which
+is impractical and prone to communication failures, especially when
+the sensors are mobile. In, no sink
+is present, but the sensors use CS and consensus to perform distributed
+signal reconstruction. However, the focus is on reconstruction performance
+and the MAC delay is not studied.
+
+
+
+In this paper, we consider distributed CS for a WSN with equispaced
+sensors on a straight line. The sensors sense a physical phenomenon
+in their local environmentand transmit the (compressed) data to a common sink. We analyze the
+tradeoff between communication cost towards the sink and MAC delay
+from the inter-sensor communication. We consider two approaches that
+rely on local processing between sensors, where only a subset of the
+nodes communicate to the sink. The first approach performs local processing
+by clustering of the sensors, while the other uses average consensus.
+Additionally, we compare the robustness to packet erasures when transmission
+to the sink is performed over a noisy (erasure) channel. Our contributions
+are:
+
+Closed-form expressions for the upper bound on the reconstruction
+error for basis pursuit denoising (BPDN), that guarantees stable reconstruction
+for both approaches in the presence of packet erasures.
+Closed-form expressions for the communication cost and the MAC delay
+to meet a given performance requirement for the consensus approach.
+Notation: We use boldface lowercase letters 
+for column vectors, and boldface uppercase letters 
+for matrices. In particular,  denotes an 
+identity matrix,  is the all-one vector, and 
+is the all-zero vector. Sets are described by caligraphic letters
+. The cardinality of a set  is denoted
+by . The transpose of a vector is denoted by .
+Expectation of a random variable is denoted by ,
+and  indicates the variance of a random variable
+or covariance matrix of a random vector. The indicator function of
+a set  is written as .
+
+
+
+
+
+
+
+
+
+
+
+
+System Model
+
+
+Illustration of the system model. The grey circles
+are the sensor nodes measuring the intensity of the signal .
+They perform local processing using sensor-to-sensor communication
+(black lines). Sensors  and  send packets to the sink, but
+the packet from sensor  is erased.
+
+
+
+Sensor and Network Model
+
+The system model is illustrated in Fig. . We consider
+a one-dimensional network of  nodes placed equally spaced on a
+straight line. Without loss of generality we set the coordinate of
+sensor , , to . The sensors measure
+the intensity of a real-valued signal  in their respective
+spatial coordinates. The observation of sensor  is
+
+where  and the 's are spatially white Gaussian
+noise samples with variance . The observations are
+stacked in a vector .
+
+Each node can communicate over a licensed spectrum with a base station
+serving as a sink, or fusion center (FC), incurring a fixed cost (bandwidth
+usage) . The node-to-sink links are modeled as independent erasure
+channels with packet erasure probability .
+(The event that all packets sent to the sink are erased is not considered.
+) Communication from the nodes to the FC relies on orthogonal channels,
+and thus incurs no delay.
+
+The nodes can also exchange information locally with nearby nodes
+using broadcasting over a shared (unlicensed) channel. To avoid packet
+collisions the transmissions are scheduled using a spatial time division
+multiple access (S-TDMA) protocol. Each node is allowed to transmit
+only in an assigned time slot, which is reused by other nodes if they
+are spatially far apart. Therefore, the local communication will incur
+a delay  (expressed in a number of TDMA slots), but is on the
+other hand considered to be cost-free. We use a disc model with radius
+ to determine if two nodes are connected. For later use, we denote
+by  the undirected graph describing
+the network, where  is the set of nodes and 
+the set of edges connecting the nodes.
+
+
+
+
+
+
+
+
+
+
+
+
+Signal Model
+
+We consider a smooth, band-limited spatial signal , sampled
+as  with energy
+. Furthermore, we assume
+that there exists a transformation 
+such that  is -sparse,
+i.e.,  has  nonzero elements. In our
+case, the signal  is regarded as sparse in the spatial frequency
+domain, owing to the smoothness of . Since nodes are equispaced,
+we can use a discrete Fourier transform (DFT) matrix as ,
+with entries
+
+for . The entries of 
+are then the sampled spatial frequencies of . We will denote
+the average signal-to-noise ratio per sample 
+as .
+
+
+Goal
+
+Given the observations  and the system model outlined
+above, the goal is to reconstruct  at the sink such
+that a certain reconstruction error is guaranteed.
+
+
+
+
+
+
+Compressed Sensing Background
+
+
+Definition and Performance Measure
+
+Let  and  be
+as described in Section . Also, let 
+be a measurement matrix where , and define the compression
+
+where 
+
+Since , recovering  from 
+is an ill-posed problem, as there are infinitely many vectors 
+that satisfy .
+ However, we can exploit the knowledge about the sparsity of 
+in the transform domain. If  satisfies the restricted
+isometry property (RIP), and ,
+(The parameter  is independent of , , and .
+An exact expression can be found in.
+) we can recover  from  by considering
+the following -norm minimization problem,
+minimize & _1
+
+subjectto & AT^-1-y_2,called BPDN. If, for a
+given matrix , there exists a constant 
+such that the following inequality holds for all -sparse vectors
+,
+
+then  satisfies the RIP of order . The computation
+of  is NP-hard. In andit was shown that if  is a Gaussian random matrix
+with i.i.d. entries ,
+then  satisfies the RIP with very high probability.
+
+Assuming  and ,
+the -norm of the reconstruction error of BPDN is upper
+bounded by
+where ,
+in which  is the solution to (),
+ is the best -sparse approximation of
+the transformed underlying signal, and  are constants
+that depend on . Here, we only
+consider strictly -sparse signals, meaning there are at most 
+non-zero components in . Hence, the first term
+on the right hand side of () is zero.
+
+Since the entries of  are i.i.d. Gaussian, 
+ ,
+ 
+is distributed according to a scaled -distribution. Hence,
+by Taylor series expansion, 
+and .
+Therefore, to satisfy 
+with high probability,  should be choosen as
+
+& =_ref=_nN((1-14M)+12M-18M^2)
+
+ & _nN(1+12M),
+where  is used to achieve a desired confidence level.
+
+
+
+
+
+
+Distributed Compressed Sensing for Networked Data
+
+We observe that the compression in () can be written
+as a sum of linear projections of the measurements  onto the
+corresponding column  of ,
+
+If we generate  in sensor , it can compute
+its contribution  to
+the compression. By distributing the local projections 
+in the network using sensor-to-sensor communication and local processing
+in the sensors, we can compute () in a decentralized
+manner. Consequently, this compression reduces the number of sensors
+that need to convey information to the sink, effectively reducing
+the communication cost at the expense of a delay induced by the local
+communication. In Sections  and we present two approaches to such distributed processing for which
+we determine the node-to-sink communication cost, inter-node communication
+delay, and an upper bound on the reconstruction error.
+
+
+
+
+
+
+Distributed Linear Projections using Clustering
+
+
+Cluster Formation and Operation
+
+A set of nodes , ,
+is selected to act as aggregating nodes (clusterheads), such that
+clusterhead  collects information from a subset
+(cluster) , of the sensors in
+the network. The clusterhead selection is done with respect to the
+local communication range such that each clusterhead is located at
+the center of its cluster, which has radius . The clusters are
+disjoint, i.e.,  for
+, and .
+Note that depending on  and , one of the clusters at the boundary
+may be smaller than the others. The number of clusters is given by
+
+
+
+Node  computes its local linear projection 
+and sends it to its clusterhead. Clusterhead  computes
+
+Finally, the clusterheads transmit their partial information to the
+sink. Since the clusters are disjoint, the sink computes ,
+and reconstructs  using BPDN.
+
+
+
+
+
+
+Cost and Delay
+
+The total communication cost is . The delay
+is given by the number of time slots in the S-TDMA needed to schedule
+a broadcast transmission for every non-clusterhead node. Due to the
+cluster formation and communication model that we consider, there
+is no interference from nodes in a cluster to the neighboring clusterheads.
+Hence, the delay  is given by the maximum node degree of the clusterheads,
+
+
+
+
+Reconstruction Performance and Robustness
+
+Define the set  as the set of clusterheads
+whose packets are erased during transmission to the sink. The sink
+is assumed to have no knowledge of , but attempts to
+recover  assuming it has received the correct compression
+. The resulting compression at the
+sink given a set of packet erasures  is 
+
+y & =_iLDy_C_i=Ax+(A-B)n-Bx=y-Bz,where  is a matrix columnsto the nodes whose clusterhead packet was erased
+ equal to the corresponding columns of .
+Therefore, for packet erasure probability , we have 
+and , while for 
+we have to account for  when setting 
+in the BPDN for () to hold. The following Theorem
+
+Given the model described in Section ,
+ as described in Section , and the
+compression in (),  the choice of 
+that guarantees a stable recovery using BPDN is
+
+
+The proof is given in Appendix .
+
+
+
+
+Distributed Linear Projections using Consensus
+
+An alternative approach is to compute  from ()
+directly in the network by using a fully distributed algorithm. Here,
+we propose the use of average consensus.
+
+
+The Consensus Algorithm
+
+We can express () as
+
+We use average consensus to estimate  in the
+network. The estimate is then used at the sink to compute ().
+Let  be the initial value
+at sensor . The updating rule of average consensusis given by
+
+where  is the set of neighboring
+sensors of sensor ,  is the algorithm step size, and 
+is the iteration index. We can also express ()
+in matrix form as
+
+where 
+and , in which
+ denotes the graph Laplacian of . By
+properties of the consensus algorithm, 
+is conserved in each iteration,
+
+irrespective of . If  is chosen small enough,
+the algorithm is monotonically converging in the limit 
+to the average in all sensor nodes, 
+
+
+
+After a certain number of iterations , a set ,
+with , of randomly chosen sensors communicate their
+estimates  of  to the
+sink. However, due to erasures, the sink estimates 
+from a set of nonerased packets ,
+, as
+
+Finally,  (cf. ()) is used in
+() to reconstruct .
+
+
+
+
+Cost and Delay
+
+As for clustering, the total communication cost is .
+The delay is given by 
+
+
+Reconstruction Performance and Robustness
+
+Due to the fact that average consensus only converges in the limit
+, for any finite  there will be an error
+in each sensor estimate  with respect to the
+true average . The transmitted packets to the
+sink can also be erased. This results in a mismatch 
+between the desired compression and the compression calculated using
+average consensus. As for the clustering case, in order to guarantee
+that the reconstruction error is upper bounded by (),
+this perturbation has to be accounted for when setting 
+in the BPDN. The following Theorem states how this should be done.
+
+Let  be the second largest eigenvalue
+of . Given the model in Section , 
+as described in Section , and the compression in
+(),  the choice of  that guarantees
+a stable recovery using BPDN is
+
+where
+(The value of  in () may be very conservative,
+since the upper bound on the convergence rate of consensus (see ()
+in Appendix ) may be very loose. Consider the
+eigenvalue decomposition of ,
+and let  be
+the projection of the data  onto the eigenspace of
+. Order the eigenvalues as . Then, the disagreement
+after  iterations of consensus on  is given by)
+w(I)-w_2^2 & =_k=2^N_k^2I_k^2,which can be upper bounded by
+
+where  follows since  is the entry that
+corresponds to the eigenvector of , and thus the initial
+disagreement is .
+In general, () is hard to compute and ()
+may be loose. If the support of  is concentrated
+to those entries corresponding to the smaller eigenvalues, 
+decreases much faster than  in the first iterations.
+However, after enough iterations the smaller eigenvalues have diminished,
+and the convergence rate is dominated by . In our case,
+the data  is Gaussian, and since the columns of 
+form an orthonormal basis in ,  is
+also Gaussian with the same mean and variance. Therefore, the power
+of  is spread evenly in its entries. Consequently, the
+bound is loose for our signals and consensus behaves much better with
+respect to  than shown in Figs.  and .
+ 
+
+
+The proof is given in Appendix .
+
+
+
+
+
+
+
+
+
+
+
+
+Results and Discussion
+
+In this section, we evaluate the cost-delay tradeoff of the clustering
+and consensus approaches, i.e., how the reconstruction error scales
+with the number of iterations  and the number of nodes transmitting
+to the sink , and compare the robustness to packet erasures. We
+fix , , , , and ,
+giving  in linear scale. The figures are created
+by computing  using the expressions in Theorems and , where the upper bound 
+is used in (), assuming  is chosen optimally
+. Since  in () is NP-hard
+to compute, we normalize the error with respect to . Also,
+since , , and  are fixed, we also normalize
+with respect to . Hence, the normalized
+error is equal to .
+Note that .
+
+
+Cost-Delay Tradeoff
+
+
+xlabelylabellegend1legendlegend2legendlegend3legendlegend4The figure shows the boundaries of systems satisfying
+the given error threshold . The area above the graphs are the
+regions of points  satisfying
+, where , for ,
+when using average consensus with . 
+Fig.  shows the boundaries of the
+regions giving a normalized error lower than the threshold for packet erasure probabilities .
+As can be seen, a higher packet erasure probability results in a boundary
+receding towards the top right corner, meaning that higher  and
+ are needed to meet . An important observation is also that
+the normalized error  is nonincreasing in
+ and . Looking at the slope of the curves, we see that there
+are differences in how much delay we must in order to lower communication cost. For example when , for
+low and high costs, we need to increase delay significantly, while
+for medium costs the curves are flatter and a smaller increase in
+delay is  to reduce cost.
+
+For clustering,  and  are implicitly given
+by  through () and (). Hence,
+there is no tradeoff as such for the clustering. The implication is
+that for larger  we cannot increase cost or delay to ensure that
+.
+
+
+Robustness to Packet Erasures
+
+
+xlpylabellegend1clusteringlegend2legendlegendconsensus, legend3consensus, This plot shows  for different
+packet erasure probabilities of clustering and two cases of consensus
+with , where  and 
+Fig.  depicts the behavior of
+ with respect to . 
+ consensus is less sensitive to
+packet erasures as compared to clustering. This is in line with the
+results in Theorems  and , where
+ and ,
+for clustering and consensus, respectively (see ()
+and ()). Note that the source of error is different
+for clustering and consensus. Both approaches are affected by packet
+erasures, but in different manners. For clustering, if an erasure
+occurs, that information is lost, while for consensus the estimation
+step () at the sink is affected only to a small degree.
+This is because the consensus algorithm disseminates the information
+throughout the network, making it more robust to packet erasures.
+On the other hand, for consensus  is dominated
+by the disagreement between the estimates at the nodes and the true
+average. This explains the superiority of clustering for small .
+However, the disagreement decreases exponentially in , so 
+can be made arbitrarily small by increasing .
+
+
+Conclusion
+
+We derived closed-form expressions for the upper bound on the -norm
+of the reconstruction error for a clustering and a consensus approach
+to distributed compressed sensing in WSNs. For the consensus approach,
+the expression can be used to trade off cost and delay such that the
+reconstruction error is guaranteed to satisfy a given performance
+requirement with high probability. We also analyzed the robustness
+to erasures of packets sent to the sink. If a large enough number
+of iterations is allowed, consensus is more robust than clustering,
+except for very small packet erasure probabilities. Moreover, by increasing
+the number of iterations, the additional error caused by the consensus
+algorithm and packet erasures can be made arbitrarily small. Another
+benefit of the consensus is that there is no need to 
+, which can be a hard task, especially if the sensors are
+mobile. Future research includes unreliabe sensor-to-sensor communication,
+uncertainty in the position of the nodes, 
+
+
+
+
+
+Proof of Theorem 1
+
+When using clustering, the compressed vector received by the sink
+is
+Define , and the total
+perturbation . Let
+ and  be the th column
+vector of  and , respectively. Then,
+for each node  we have ,
+and . Therefore,
+for () to hold, we need .
+Denote by  the set of nodes whose information is not
+erased, i.e., ,
+where . Note that  is a zero-truncated binomial
+random variable with parameters  and . It is easy to see that
+,
+hence the covariance matrix is
+
+E_H,A,n u_ku_k^T  & =E_H,A c_kc_k^T E_n n_k^2 
+
+ & +E_H,A b_kb_k^T x_k^2.
+For notational convenience, we drop the subscript indicating over
+which variable the expectation is taken. We observe that for ,
+ and ,
+and for , 
+and , thus
+
+It follows that
+
+E uu^T  & =E (_k=0^N-1u_k)(_k=0^N-1u_k)^T 
+
+ & (a)=E _k=0^N-1u_ku_k^T 
+
+ & =_k=0^N-1(E u_ku_k^TI_H(k) +E u_ku_k^TI_VH(k) ),
+where  follows since all 's are
+mutually independent. The probability that  is
+given by
+
+Then, we have
+
+E uu^T  & =1M(N(1-p_H)_n^2+Np_HE_XN)I_M
+
+ & =_n^2NM(1-p_H(1-SNR))I_M_u^2I_M.For large enough , ,
+and consequently  is distributed according
+to a scaled -distribution. Hence, 
+and .
+Therefore, using  as defined in (),
+the robust choice for  is
+
+& =E u_2 +Var(u_2)
+
+ & =_ref1-(1-1-p1-p^N/(2R+1))(1-SNR).
+
+
+
+
+
+Proof of Theorem 2
+
+The vector received by the sink using consensus is
+
+In order to guarantee stable reconstruction .
+By the triangle inequality, we have
+
+Thus, we choose .
+The statistics of the first term on the right hand side of ()
+are given in Section . It remains to determine the
+contribution from the consensus. Since all dimensions of 
+are i.i.d. we can calculate the statistics from one dimension and
+deduce what the total contribution is. We fix the number of iterations
+, the number of queried nodes , and the data .
+Define the disagreement between the estimate from  received
+packets and the true average after  iterations for each dimension
+ 
+where  is the th element of the vector ,
+ is the average over the th dimension, and 
+is the estimate . For notational
+convenience we drop the subscript indicating the dimension, and the
+dependencies on  and . Now, there are two sources of randomness:
+(i) the set of queried nodes , which
+is randomly selected; (ii) the number of nonerased packets ,
+due to random packet erasures. Since 's are fixed, 
+is constant. Hence,
+
+Var_L,L() & =Var_L,L(w)=E_L,L (w-w)^2 
+
+ & =E_L E_.LL (w-w)^2  .
+The estimate  is an estimate by simple random sampling from
+a finite population of size . Then
+
+E_L &  E_.LL (w-w)^2  
+
+ & =E_L 1LN(_k=0^N-1(w_k-w)^2)N-LN-1 
+
+ & =1N(N-1)(_k=0^N-1(w_k-w)^2)(NE_L 1L -1),
+where the first equality is due to.
+The expectation of the  of 
+is
+If we consider again the dependence of  on  and let ,
+we have
+
+The convergence rate of the -norm 
+is defined as
+
+which can be upper bounded by .
+Consequently, we have
+
+Now, considering the randomness of  and ,
+
+Furthermore
+
+E_A,n w(0)-w1_2^2  & =_k=0^N-1E_A,n (w_k(0)-w)^2 
+
+ & =N-1N(_k=0^N-1_n^2M+_k=0^N-1x_k^2M)
+
+ & N_n^2+E_XM,
+where the last step follows since we consider very large . Finally,
+we have
+
+Due to the multiplication by  in (), and since
+all dimensions  are i.i.d., ,
+hence  is distributed according
+to a scaled -distribution with 
+and .
+Using () and the same argument as in (),
+the robust choice of  is
+
+where
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+IEEEtran
+
+
+

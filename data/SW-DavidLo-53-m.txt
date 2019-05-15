@@ -1,0 +1,1355 @@
+Conclusion and Future Work
+sec:conclusion
+
+
+
+We have proposed WebAPIRec, a recommendation system that takes as input a new project profile and recommends web APIs that are potentially relevant to the project. We have evaluated our approach on 9,883 web APIs and 4,315 projects in ProgrammableWeb.
+WebAPIRec achieves Hit@5, Hit@10, MAP@5, MAP@10, MAP, and MRR of 0.840, 0.880, 0.697, 0.687, 0.626, and 0.750, respectively. WebAPIRec can thus successfully recommend correct web APIs in top-5 positions for 84.0 of the projects. We have compared WebAPIRec ProgrammableWeb's native search functionality, McMillan et al.'s application search engine mcmillan2012exemplar, and popularity-based recommendation. WebAPIRec always produce superior results.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+As future work, we plan to analyze more APIs and more projects from additional data sources beyond ProgrammableWeb. We also plan to consider context information to improve our approach (e.g., a word "developer" could mean either a real estate developer or a software developer). The context of a word can often be inferred from words appearing before or after the target word. To consider context information, we plan to employ deep learning (e.g., Word2Vec mikolov2013distributed ). Moreover, textual information from project profile in ProgrammableWeb may not contain all technical details and this may be a factor contributing to some inaccurate recommendations in our experiments. We plan to address this limitation by enriching descriptions of web APIs with information from other sources, e.g., online forums and Twitter feeds where users of web APIs share their experience and queries, and developers provide additional technical information to respond to user queries. We also wish to extend our study to not only recommend APIs, but also suitable resources to help developers get started with the APIs. Last but not least, we wish to develop an approach that can provide rationales for recommended APIs (e.g., explaining why an API can be used for a given project).
+
+
+
+
+
+
+sec:experiment
+
+
+
+Dataset, Metrics, and Settingssec:dataset
+
+Dataset. ProgrammableWeb's site contains the profiles of more than 17,000 APIs and more than 7,000 web application projects. However, ProgrammableWeb specifies that a number of APIs and projects are no longer offered by the providers. ProgrammableWeb explicitly labels such APIs and projects as deprecated. This allow us to delete corresponding APIs and projects automatically. We delete these phased out APIs and projects and focus on those that are available for use. After we delete these phased out APIs, we are left with 9,883 APIs and 4,315 projects which we use for this study. The goal of our experiment is to investigate whether WebAPIRec can return correct APIs given the profile of a project. The ground truth APIs of a project are the APIs that are specified in the project's page on the ProgrammableWeb's site. Note that these APIs are used by the project and thus prove to be useful APIs. 
+
+In our preliminary investigation on some projects in ProgrammableWeb, we notice that their textual descriptions sometimes explicitly mention the API names that are used by the projects. We remove all mentions of these API names from the project description. This is necessary to ensure that the description contains no mention about the correct APIs. The removal process is fully automatic since the mentions of API names in project textual descriptions are exact and thus removing them simply requires us to perform a simple textual search and replace procedure.
+
+One may ask whether the ground truth obtained from ProgrammableWeb is reliable. Due to the large size of the dataset, it is impossible for us to know whether all the ground truth is valid. To mitigate this threat to the validity of our findings, one of the authors have manually checked the correctness of the ground truth for a random subset of 353 projects to achieve statistically significant result at a confidence level of 95 and margin of error of 5. We found that the ground truth is correct. We consider a ground truth to be correct if used APIs’ functionalities do not conflict with a project’s description. Conflict happens when we cannot find reasons on why an API would be used by a project given its description. On the random subset, we find that no such conflict occurs.
+
+Evaluation Metrics. To evaluate our approach, we consider several popular evaluation metrics Hit@N, Mean Average Precision (MAP), MAP@N, and Mean Reciprocal Rank (MRR). These metrics have been used before in many previous studies shaowei/icpc2014,RaoK11,ZhouZL12,SahaLKP13,SunLWJK10,RAN07,ThungWLL13,manning2008introduction. We elaborate these metrics below:
+
+itemize
+
+Hit@: This metric counts the percentage of ranked lists produced when recommending APIs to projects, where at least one correct API exists at the top  results. In this work, we use  and .
+
+Mean Average Precision (MAP): MAP is a popularly used IR metric to evaluate the ranking results. It exhibits a top-heaviness trait,  putting higher penalties for incorrect ordering at the top ranked APIsmanning2008introduction. To compute MAP, for each ranked list returned for a project, we first compute the average precision (AP):
+align
+eqn:avg_prec
+ AP =  _i=1^M P(i)rel(i)_i=1^M rel(i)
+align
+where  is the number of retrieved APIs,  is a binary value that represents whether the  retrieved API is correct or not, and  is the precision at position  of the ranked list.  is defined as:
+align
+ P(i) = Correct APIs at top i positionsi
+align
+In turn, MAP is the mean of the APs over all projects.
+
+MAP@: This is the same as MAP, except that we replace  in equation (eqn:avg_prec) to , where . We use this metric to account for limited attention bandwidth, i.e., a developer can look only at a limited number () of APIs. In this work, we use  and .
+
+Mean Reciprocal Rank (MRR): The reciprocal rank of a ranked list is the inverse of the rank of the first correct API in the ranked list. The mean reciprocal rank takes the average of the reciprocal ranks of all ranked lists produced when recommending APIs to projects. For a set of projects P, MRR is defined as:
+align
+MRR=1P_i=1^P1rank_i
+align
+where  is the rank of the first correct API.
+
+
+
+
+
+
+
+
+
+
+
+
+
+itemize
+
+Experiment Setting. We use 10-fold cross validation to evaluate our approach. That is, we first divide the projects into 10 mutually exclusive parts (i.e., folds), We then use 9 parts to train the weight parameters of our personalized ranking model (i.e., training set), and use the remaining part to evaluate the performance of our model (i.e., testing set). We repeat the process 10 times using 10 mutually exclusive testing sets. We aggregate the performance across the 10 folds and report the average scores. All experiments were conducted on an Intel(R) Xeon CPU E5-2667 @2.90 GHz PC with Linux CentOS operating system. For all experiments, we set the regularization parameter  of our ranking method to .
+
+Baseline Methodssec:baselines
+We use the following baselines to gauge our WebAPIRec approach:
+enumerate
+ProgrammableWeb Search Functionality. For this baseline, we type the query in ProgrammableWeb search box and check whether the recommended APIs match the APIs that were actually used by the project. We consider three variants of this baseline approach: the first variant only uses the project description (PW), only uses the project keywords (i.e., tags) (PW), and both (PW). Note that we do not perform any preprocessing for ProgrammableWeb input since developers would also not do so. Moreover, ProgrammableWeb might perform it internally. 
+
+Exemplar. This is an adapted version of McMillan et al.'s work mcmillan2012exemplar. They proposed Exemplar, a search engine for relevant applications. In our work, we treat an API as an application and search "relevant applications" using project profile. To use Exemplar in our setting, we need to remove its source code analysis component, since our scenario only involves text as input. We note that many APIs, including the web APIs considered in this work, do not come with source code. After this treatment, Exemplar approach is equivalent to an approach that computes VSM text similarity between project and API descriptions, and uses the resultant similarity scores to rank APIs. Since Exemplar code is not made publicly available, we reimplemented it based on the authors’ description in the paper.
+
+
+
+PopRec. This is a popularity-based recommendation  baseline. We define popularity of an API as the number of times the API has been used on the list of projects in the training data. Therefore, a more popular API will have a higher rank in the recommendation list output by PopRec. In this approach, the same list of APIs will be recommended to each project in the evaluation data. In other words, the recommendation is not personalized. The top-50 popular APIs are shown in Table tab:top50API.
+enumerate
+
+table[!t]
+			 Top-50 APIs in ProgrammableWebtab:top50API
+	
+	tabularp8cm
+		API Names
+
+		Google Maps, Twitter, YouTube, Twilio, Facebook, Amazon Product Advertising, Twilio SMS, eBay, Last.fm, Microsoft Bing Maps, DocuSign Enterprise, Google App Engine, foursquare, Google Homepage, Box, GeoNames, del.icio.us, Amazon S3, Shopping.com, Amazon EC2, Concur, indeed, Instagram, Google AdSense, LinkedIn, Salesforce.com, Freebase, Facebook Graph, Yelp, Spotify Metadata, Wikipedia, Google Earth, Bing, Bit.ly, Yahoo BOSS, Google AJAX Libraries, Google Analytics, Google Geocoding, Lyricsfly, Google Ajax Feeds, Google Translate, MusicBrainz, Panoramio, Bing Maps, Oodle, SoundCloud, PayPal, Zillow, Google Calendar, Facebook Social Plugins 
+
+		tabular
+	
+table
+
+For all baselines, we simulate how developers search APIs as observed from the ProgrammableWeb interface. This makes our baselines meaningful since it reflects real world scenario.  For all approach (including ours), if two APIs have the exact ranking score, we randomly break the tie. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Key Results and Analysis
+
+
+RQ1: How Effective is Our Approach in Recommending APIs to Projects?
+We evaluate the extent our approach WebAPIRec is effective to recommend APIs to projects. We compare our approach with the baselines in Section sec:baselines. Evaluation is done via a 10-fold cross validation procedure, and for each project, we use WebAPIRec and the baselines to recommend APIs based on the project profile.
+
+
+
+RQ2: What is the Contribution of Each Feature in Our Ranking Model?
+We evaluate the contribution of each feature in our approach. The goal is to know which features are more important. To this end, we use the weight parameters  in our model. Features with higher weight values are considered to have higher contributions and are thus more important. As we perform 10-fold cross validation, we average the feature weights across 10 folds. This gives us the average contribution of each feature. We then report these average weights to indicate which features are the most important.
+
+
+
+RQ3: What is the Impact of Training Size to the Effectiveness of Our Approach?
+We investigate the effect of training size to the effectiveness of our approach. To this end, we keep the same 10 of data as our testing set, but use different percentages of data as training set: 10, 20, 30, , 80. By keeping the same set of evaluation data, we ensure that the impact of training size is comparable. For each percentage of training data, we report the average performance. 
+	
+
+
+RQ4: How Efficient is Our Approach During Its Training and Deployment Phases?
+The efficiency of WebAPIRec affects its practical use. Thus, we investigate the time it takes for WebAPIRec to learn its weights from training data and the time it takes to recommend APIs to a project. Firstly, to measure training efficiency, we log the training time for each CV fold and report the averaged (training) time over 10 folds. Secondly, we measure recommendation efficiency by computing the total time required to predict on the 10 testing sets, and dividing it with 10 times the total number of projects.
+
+
+
+
+Threats to Validity
+ Feature Engineering
+sec:feature
+In this section, we define features  that we use to train our personalized ranking model. We explore two groups of features: project features and API features.
+
+Project Featuressec:pa
+
+To derive the project features, we first find the top- projects whose profiles are the most similar to the new project profile. APIs used in these top- projects are then used to calculate the API scores given the new project. We describe these two steps in the following subsections.
+
+Finding Top- Projectssec:patopk
+
+In order to find the top- projects, we need to measure the similarities between many projects. For two project profiles  and , we measure either the similarity of their textual descriptions or the similarity of their keywords. The detailed steps are as follows:
+
+
+enumerate
+[i.] Similarity of Textual Descriptions. To compute the similarity between two textual descriptions, 
+as mentioned in Section sec:WebAPIRec, we first convert each textual description to a VSM feature vector and then compute the similarity using cosine similarity between the two resultant feature vectors. The cosine similarity score corresponding to  and  is denoted as .
+
+
+[ii.] Similarity of Keywords. To compute the similarity between the keywords of  and , which we denote as , we use the following formula:
+aligneqn:simkeypp
+Sim^Key(p_1,p_2) = p_1^Key p_2^Keyp_1^Key p_2^Key
+align
+
+where  and  corresponds to the set of keywords of  and  respectively. Also,  denotes the number of elements in the set . The numerator of the equation corresponds to the number of keywords that  and  have in common, while the denominator of the equation normalizes the similarity so that its score ranges from zero to one.
+enumerate
+
+Notice that we separate descriptions and keywords so that we can distinguish their importance. It may be the case that the similarity of keywords is more important than the similarity of descriptions (and vice versa).
+
+
+
+Assigning Scores to APIs
+
+After a list of the top- projects is obtained (based on the similarity of textual descriptions or keywords), we analyze the set of APIs used in these projects. If an API is used by many of these top- projects, the API is likely more suitable for the new project. Considering a new project description  and project similarity measured in terms of textual descriptions, we assign a textual description based score to an API  as:
+align
+CF^Text(p',a,k) =
+ppN_k(p') y(p,a)=1keq:rescorehistory
+align
+where  denotes the top- projects of , and  indicates whether API  is used by project . The score  ranges from 0 to 1. The higher the score is, the more likely API  is suitable for the new project description . Similarly, we can measure project similarity in terms of keywords and compute .
+
+We define our project features in terms of . We consider different numbers of nearest neighbors  and similarity definitions (i.e., description or keyword). We list these features in Table tab:features. The intuition behind this set of project features comes from the collaborative filtering concept, i.e., we are likely to find suitable APIs for a project by looking at other projects that are similar to it. The idea is that similar projects are likely to share common APIs because they share similar functionalities. Compare the descriptions of web application projects in Tables tab:mashupEx and tab:mashupSim. Both project descriptions contain words such as "music" and "world" and have a common keyword, i.e., "music". Note that the two projects share a common API namely "Last.fm".
+
+table[!t]
+    Feature Definitiontab:features
+  
+  tabularlcl
+    Category  & Feature & Definition 
+
+     10*Project &  &  with .
+
+     &  &  with .
+
+     &  &  with .
+
+      & &  with .
+
+     &  &  with .
+
+    2-3
+      & &  with .
+
+      & &  with .
+
+      & &  with .
+
+      & &  with .
+
+     & &  with .
+
+     2*API &  & (,)
+
+   2-3
+    &   & (,)
+
+    tabular
+  
+table
+
+table[!t]
+      Another Sample Web Application Project Profiletab:mashupSim
+  
+  tabularlp1.9in
+    2cSound Shelter - An electronic music discovery engine 
+
+     Long Description &  Sound Shelter is an electronic music discovery engine. We listen to the opinions of the top taste makers from across the planet to bring you the world's best House, Techno, Disco, Dubstep and Soul Jazz releases. Our powerful web technology collects recommendations from music lovers all over the world to give you the best new releases across all electronic and soul jazz.
+
+   Keywords & music, search, recommendations
+
+   APIs & Last.fm, Discogs, Echo Nest, Spotify Metadata, Juno Download
+
+    tabular
+  
+table
+
+API Featuressec:aa
+
+We compare profiles of different APIs with a new project profile. For each API, we compute scores corresponding to the similarity between the API profile and the new project profile. For an API  and a new project , we either measure the similarity of their textual descriptions or the similarity of their keywords. We consider these two similarity measures as our API features and list them in Table tab:features. The detailed steps to compute the similarity measures are as follows:
+
+enumerate
+[i.] Similarity of Textual Descriptions. To compute a similarity score between an API's and a new project's textual descriptions, we convert these textual descriptions into vectors of weights following similar steps when computing similarity of textual descriptions between two projects in Section sec:patopk. We then compute the cosine similarity between the API and the new project feature vectors. 
+We denote the cosine similarity between an API  and a new project  as (,).
+
+[ii.] Similarity of Keywords. To compute a similarity score between the set of keywords for API  and the set of keywords for the new project description , we follow Equation eqn:simkeypp. We denote the keywords similarity of an API  and a new project  as (,).
+
+enumerate
+
+The rationale behind using similarity between a project and an API as features is that a project profile should explain the project functionality while an API profile should explain the API functionality. Thus, an API that is more similar to a project is likely to be more suitable for the project since they are likely to share similar functionality. Consider the project profile in Table tab:mashupEx and the API profile in Table tab:apiEx, both the project and API descriptions contain words such as "fm", "music" and "artists", and share a common keyword, i.e., "music". In this case, we can say that the API is likely to be  usable for the project.
+
+API Recommendation System
+sec:WebAPIRec
+
+
+
+
+
+
+The architecture of WebAPIRec is outlined in Figure fig:framework. It takes as input: a new project profile, a set of API profiles, and a set of past projects. From the new project profile and each API profile, WebAPIRec takes its textual descriptions and keywords. From each past project, WebAPIRec takes its textual descriptions, keywords, and APIs that was used. WebAPIRec analyzes these inputs and finally produces a ranked list of APIs to be recommended to the target project.
+
+figure[!t]
+framework.png
+
+Architecture of WebAPIRec
+fig:framework
+
+figure
+
+WebAPIRec has two operating phases: training phase and deployment phase. In the former phase, WebAPIRec takes as input a set of API profiles and a set of past projects along with the APIs that they use. It then learns a personalized ranking model (see Section sec:method). In the deployment phase, it takes as input the new project profile, a set of API profiles, and the trained personalized API ranking model. It then applies the model to the new project profile and outputs a ranked list of recommended APIs.
+
+
+
+
+
+To train the personalized ranking model in the training phase, WebAPIRec needs to represent the profile of each past project (i.e., training data) as a feature vector. 
+WebAPIRec first identifies nouns from the textual descriptions using the Stanford POS tagger. These nouns carry more meaning than other kinds of words, as advocated in Capobianco12,Shokripour13. WebAPIRec then combines the extracted nouns with the keywords, remove stop words, stem each of the remaining words, and construct a VSM feature vector. The same process can be done to convert an API profile into a feature vector. 
+These project and API feature vectors are then used to construct a set of training triples , which serves as input to the personalized ranking model. In a triple ,  is the feature vector of a project in the training data,  is the feature vector of an API that is used by project , and  is the feature vector of an API not used by project . At the end of the training phase, the ranking model will have learned how to rank a list of APIs based on their feature vectors and the feature vector of the target project.
+
+
+
+
+
+
+
+
+
+
+
+In the deployment phase, similar to the training phase, WebAPIRec first constructs feature vectors from a new project profile and API profiles. Using the learned personalized API ranking model, WebAPIRec computes the relevancy of each API and sort the APIs (in descending order) based on these scores. The sorted APIs are output as a list of recommended APIs.
+
+
+
+
+
+
+sec:introduction
+
+Developing a software project is not an easy task, as customers usually demand many features to be implemented. To aid their jobs, developers often use third party libraries that provide relevant functionalities through application programming interfaces (APIs) raemaekers2012analysis. APIs provide functionalities for certain tasks that can be (re)used by developers to expedite project developments. Using APIs prevents developers from reinventing the wheel, thus allowing them to focus on more important tasks at hand. Hence, it is usually a good idea to find suitable APIs and use them in a project. 
+Moreover, by building upon existing APIs, features can be completed faster as many APIs are well designed and their functionalities have been tested by many client applications.
+
+
+
+Finding the right APIs, however, is not as straightforward as it may seem. Thousands of APIs have been developed to cater for various purposes, and developers are often unaware of the existence of APIs suitable for a particular feature of the project that they are developing. Of course, some APIs are well known, but the majority of APIs do not enjoy such luxury yu2009innovation. Moreover, although some API choices are obvious (e.g., if we want to add Facebook support, we do not have much choice except using Facebook API), the number of such obvious API choices is not many. In general, finding APIs for various needs, e.g., music management, typically involves many possible alternatives and the choice will largely depend on the project requirement. Some examples of music management APIs are MusicBrainz, Soundiiz, and Toma.hk. MusicBrainz can be used to extract music metadata, Soundiiz can be used to create music playlist, and Toma.hk can be used to play music from different sources. The choice of which API to use would depend on the need and requirement of a target application. These facts necessitate the development of an automated recommendation system that can help developers find APIs that they need for their projects.
+
+
+
+
+In this paper, we propose a new approach dubbed WebAPIRec to recommend web APIs based on project profiles. In WebAPIRec, we define a project profile as the textual description and keywords of the project. It is worth noting that our approach does not require the web API source code to be available. This requirement is important as many proprietary yet useful web APIs do not come with source code.
+
+Examples of web APIs include Google Maps, Bing Maps, YouTube, and Last.fm, which are often used as key components in many projects. These web APIs offer essential functionalities and usually come with data that can be used to complete various features in a more efficient way. 
+
+Given a new project profile, our approach recommends web APIs by analyzing past projects and the web APIs that they use. WebAPIRec consists of two phases: training and deployment phase. In the training phase, WebAPIRec analyzes past projects and their used web APIs to build a personalized ranking model that aims to minimize ranking errors in the training data. Personalized ranking means that the ranking of web APIs is specific to each project, and thus different projects have different web API rankings. A ranking error occurs if a web API used by some project is ranked lower than an unused web API. In the deployment phase, WebAPIRec analyzes the profile of a new project using the trained model. It then assigns a relevancy score to each web API. A higher relevancy score implies that the API is deemed more relevant. Finally, WebAPIRec ranks the web APIs in a descending order of their relevancy and returns a list of recommended web APIs. This list is intended to help developers to pick web APIs more efficiently. It does not explicitly return a composition of web APIs for the project.
+
+
+
+
+
+
+To illustrate the usefulness of our approach, consider the following scenario. A developer has no idea what web API to use for developing his application. Normally, he will surf the web to find a suitable web API. However, not all web pages are related to web APIs and, even if they are, he still needs to read the web API descriptions and decide whether each of them is usable or not. If he thinks a web API is usable, he will try the web API. Still, after trying it, the web API may not meet his expectations. There may be numerous trials and errors before he finds the web API that best matches his needs. We thus develop WebAPIRec to provide an automated recommender system that can help reduce the effort needed by a developer to find the right web API. 
+
+
+
+
+
+
+
+To validate our WebAPIRec approach, we use the web application projects and web APIs extracted from the ProgrammableWeb website(http://www.programmableweb.com/). This dataset has a total of 9,883 web APIs and 4,315 projects. 
+We evaluate the effectiveness of our approach in terms of Hit@N, MAP@N, MAP, and MRR, which are popular metrics for evaluating recommender systems shaowei/icpc2014,RaoK11,ZhouZL12,SahaLKP13,SunLWJK10,RAN07,ThungWLL13. Our experiment shows that our approach achieves Hit@5, Hit@10, MAP@5, MAP@10, MAP, and MRR scores of 0.840, 0.880, 0.697, 0.687, 0.626, and 0.750, respectively. The Hit@5 score implies that for 84.0 of the projects, WebAPIRec can successfully return correct web APIs, which are used to implement the projects at the top-5 positions.
+
+We have compared the effectiveness of our approach against the native search functionality of ProgrammableWeb. We input the profile of a project (in full or in part) and evaluate the list of libraries that the search functionality returns. However, we find that the search functionality is limited and it achieves only Hit@5, Hit@10, MAP@5, MAP@10, MAP, and MRR scores of at most 0.046, 0.047, 0.041, 0.042, 0.042, and 0.038 respectively. We have also compared our approach against several other baselines based on McMillan et al.'s application search engine mcmillan2012exemplar and popularity-based recommendation.
+We find that our approach outperforms all of them. The best performing baseline achieves significantly lower Hit@5, Hit@10, MAP@5, MAP@10, MAP, and MRR scores of 0.591, 0.675, 0.414, 0.417, 0.363, and 0.476 respectively. 
+Comparing the Hit@5 scores of WebAPIRec with those of the baselines, WebAPIRec outperforms the best performing baseline by a substantial margin of 42.1.
+
+
+
+
+We summarize our main contributions as follows:
+enumerate
+ We propose a new approach named WebAPIRec that recommends web APIs by analyzing past similar projects and web APIs that they use, and model the recommendation task as a ranking problem. To our best knowledge, WebAPIRec is the first approach that employs a personalized ranking model to learn the correct ordering of web APIs for a specific project. Our approach recommends top-  web APIs that can most likely be used to implement the project.
+
+We have comprehensively evaluated our approach on a dataset extracted from ProgrammableWeb. Our experiment shows that WebAPIRec is able to achieve satisfactory Hit@, MAP, MAP@ and MRR scores. These results are substantially better than the results for the ProgrammableWeb's native search functionality, McMillan et al.'s application search, and popularity-based recommendation.
+enumerate
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+WebAPIRec: Recommending Web APIs to Software Projects via Personalized Ranking
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+op-tical net-works semi-conduc-tor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Ferdian Thung, Richard J. Oentaryo, David Lo, and Yuan Tian
+
+School of Information Systems, Singapore Management University, Singapore
+
+Email: ferdiant.2013, roentaryo, davidlo, yuan.tian.2012@smu.edu.sg
+
+
+
+
+
+
+
+
+
+Application programming interfaces (APIs) offer a plethora of functionalities for developers to reuse without reinventing the wheel. Identifying the appropriate APIs given a project requirement is critical for the success of a project, as many functionalities can be reused to achieve faster development. However, the massive number of APIs would often hinder the developers' ability to quickly find the right APIs. In this light, we propose a new, automated approach called WebAPIRec that takes as input a project profile and outputs a ranked list of web APIs that can be used to implement the project. At its heart, WebAPIRec employs a personalized ranking model that ranks web APIs specific (personalized) to a project. Based on the historical data of web API usages, WebAPIRec learns a model that minimizes the incorrect ordering of web APIs, i.e., when a used web API is ranked lower than an unused (or a not-yet-used) web API. We have evaluated our approach on a dataset comprising 9,883 web APIs and 4,315 web application projects from ProgrammableWeb with promising results. For 84.0 of the projects, WebAPIRec is able to successfully return correct APIs that are used to implement the projects in the top-5 positions. This is substantially better than the recommendations provided by ProgrammableWeb's native search functionality. WebAPIRec also outperforms McMillan  et al.'s application search engine and popularity-based recommendation. 
+
+
+
+
+
+
+
+
+
+
+Web API, Recommendation System, Personalized Ranking
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Acknowledgment
+
+This research was supported by the Singapore Ministry of Education (MOE) Academic Research Fund (AcRF) Tier 1 grant.
+
+
+
+IEEEtranS
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[]Ferdian Thung
+	is a PhD student in the School of Information System,
+	Singapore Management University. He started his PhD program in 2013. Previously,
+	he received his bachelor degree in the School of Electrical Engineering and Informatics
+	from Bandung Institute of Technology, Indonesia in 2011. He has worked as a research
+	engineer for more than a year before joining the PhD program. His research interest is in software engineering and data mining area. He has
+	been working on automated predictions, recommendations, and empirical studies in
+	software engineering.
+[]Richard J. Oentaryo
+	is a Senior Data Scientist at McLaren Applied Technologies Singapore, a new RD arm of the McLaren Technology Group in Asia-Pacific region. Previously, he was a Research Scientist at the Living Analytics Research Centre (LARC), School of Information Systems, Singapore Management University (SMU) in 2011-2016, and a Research Fellow at the School of Electrical and Electronic Engineering, Nanyang Technological University (NTU) in 2010-2011. He received Ph.D. and B.Eng. (First Class Honour) degrees from the School of Computer Engineering (SCE), NTU, in 2011 and 2004 respectively. Dr. Oentaryo is a member of the Association for Computing Machinery (ACM) and Institute of Electrical and Electronics Engineers (IEEE). He has published in numerous international journals and conferences, and received such awards as the IES Prestigious Engineering Achievement Award in 2011, IEEE-CIS Outstanding Student Paper Travel Grant in 2006 and 2009, and ITMA Gold Medal cum Book Prize in 2004.
+[]David Lo
+	received his PhD degree from the School of Computing, National University of Singapore in 2008. He is currently an Associate Professor in the School of Information Systems, Singapore Management University. He has close to 10 years of experience in software engineering and data mining research and has more than 200 publications in these areas. He received the Lee Foundation Fellow for Research Excellence from the Singapore Management University in 2009, and a number of international research awards including several ACM distinguished paper awards for his work on software analytics. He has served as general and program co-chair of several established international conferences (e.g., IEEE/ACM International Conference on Automated Software Engineering), and editorial board member of a number of high-quality journals (e.g., Empirical Software Engineering).
+[]Yuan Tian
+	is currently a PhD student in the School of Information Systems, Singapore Management University. She started her PhD program in 2012. Previously, she received her bachelor degree in the College
+	of Computer Science and Technology from Zhejiang University, China in 2012. Her research is in software system and data mining area. Particularly, she is interested in analyzing textual information in software
+	repositories.
+
+
+
+
+Personalized Ranking
+
+WebAPIRec casts the API recommendation problem as a personalized ranking task. Under this formulation, our goal is to provide a ranked list of APIs that are specific (i.e., personalized) to each project. Specifically, we consider the setting where WebAPIRec takes as input a set of training triples (,,) where  is a feature vector of a project,  is a feature vector of an API library used in , and  is a feature vector of an API not used in . Based on these training triples, a personalized ranking model learns how to rank APIs for a target project by jointly utilizing their feature vectors.
+
+
+
+Notation and Desiderata
+
+
+
+We first define our notations here. Let  be the set of all software projects and  the set of all web APIs. Accordingly, the recommendation task is to provide a specific project  with a total ordering  of all APIs . Essentially, a sound ranking  requires several criteria to be fulfilled:
+
+a, a' A & a a' a >_p a' a' >_p a
+
+a, a' A & a >_p a' a' >_p a a = a'
+
+a, a', a" A & a >_p a' a' >_p a" a >_p a"
+
+The formulae ()-() correspond to the so-called totality (i.e.,  and  should be comparable), anti-symmetry (i.e., unless ,  and  should have different ranks), and transitivity properties (i.e., if  ranks higher than (or equal to)  and  ranks higher than (or equal to) , then  ranks higher than (or equal to) ), respectively .
+
+
+
+The personalized ranking model will in turn learn to rank APIs based on a set of training triples :
+
+D = (p,a,a')  a A_p a' A A_p 
+where  refers to the set of APIs used by a project , and each element/triple  implies that project  prefers API  over API . 
+
+Ranking Model
+
+Our personalized ranking model computes a compatibility score between a project  and an API . Specifically, for any  pair, our model defines the compatibility score  as a weighted sum of  interaction features:
+
+f(p,a) = &_j=1^J _j x_j(p,a)
+where each feature  quantifies a specific type of interaction between the project  and API , and  is the weight parameter to be identified by the training procedure. Further details on which features  we use in the recommendation task will be given later in Section .
+
+After training is completed, we can compute for a new project  the score   using the identified weight parameters  and feature . We may then sort the scores  computed for all APIs , and in turn produce the ranked list of APIs to be recommended for .
+
+
+Loss Function Formulation
+
+To solve the API recommendation task, we need to formulate the loss function that guides the training process of our ranking model.
+
+We define a loss function  to evaluate the goodness of the compatibility score , and then find the optimal weight parameters that minimize . As mentioned, feature vectors ,  are ranked according to . Thus, if the feature vectors with higher scores  are actually relevant (i.e., API  is actually used by project ), the loss should be small; otherwise, the loss should be large.
+
+
+In this work, we focus on a ranking loss function of the form , where  quantifies how likely API  is more relevant to project  than API , and  indicates whether  is actually more relevant to  than  (i.e.,  if , and  otherwise). Accordingly, we can define the expected loss  over all possible project-API combinations as:
+
+E = 1PA^2 _p P _a A _a' A L(y(a >_p a'), f(a >_p a')) 
+By noticing that the training data  defined in () contains only the API pairs  such that , and owing to the totality and anti-symmetry properties of a sound ranking, we can simplify the above formula as:
+
+E = 1D _(p,a,a') D L(1, f(a >_p a'))
+
+The above formulation by itself does not warrant a personalized total ordering. To achieve this, all three properties (i.e., totality, anti-symmetry, and transitivity) must be fulfilled. To this end, we can define  as:
+
+f(a >_p a') = f(p,a) - f(p,a')
+which leads to the following loss:
+
+E = 1D _(p,a,a') D L(1, f(p,a) - f(p,a'))
+
+What then is a suitable choice for the loss function ? In this work, we choose to use the squared hinge loss , yielding the following expected loss:
+
+E = &1D _(p,a,a') D (0, 1 - (f(p,a) - f(p,a')) )^2
+
+Intuitively, the above loss means that no penalty will be given to correct orderings (i.e., ), and a quadratic penalty to incorrect orderings (i.e., ), depending on how far  is apart from . 
+
+Quadratic penalty means that an incorrect ordering of APIs will get penalized higher (as compared to linear penalty). In other words, we are more stringent with incorrect ranking, which in principle would lead to a more robust model. Computationally, another merit of quadratic penalty is that we can compute the second derivative (also called curvature) of the loss function. As such, we can use second-order optimization methods (such as the Newton algorithm) to train the model faster. We further explain this in Section .
+
+To mitigate overfitting to the training data, we also add an L2 regularization term to the loss , which leads to the regularized expected loss :
+
+R = &E + 2 _j=1^J _j^2 
+
+where   is the (user-defined) regularization parameter. Intuitively, adding the L2 regularization term serves to penalize large values of weight parameters , which will have the effect of simplifying the ranking model and thus reducing the likelihood of overfitting. As such, performing the minimization of  with the regularization term will provide us the simplest model that can fit the training data well.
+
+It is also worth mentioning that the formulation of () can be viewed as a variant of the ranking support vector machine (RankSVM). The conventional RankSVM, however, uses a linear hinge loss, which gives a less stringent linear penalty to incorrect orderings. Taking the analogy to classification task, it has been previously studied that using the squared hinge loss in SVM would yield better accuracy when  is large. In this case, underfitting would be less severe for the squared hinge loss, as it gives higher penalty than the hinge loss. The same argument applies to the ranking task, since RankSVM is ultimately equal to performing a binary classification on the pairwise feature differences .
+
+Finally, we note that the regularized loss  is sound from the optimization viewpoint, as  is a strictly convex function. This means that there is a unique optimal solution for , i.e., any local optimum found for  will be the global optimum. The reason is that the second derivative of  is always positive, that is, the Hessian matrix is positive definite. Thus, any gradient-based training method can be applied to arrive at a unique global optima. This constitutes another benefit of our approach over the regularized (linear) hinge loss used by the conventional RankSVM, which is not strictly convex.
+
+Efficient Training
+
+While the regularized loss  is strictly convex, the presence of a large number of API pairs  would impose a high computational overhead. In particular, a naive computation of  (as well as its derivatives) would have the time complexity of  per iteration, which is quadratic with respect to the number of training triples  in . Here  refers to the average number of nonzero features (i.e., ) per training triple. To mitigate this, we adopt an efficient truncated Newton method as described in. The key idea is to first rewrite the Hessian (i.e, second derivatives) of the loss function in terms of matrix-vector product, and then exploit a special structure in the Hessian matrix for which some elements can be computed efficiently via an order-statistic tree. With this, we can bring the complexity down to , where  is the number of relevance levels ( in our case, as we deal with binary relevance, i.e., whether or not an API is used by a project). Full details can be found in, and are not included in this paper for brevity.
+
+Ranking vs. Classification
+
+Why should we use a ranking approach instead of classification to address the recommendation problem? Indeed, one can use a classification method (e.g., binary SVM classifier) to distinguish whether an API is relevant to a project or not. However, such approach poses two main issues. First, the classification approach is built upon the premise that APIs that are not used by a project constitutes the negative instances (i.e., will not be used by a project). Such assumption is inappropriate for the API recommendation task. In contrast, our ranking method assumes that such cases can either imply negative, or unobserved (i.e., not yet explored in a project), instances. In this case, the ranking approach models the preferability of APIs, i.e., if an API has been used by a project (i.e., positive instance), we assume that the project prefers this API over all other negative and/or unobserved APIs.
+
+Second, from a computational standpoint, the classification approach would suffer from the highly skewed distribution of positive and negative instances. This is because only a handful of APIs are actually used by a project (i.e., very few positive instances). In contrast, the ranking approach focuses on the preferability of APIs which exhibits the reversal property (i.e., if , then ). As mentioned, RankSVM is equivalent to (binary) classification on a transformed feature space . This leads to a transformed dataset whereby the class distribution is (automatically) balanced, which is easier to deal with.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ProgrammableWeb Dataset
+
+
+ProgrammableWeb is a website that collects information about APIs released as web services and web application projects that use them. It contains a collection of thousands of APIs implementing various functionalities. Table  shows the profile of an API in our dataset. The profile of an API contains several pieces of information such as its name, short description (i.e., summary), long description, and keywords (i.e., tags). In this paper, we refer to a merged text that contains the name, short description, and long description of an API as the textual description of the API. We represent each API by its textual descriptions and keywords. 
+
+
+
+
+
+
+
+
+[!htb]
+  
+      A Sample API Profile  
+  
+  
+
+ProgrammableWeb contains thousands of web application projects. Table  shows the profile of a project in our dataset. The profile contains several pieces of information including: a long description of the project and the relevant keywords (i.e., tags). A web application project does not have a short description in ProgrammableWeb. We refer to the long description of a web application project as its textual description. Similar to an API, we represent each web application project by its textual descriptions and keywords.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[!htb]
+    
+    A Sample Web Application Project Profile  
+  
+  
+
+IR  NLP Techniques
+WebAPIRec make use of information retrieval (IR) and natural language processing (NLP) techniques. They include parts-of-speech (POS) tagging technique from NLP and text preprocessing, vector space model (VSM), and cosine similarity techniques from IR. We describe each of them below.
+
+Parts-of-Speech Tagging
+
+POS tagging is a natural language processing technique that assigns a part of speech label to every word in a textual document (in our case: a textual description of an API or a project). Common parts of speech include: noun, verb, adjective, adverb, etc. Various algorithms have been proposed to perform POS tagging. One of the most advanced family of POS tagging algorithms is stochastic POS taggers, which consider the context of a word to decide its POS tag . In this work, we use the popular Stanford (stochastic) POS tagger , which has also been used in many software engineering studies, e.g., .
+
+Text Preprocessing
+
+In this phase, we break a text data into a more suitable representation that can later be converted into an IR model. Also, since text data are often noisy (i.e., it contains many unimportant words, closely related words that are in different tenses, etc.), additional preprocessing steps are needed. In this work, the preprocessing steps are:
+
+
+ Tokenization. It is a process of breaking a text document into its constituent word tokens. Delimiters, such as punctuation marks and white spaces, are used as boundaries between one word token and another. At the end of this process, each text document is represented by a bag (or multi-set) of word tokens.
+ Stop Word Removal. This involves removing words that appear very frequently and thus help very little in discriminating one document from another. Examples of these stop words include: "I", "you", "are", etc. In this work, we use the list of English stop words from http://jmlr.org/papers/volume5/lewis04a/a11-smart-stop-list/english.stop.
+ Stemming. It is a process of converting a word to its base form, typically by removing a suffix from the word. 
+ For example, using stemming, words "reads" and "reading" would all be converted to "read". Without stemming, these words will be considered as different words altogether. We use the Porter stemming method  to reduce each word to its stemmed form. 
+
+Vector Space Model
+Text preprocessing will convert a textual document-i.e., a project or API description-into a bag of words. In the bag of words representation, important words are not distinguished from unimportant ones. To consider the relative importance of words, IR researchers proposed the vector space model (VSM), which represents a textual document as a vector of weights . Each weight corresponds to a word and indicates the relative importance of that word. VSM is constructed by analyzing many bags of words representing a set of documents in a corpus (i.e., a collection of project or API descriptions).
+
+Many weighting schemes can be used to infer the importance of a word. In this work, we use the popular term frequency-inverse document frequency (tf-idf) scheme . This scheme is based on two intuitions. Firstly, words (terms) that appear frequently in a document are more important than words that appear rarely in it. For example, a document that has many occurrences of the word "Texas" is likely to be related to "Texas". Secondly, words that appear in many documents are less able to distinguish one document from another, and should be given a smaller weight. For example, if all documents in a corpus contains the word "Software", then this word is unimportant, as it cannot distinguish one document from another.
+
+Given a document  in a corpus , we can compute the weight of every word that appears in . To compute the term frequency (tf) of a word  in a document , we simply count how many times the word appear in . To compute the inverse document frequency (idf) of a word  in corpus , we first compute the document frequency (df) of , which is the number of documents in  that contains .  We then normalize this number by dividing it by the number of documents in . The idf is simply the logarithm of the reciprocal of this normalized number. In turn, the tf-idf weight of a word  is the product of its term frequency and inverse document frequency. Formally, the tf-idf weight of a word  in a document  of a corpus  (denoted as ) is:
+
+w_(d,D,C) &= TF_(d,D) IDF_(d,C) 
+
+            &= TF_(d,D) ( N_CDF_(d,C) )
+where  refers to the term frequency of word ,  refers to the number of documents in corpus C, and  refers to the document frequency of word .
+
+We denote the VSM representation of a document  considering a corpus  as . In our implementation, we use a sparse matrix representation for the API and project documents (i.e., we only store the non-zero entries).
+
+Cosine Similarity
+To compute the similarity of two documents, we can take their VSM representations and compare the two vectors of weights by computing their cosine similarity . Consider two vectors  and  of size ; their cosine similarity is:
+
+    Sim(a,b) = _i=1^N w_i,a w_i,b_i=1^N w_i,a^2_i=1^N w_i,b^2
+where  refers to the  weight in vector .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Related Work
+
+
+
+
+
+Studies on Method Recommendation. Thummalapenta and Xie   proposed an approach to recommend code snippet. Their approach queries a code search engine (i.e., Google Code) to return code examples. These examples are then used to infer a sequence of method invocations for converting an object from one type to another.
+
+Robbes and Lanza  proposed a technique that improves code auto-completion by using recorded program history. Hindle et al.  investigated the "naturalness" of software, and proposed a code auto-completion feature by building a statistical language model. Kawaguchi et al.  and Lee et al.  developed tools that are able to detect code clone in real time. These tools can also potentially be used for code auto-completion.
+
+Chan et al.  proposed an approach to recommend API methods given textual phrases. Their approach was extended by Thung et al. , who recommend API methods given a feature request. Chan et al.'s approach requires precise textual queries, whereas Thung et al.'s approach is more robust to noisy textual queries.
+Robillard et al.  developed Suade, which takes as input a set of program elements and outputs another set of program elements that would likely be interesting to the developers. 
+
+
+
+
+Different from the above studies, in this work we do not recommend API methods; rather, we recommend the APIs. Our work is thus complementary with the above studies. Developers can first use our approach to infer the web APIs relevant to a project, and then adapt some of the tools in the above studies to recommend relevant methods from the APIs.
+
+
+
+
+Studies on API Recommendation. Teyton et al.  proposed an approach that creates a library migration graph by analyzing library migrations performed by a large number of projects. This graph can be used to help developers decide appropriate libraries to migrate to. Teyton et al.'s work and our work have different yet complementary goals: recommending libraries to migrate old libraries of existing projects vs. recommending libraries to new projects. 
+Thung et al.  devised an approach that takes as input APIs that a project uses and recommends additional relevant APIs. Different from the current work, this approach does not take as input the profile of a new project. Instead, it requires developers to input APIs that are used by an existing project. 
+It does not employ any text mining solution, since no text data is involved. In contrast, WebAPIRec employs text mining and does not require information about APIs that are or will be used in a project. WebAPIRec can thus be used in the initial development stage, when only the requirement of a project is known. Also, our work complements the work in , as developers can pick suitable APIs from our recommendation and put these APIs as input to the method in  to get additional recommendations.
+
+
+
+
+
+
+Studies on ProgrammableWeb Dataset. There exist a number of studies on the ProgrammableWeb dataset . These studies tried to characterize the structure and evolution of various networks created from the APIs and projects that are listed on ProgrammableWeb. Various network properties such as power-law, long-tail, small-world, etc. were investigated in these studies. For example, a recent work by Han et al.  analyzed whether or not networks created from APIs, projects and their tags in ProgrammableWeb have power-law properties. Different from the above studies, 
+we are interested in recommending APIs on ProgrammableWeb.
+
+
+
+
+
+Studies on Text Mining for Recommending Developer Actions. Almhana et al. propose to use multi objective optimization algorithm for bug localization . They define two optimization objectives for bug localization. The first one is maximizing both lexical and historical similarities and the second one is minimizing the number of recommended classes. Ye et al. have defined 6 similarity functions between bug reports and source codes that encode project domain knowledge . These similarities are input to their learning to rank approach. Given a new bug report, their approach ranks source code files in order of likelihood of them being the source of bug. Tian et al. use learning to rank approach to recommend developers for fixing issues described in bug reports .  Yang et al. combine word embedding and traditional information retrieval approach to recommend similar bug reports . Xia et al. combine bug report and developer based analysis to recommend developers that should be assigned to a bug report .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  illustrates the effectiveness of our approach in comparison with the baselines. Our approach achieves Hit@5, Hit@10, MAP@5, MAP@10, MAP, and MRR scores of 0.840, 0.880, 0.697, 0.687, 0.626, and 0.750, respectively. Both MAP@5 and MAP@10 scores are lower than Hit@5 and Hit@10 scores. This indicates that in the top-N, for most cases, not all APIs are relevant, but at least one of them are. Based on Hit@5 results, we find that for 84.0 of the projects, a correct API used to implement a project is among the top-5 APIs returned by WebAPIRec. Clearly, WebAPIRec outperforms the baselines that use ProgrammableWeb native search functionality. Measured either by Hit@5, Hit@10, MAP or MRR, WebAPIRec performs better than PW, which is the best performing baseline from ProgrammableWeb. PW, which has the largest number of words among the ProgrammableWeb baselines, performs the worst. In fact, we observe a consistent reduction in performance as number of words increases. We hypothesize that ProgrammableWeb uses boolean and operation in its search engine, thereby returning only APIs whose profiles contain all words in the query. Our manual investigation suggests it is likely the case.
+
+WebAPIRec also outperforms Exemplar and PopRec. 
+
+The strongest baseline is PopRec, which achieves Hit@5, Hit@10, MAP@5, MAP@10, MAP, and MRR scores of 0.591, 0.675, 0.414, 0.417, and 0.476, respectively. WebAPIRec clearly improves significantly upon this baseline by 42.1 in terms of Hit@5.
+
+We show an example recommendation from our approach in Table . Here, we recommend APIs for Yamusica. Three of our recommendations are correct: Bandsintown, Last.fm, and Google Maps. The baselines can only recommend less than 3 correct APIs: ProgrammableWeb does not return any APIs; PopRec can identify Google Maps because it is in the set of top-10 APIs as shown in Table . Exemplar can correctly recommends one API, i.e. Bandsintown, since its description and keywords are the most similar with Yamusica. WebAPIRec recommends the three APIs largely because they are used by similar projects.
+
+[!t]
+			Example Recommendation	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[!t]
+    6.56		Effectiveness of Our Approach	
+	
+ Table  shows the contribution of each feature to the effectiveness WebAPIRec. The most important feature based on our model weights is feature , which is our project feature that considers top-15 most similar projects in terms of their descriptions. It suggests that 15 nearest neighbors is the optimal number of neighbors. Using too few neighbors may hurt recommendation accuracy as pertinent information from other useful neighbors may be missed. On the other hand, using too many neighbors may increase noise since irrelevant neighbors may be included. Our model gives less weights for features extracted from too few neighbors (e.g., ) or too many neighbors (e.g., ). Similar observation is reflected from the weights of features -, which measure keyword similarities. We observe that the highest weight is also given to the feature representing top-15 most similar projects (i.e., ) and less weights are given to features that are extracted from either too few neighbors (e.g., ) or too many neighbors (e.g., ). Meanwhile, we observe that the API features give moderate contribution to the performance of WebAPIRec.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[!t]
+    		Contributions of Individual Features
+	
+		
+    
+
+Table  shows the effectiveness of WebAPIRec when we vary the training size. We notice that the performance of our approach increases as the size of the training data increases. Moreover, the improvement direction is always consistent among different evaluation measures, meaning that the performance never drops as we increase the training size. Moreover, even when the size of the training data is only 10, we can still successfully recommend correct APIs in the top-5 positions for 75.6 of the projects.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[!t]	
+	78		Varying Training Size	
+	
+	
+Table  shows the consolidated results. 
+On average, WebAPIRec only needs about three minutes to train a model, and 0.0013 seconds to recommend a list of APIs to a project. In practice, training only needs to be performed once or occasionally (when the training data changes significantly). The results show that WebAPIRec is efficient.
+
+[!t]
+       Computational Time of WebAPIRec  
+  
+  
+ 
+
+Threats to Internal Validity. It relates to experimental errors and biases. We have double-checked the correctness of our codes. Still, there could be bugs that we  miss. Also, some APIs and projects in ProgrammableWeb are no longer in service. As mentioned in Section , we have cleaned our dataset by removing these APIs and projects. We have also removed explicit mentions of API names from project descriptions. Another potential threat is related to project descriptions itself. The descriptions are likely written post-implementation and thus may not reflect pre-implementation descriptions. Unfortunately, there is no public dataset containing pre-implementation descriptions and used APIs. However, ProgrammableWeb descriptions are typically brief whereas requirement documents (i.e., examples of pre-implementation descriptions) are much more detailed and thus are expected to lead to better performance (i.e., due to richer information).
+
+Threats to External Validity. It relates to the generalizability of our results. We have evaluated our method on a dataset comprising 9,883 APIs and 4,315 projects. We believe these are sufficiently large numbers of APIs and projects. Still, all APIs and projects come from ProgrammableWeb. 
+In the future, we plan to mitigate the threats to external validity further by investigating additional APIs and projects. Note that our approach can potentially be used for non-web APIs, provided that the same set of information exists. We plan to explore how our approach works for non-web APIs in the future. 
+ 
+
+Threats to Construct Validity. It relates to the suitability of our evaluation metrics. In this work, we have used Hit@N, MAP (as well as MAP@), and MRR, which have been well-established in IR community and many past software engineering studies . Thus we believe there is little threat to construct validity. 

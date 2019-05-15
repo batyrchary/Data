@@ -1,0 +1,599 @@
+
+
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+A Novel Spectrally-Efficient Scheme for Physical Layer Network Coding 
+
+
+ Ahmed G. Helmy 1,
+Tamer Khattab2, Mazen O. Hasna2
+
+  1 Department
+of Electronics and Electrical Communication, Cairo University, Giza,
+Cairo
+
+ 2Electrical
+and Computer Engineering, Qatar University, PO Box 2713, Doha, Qatar
+
+In this paper, we propose a novel three-time-slot transmission scheme
+combined with an efficient embedded linear channel equalization (ELCE)
+technique for the Physical layer Network Coding (PNC). Our transmission
+scheme, we achieve about  increase in the spectral efficiency
+over the conventional two-time-slot scheme while maintaining the same
+end-to-end BER performance. We derive an exact expression for the
+end-to-end BER of the proposed three-time-slot transmission scheme
+combined with the proposed ELCE technique for BPSK transmission. Numerical
+results demonstrate that the exact expression for the end-to-end BER
+is consistent with the BER simulation results.
+  
+
+Introduction
+
+ Network Coding (PNC) is a relatively new
+paradigm in networking which is based on exploiting interference,
+instead of avoiding it, to significantly enhance network throughput,
+robustness, and security. It has been extensively
+studied for wired networks and wireless ad-hoc networks.
+The concept of physical-layer network coding (PNC) was originally
+proposed in as a way to exploit network coding
+operation that occurs naturally
+in superimposed electromagnetic (EM) waves. The laws of physics show
+that when multiple EM waves come together within the same physical
+space, they mix. This mixing of EM waves is a form of network coding,
+performed by nature. Using PNC in a Two-Way Relay Channel (TWRC) boosts
+the system throughput by 100. 
+
+Fig.  illustrates the idea of the concept of network
+coding. In the first time slot, nodes 1 and 2 transmit  and
+ simultaneously to relay R. Relay R deduces = 
+. Then, in the second time slot, relay R broadcasts  to nodes
+1 and 2, where  refers to the XOR operation. 
+
+The main issue in PNC is how relay R deduces = 
+from the superimposed EM waves, which is referred as "PNC mapping.
+Generally, PNC mapping is the process of mapping the received mixed
+EM waves plus noise to the desired-network coded signal for forwarding
+by the relay to the two end nodes. In general, PNC mapping in not
+restricted to the XOR mapping.
+
+In, the authors investigate the Symbol Error Rate
+(SER) performance for BPSK and QPSK schemes for two end nodes with
+in-phase and orthogonal constellation in AWGN environment. The analysis
+assumes perfect channel estimation and takes into consideration the
+effect of power control at the two end nodes. The authors use the
+Craig's polar coordinate algorithm to derive
+an exact expression for the SER.
+
+Most of the work found in literature assumes that the two received
+streams which compose the superimposed EM wave at the relay can be
+perfectly resolved and channel-equalized using channel estimates at
+the relay based on channel estimation techniques presented in the
+literature, such as.
+Practically, such resolvability assumption contradicts the main principle
+of PNC operation which relies on utilizing the natural superposition
+of EM waves from both end nodes at the relay to map these signals
+into the desired-network coded signal to be forwarded by the relay
+to the two end nodes without the separation at the relay.
+
+In this paper, we propose an efficient embedded linear channel equalization
+(ELCE) technique to perfectly equalize the channels without
+resolving data streams from each node using a three-time-slot system
+assuming perfect channel estimation at the relay node. In addition
+to overcoming the impractical assumption of stream separation, our
+ proposed three-time-slot scheme achieves about  increase in
+spectral efficiency compared to the BPSK transmission presented in
+ while maintaining the same BER performance
+of resolvable BPSK and QPSK PNC schemes. The achieved spectral efficiency
+lies between the one of BPSK assuming resolvable streams at the relay
+node and QPSK assuming resolvable nodes' beams at relay. Finally,
+we present an exact analysis for the end-to-end bit-error rate (BER)
+expression for the  proposed three-time-slot scheme assuming BPSK
+transmission under Rayleigh fading channel.
+
+Physical Layer Network Coding approach (PNC)
+
+
+ 
+
+
+The rest of this paper is organized as follows: In Section ,
+we describe our three-time-slot system model. Section presents our proposed ELCE technique. An exact end-to-end BER expression
+for the proposed three-time-slot scheme over the Rayleigh fading channels
+is derived in Section . In Section ,
+we provide the numerical results for the proposed three-time-slot
+scheme combined with the ELCE technique and we conclude the paper
+in Section .
+
+
+System Model 
+
+In this section, we introduce our system model
+tailored with our proposed three-time-slot scheme for a communication
+system using PNC for TWRC. The relay and the users are assumed fully
+symbol-synchronized. Channels are assumed to be Rayleigh fading with
+channel gains represented as circulary symmetric complex random variables
+and the noise is Additive White Gaussian (AWGN) with zero mean. We
+also assume that all the channels' state information are available
+at the receivers side. As illustrated in Fig. ,
+node  and node  send two successive symbols with 
+phase difference between them,  node 1 and node 2 will send
+ and , respectively, to the
+relay node in the first time slot, where  and 
+are two successive symbols of node 1 and node 2, respectively. Then,
+in the second time slot, node 2 repeats its transmission of ,
+however, node 1 retransmits a  version of its transmission
+in the first slot,  it transmits . The
+relay node adopts the ELCE technique, described in Section ,
+followed by a PNC mapping using the superimposed EM waves 
+and  received at the relay node in the first two time slots.
+In the third slot, the relay transmits the PNC-mapped data 
+to the end nodes. Hence, we transmit four symbols in three time slots
+which means a  spectral efficiency increase over the conventional
+two-slot scheme in. The two superimposed EM
+waves  and  can be expressed as follows
+
+
+Y_1 & =h_1(S_11+jS_12)+h_2(S_21+jS_22)+n_1
+
+Y_2 & =jh_1(S_11+jS_12)+h_2(S_21+jS_22)+n_2,where ,  , and  are the channel between
+node 1 and the relay, the channel between node 2 and the relay, the
+noise at the relay receiver at the first time slot with variance ,
+and the noise at the relay receiver at the second time slot with variance
+, respectively. We assume that and 
+are block fading channels with constant amplitudes during the full
+transmission time ( during the three time slots). We also assume
+equal noise variance for  and ,  . 
+
+
+Proposed Three-Time-Slot scheme for a communication system using PNC
+for TWRC
+
+
+ 
+
+
+
+Embedded Linear Channel Equalization (ELCE) Technique 
+
+In this section, we present the proposed
+ELCE technique for perfect channel equalization assuming perfect channel
+estimation at the relay and the end nodes. Starting from Eqs. ()
+and (), we multiply Eqs. () and ()
+by  and ,
+respectively to produce  and , respectively. Hence,
+the received-signal vector 
+
+
+ can be expressed as follows 
+
+
+
+
+We construct the channel-equalized-signal vector 
+
+
+ by left multiplying  by the equalization matrix 
+which is defined as follows 
+
+therefore,  can be expressed as follows
+
+
+X & =HZ
+
+ & =[]+12[]
+
+
+The relay node calculates the perfectly channel-equalized combined
+signal  which is equivalent to the superimposed
+EM wave at the relay node used to perform the PNC mapping before forwarding
+to both end nodes. Hence, the signal  can be expressed
+as follows
+
+
+X^ELCE & =[S_2+12(1+j) h_2^*h_2^2(n_1-jn_2)]
+
+ & +[S_1+12-j(1-j) h_1^*h_1^2(n_1-n_2)]where  and  
+
+
+Exact End-to-End BER Performance for the Proposed Three-Time-Slot
+Scheme
+
+In this section, we provide the BER performance
+analysis for the  proposed three-time-slot scheme at the relay node
+for BPSK modulation scheme at each node. Fig. shows the received signal constellation at the relay node assuming
+that both end nodes use BPSK modulation scheme. We assume that 
+and  are the constant bit energy for the BPSK signal generated
+from nodes 1 and 2, respectively. Then, each node start performing
+the  proposed three-time-slot scheme by combining each two successive
+BPSK symbols (  and 
+for node 1 and 2, respectively, with  different possibilities
+" and " for each symbol) together into one QPSK symbol
+(  and  for node 1 and 2,
+respectively, with  different possibilities ", , ,
+and " for each symbol) and transmit it to the relay node. Consequently,
+there are sixteen possible symbols in the combined received signal
+constellation at the relay node ( for noise-free 
+). Then, the relay node performs the PNC mapping on the noise-free
+ to construct the QPSK-mapped signal 
+and broadcasts it to the end nodes in the third time-slot as shown
+in Fig. . Since, 
+and , and  are BPSK symbols,
+hence, each combined symbol  at relay node is resulted
+by the addition of encoded four bits. However, the relay node maps
+ to a QPSK PNC-mapped signal to broadcast it to the
+end nodes at the third time-slot. We assume that ,
+therefore, we have sixteen decision regions bounded by decision boundaries
+ for in-phase and quadrature components in the signal
+constellation as shown in Fig. . 
+
+The received constellation at the relay node for BPSK signal for the
+proposed three-time-slot transmission scheme
+
+
+ 
+
+
+To simplify the analysis, we use the Craig's polar coordinate algorithm
+ for symbol-error rate (SER) calculation for
+AWGN channels. Furthermore, we extend this analysis for the fading
+channels by using the instantaneous value of noise variance 
+which can be proved from Eq. () to be as 
+and we can consider 
+as the new instantaneous noise variance of a zero mean AWGN signal
+added to the desired signal  performing the ELCE technique.
+Although we apply our analysis to BPSK only, however it can be extended
+to higher modulation.
+
+Let  denotes the instantaneous
+probability of symbol error in the PNC mapping process at the relay
+due to the noise effect assuming that the noise-free PNC-mapped signal
+is "0" ( ), and 
+denotes the instantaneous probability of symbol error in the PNC mapping
+process at the relay due to the noise effect assuming that the noise-free
+PNC-mapped signal is "1" ( ), where
+ and  are the channel gains for and
+, respectively.
+
+Using Craig's polar coordinate algorithm, we
+develop the instantaneous expressions for 
+and  exploiting the
+previous definition of .
+To simplify the notation, we denote ,
+,  ,
+and .
+Consequently, the average probability of symbol error over the fading
+channel given that symbol "0" was transmitted 
+and the average probability of symbol error over the fading channel
+given that symbol "1" was transmitted 
+can be expressed as follows
+
+
+P_e/0^Symbol & =__1__2F_e/0^inst(_1,_2) f__1(_1)f__2(_2)d_1d_2
+
+P_e/1^Symbol & =__1__2F_e/1^inst(_1,_2) f__1(_1)f__2(_2)d_1d_2where  and 
+are the probability density function (PDF) of the channel gains of
+ and , respectively. From,
+we derive  and
+ as follows
+
+
+F_e/0^inst(_1,_2) & =1_k=1^K_0^_kexp -A_k^22_N^2 sin^2 d
+
+ & =1_k=1^K_0^_kexp -A_k^2_1_22^2(_1+_2) sin^2 df0
+
+F_e/1^inst(_1,_2) & =1_l=1^L_0^_lexp -A_l^22_N^2 sin^2 d
+
+ & =1_l=1^L_0^_lexp -A_l^2_1_22^2(_1+_2) sin^2 df1
+where  and  are the number of all possible error regions assuming
+that the noise-free PNC-mapped symbol "0" was transmitted
+and the number of all possible error regions assuming that the noise-free
+PNC-mapped symbol "1" was transmitted, respectively.
+In addition,  and  are the scanning angle for
+each of the error regions of the noise-free PNC-mapped symbol "0"
+and the scanning angle for each of the error regions of the noise-free
+PNC-mapped symbol "1", respectively. The parameters ,
+and  are the received symbol energy projected
+on the decision boundary divided by the noise density for each of
+the error regions of the noise-free PNC-mapped symbol "0"
+and the received symbol energy projected on the decision boundary
+divided by the noise density for each of the error regions of the
+noise-free PNC-mapped symbol "1", respectively. All of
+these parameters depend on the signal constellation received at the
+relay node which will be shown later on for our probability of symbol
+error derivation in Sections  and .
+
+Let  denotes a new random variable which is defined as ,
+we apply a random variable transformation to deduce the PDF of ;
+namely  in terms of the PDFs of 
+and . Using Eqs. () and () and employing
+the definition of , Eqs. () and () can
+be expressed as follows
+
+1.3
+*
+P_e/0^Symbol & =_F_e/0^inst() f_()d
+
+ & =1_k=1^K_0^_k[_0^exp -A_k^22^2sin^2 f_()d]d
+
+P_e/1^Symbol & =_F_e/1^inst() f_()d
+
+ & =1_l=1^L_0^_l[_0^exp -A_l^22^2sin^2 f_()d]dwhere  and 
+are the instantaneous probability of symbol error as a function of
+ for "0" and "1" noise-free PNC-mapped
+symbols, respectively. The inner integral (in square brackets) is
+in the form of a Laplace transform with respect to the variable .
+Since the moment generating function (MGF) of  [i.e., 
+] is the Laplace transform of  with the exponent
+reversed in sign. Consequently,  and 
+expressions can be rewritten as follows 
+
+
+
+Eqs. () and () are considered the general forms
+used to evaluate the average probability of symbol error for any binary
+signal constellation over an arbitrary distribution of fading channels
+ and  and consequently  and .
+For the Rayleigh fading channel,  and  are
+exponentially distributed with average  and
+, respectively. For the sake of simplicity,
+we assume that .
+Using the definition of the MGF of  
+expressed in (, Eq. 20), the general forms in Eqs.
+() and () can be rewritten for the Rayleigh
+fading channels after some mathematical manipulations as follows
+
+
+P_e/0^Symbol & =1_k=1^K_0^_k_2F_1(1,2;32;4A_k^22^2sin^2) dpe_1-0
+
+P_e/1^Symbol & =1_l=1^L_0^_l_2F_1(1,2;32;4A_l^22^2sin^2) dpe_1-1
+where  is the hypergeometric function for the
+parameters , , , and . The integral in Eqs. ()
+and () can be evaluated numerically using any approximation
+technique such as Gauss Quadrature Numerical Integration Method. Let
+ denotes the total average probability of symbol error
+at the relay node over an arbitrary fading channel distributions assuming
+equally probable binary signal transmission.  can
+be expressed as follows
+
+
+
+
+Without loss of generality and assuming Gray coded bit mapping at
+both end nodes. Since, 
+and , and  are BPSK symbols,
+hence, each combined symbol  at relay node is resulted
+by the addition of Gray encoded four bits that differ by only one
+bit from the adjacent combined symbol,  if the noise causes
+the constellation to cross the decision boundary, only one out of
+the four bits, combined to generate the symbol received at relay node,
+will be in error. Consequently, the relation between the BER 
+and the SER for the combined symbol at the relay node will be approximately
+as follows
+
+
+
+
+Then, the end-to-end BER from node 1 to node 2, ,
+is defined as the BER between the data transmitted from node 1 and
+decoded at node 2 as follows
+
+
+P_12 & =1-(1-P_relay^b)(1-P_r,2)
+
+ & =P_relay^b+P_r,2-P_r,2P_relay^bwith  indicates
+the BER caused by the data transmission from the relay to node 2,
+where  and  are the constant bit energy used by the
+relay node to transmit the QPSK PNC-mapped signal to the end nodes,
+and .
+By the new definition of the  presented in,
+the BER  value for the Rayleigh fading channel, for a value
+of AWGN variance  and channel gain ,
+will be as follows
+
+
+
+
+
+
+Similarly, the end-to-end BER from node 2 to node 1, ,
+is defined as the BER between the data transmitted from node 2 and
+decoded at node 1 as follows
+
+
+P_21 & =1-(1-P_relay^b)(1-P_r,1)
+
+ & =P_relay^b+P_r,1-P_r,1P_relay^bwith  indicates
+the BER caused by the data transmission from the relay to node 1.
+Also, the BER  value for the Rayleigh fading channel, for
+a value of AWGN variance  and channel gain ,
+will be as follows
+
+
+
+
+
+
+Finally, the overall end-to-end BER for an equal given channel gain
+ and AWGN variance  is obtained,
+using Eqs. () and () and the definitions of 
+and , as follows
+
+
+
+
+In the next subsections, we derive the SER in the PNC mapping process
+at the relay due to the noise effect assuming that the noise-free
+PNC-mapped combined symbols are "0" and "1".
+Recalling Eqs. () and () on the signal constellation
+shown in Fig.  and Fig. ,
+respectively, we calculate the total BER at relay node 
+using Eq. (). We use signal constellation to derive the
+values of of the controlling parameters ,
+and  for both cases of the noise-free PNC-mapped combined
+symbols "0" and "1". Once we compute ,
+the overall end-to-end BER  can be evaluated by
+Eq () for given channel parameters 
+and .
+
+
+SER of the PNC-mapped Combined Symbol "0" 
+
+To understand the decoding process for the PNC-mapped combined symbol
+"0", we use the signal constellation geometry in Fig.
+. As shown in Fig. ,
+the channel-equalized symbol  is considered an error in
+this case when it is located in the shaded regions. The expression
+of  can be derived, using Eq. (),
+as follows
+
+
+P_e/0^Symbol & =1_0^/2_2F_1(1,2;32;4[E_b_2]^22^2sin^2) d
+
+ & -1_0^/2_2F_1(1,2;32;4[2E_b_1+E_b_2]^22^2sin^2) d
+
+ & +1_0^/2_2F_1(1,2;32;4[E_b_2]^22^2sin^2) d
+
+ & -1_0^/4_2F_1(1,2;32;4[E_b_2]^22^2sin^2) d
+
+ & -1_0^/4_2F_1(1,2;32;4[E_b_2]^22^2sin^2) d
+
+ & +1_0^/2-_0_2F_1(1,2;32;4[2E_b_1+E_b_2]^22^2sin^2) d
+
+ & +1_0^_0_2F_1(1,2;32;4[E_b_2]^22^2sin^2) dSER_0
+where 
+
+
+
+centering
+
+Decision boundaries and decoding for the PNC-mapped combined symbol
+0
+
+
+ 
+
+
+
+SER of the PNC-mapped Combined Symbol "1"
+
+To understand the decoding process for the symbol "1",
+we use the signal constellation geometry in Fig. .
+As shown in Fig. , the channel-equalized
+symbol  is considered an error in this case when it is
+located in the shaded regions. The expression of 
+can be derived, using Eq. (), as follows
+
+
+P_e/1^Symbol & =1_0^/2_2F_1(1,2;32;4[E_b_2]^22^2sin^2) d
+
+ & +1_0^/2_2F_1(1,2;32;4[2E_b_1-E_b_2]^22^2sin^2) d
+
+ & +1_0^/2_2F_1(1,2;32;4[E_b_2]^22^2sin^2) d
+
+ & -1_0^/4_2F_1(1,2;32;4[E_b_2]^22^2sin^2) d
+
+ & -1_0^/4_2F_1(1,2;32;4[E_b_2]^22^2sin^2) d
+
+ & -1_0^/2-_1_2F_1(1,2;32;4[2E_b_1-E_b_2]^22^2sin^2) d
+
+ & -1_0^_1_2F_1(1,2;32;4[E_b_2]^22^2sin^2) dSER_1
+where 
+
+
+
+centering
+
+Decision boundaries and decoding for the PNC-mapped combined symbol
+1
+
+
+ 
+
+
+
+Numerical Results
+
+
+In this section, we present our numerical results
+for our  proposed three-time-slot scheme in Fig. and the end-to-end BER performance analysis for the received constellation
+shown in Fig. . Assume zero-mean white Gaussian
+noise and consider slow Rayleigh fading channels with flat amplitudes,
+we consider , , , and .
+
+Fig.  depicts the end-to-end BER performance
+comparison between the  proposed three-time-slot scheme and the resolvable
+BPSK and QPSK. Fig.  demonstrates that
+the proposed scheme achieves the same end-to-end BER performance of
+the resolvable BPSK and QPSK with higher spectral efficiency.
+
+
+BER performance comparison between the proposed three-time-slot transmission
+scheme and resolvable BPSK and QPSK
+
+
+ 
+
+
+In Fig. , we compare between the the
+simulation results of end-to-end BER for the  proposed three-time-slot
+scheme and the others from the analytical expression for BER numerically
+calculated from Eq. (). Fig. demonstrates that the analytical expression for the end-to-end BER
+is consistent with the simulation results.
+
+
+Comparison between analytical and simulation results for the proposed
+three-time-slot transmission scheme
+
+
+ 
+
+
+
+Conclusion
+
+ In this paper, we proposed a novel three-time-slot
+transmission scheme combined with an efficient ELCE technique. Using
+such three-time-slot transmission scheme, we achieved about 
+increase in the spectral efficiency over the conventional two-time-slot
+scheme with the same end-to-end BER performance as shown in our numerical
+results. In addition, we provided an exact expression for the end-to-end
+BER for the proposed three-time-slot scheme in case of BPSK transmission.
+Numerical results demonstrate that the provided exact analytical expression
+of the end-to-end BER of the proposed three-time-slot scheme is almost
+consistent with the BER simulation results.
+
+IEEEtran
+

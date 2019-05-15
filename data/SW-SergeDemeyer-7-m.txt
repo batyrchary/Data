@@ -1,0 +1,242 @@
+
+
+
+	/Author (Ali Parsai and Serge Demeyer)
+	/Title  (Dynamic Mutant Subsumption Analysis Using LittleDarwin)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+acmlicensed
+15.00
+10.1145/3121245.3121249
+2017
+2017
+978-1-4503-5155-3/17/09
+[A-TEST'17]8th International Workshop on Automated Software TestingSeptember 4-5, 2017Paderborn, Germany
+
+
+
+
+Dynamic Mutant Subsumption Analysis using LittleDarwin
+
+Ali Parsai
+0000-0001-8525-8198
+
+  University of Antwerp
+  Middelheimlaan 1
+  Antwerp 
+  Belgium
+  2020
+
+ali.parsai@uantwerpen.be
+
+Serge Demeyer
+0000-0002-4463-2945
+
+    University of Antwerp
+    Middelheimlaan 1
+    Antwerp 
+      Belgium
+      2020
+
+serge.demeyer@uantwerpen.be
+
+
+
+
+
+
+Many academic studies in the field of software testing rely on mutation testing to use as their comparison criteria. However, recent studies have shown that redundant mutants have a significant effect on the accuracy of their results. One solution to this problem is to use mutant subsumption to detect redundant mutants. Therefore, in order to facilitate research in this field, a mutation testing tool that is capable of detecting redundant mutants is needed. In this paper, we describe how we improved our tool, LittleDarwin, to fulfill this requirement. 
+
+
+    <ccs2012>
+    <concept>
+    <concept_id>10011007.10011074.10011099.10011102.10011103</concept_id>
+    <concept_desc>Software and its engineering Software testing and debugging</concept_desc>
+    <concept_significance>500</concept_significance>
+    </concept>
+    </ccs2012>
+
+[500]Software and its engineering Software testing and debugging
+
+
+
+
+
+
+
+acmlicensed
+15.00
+10.1145/3121245.3121249
+2017
+2017
+978-1-4503-5155-3/17/09
+[A-TEST'17]8th International Workshop on Automated Software TestingSeptember 4-5, 2017Paderborn, Germany
+
+
+Software Testing, Mutation Testing, Mutant Subsumption, Dynamic Mutant Subsumption
+
+
+Introduction
+Many academic studies on fault detection need to assess the quality of their technique using seeded faults. One of the widely-used systematic ways to seed simulated faults into the programs is mutation testing .  
+Mutation testing is the process of injecting faults into software (i.e. creating a mutant), and counting the number of these faults that make at least one test fail (i.e. kill the mutant). The process of creating a mutant consists of applying a predefined transformation on the code (i.e. mutation operator) that converts a version of the code under test into a faulty version. It has been shown that mutation testing is an appropriate method to simulate real faults and perform comparative analysis on testing techniques .
+
+There has been many studies to optimize the process of mutation testing by following the maxim do faster, do smarter, do fewer . In particular, do fewer aims to reduce the number of produced mutants. There are several techniques that implement this logic (e.g. selective mutation , and mutant sampling ). However, only recently the academics began to investigate the threats to validity the redundant mutants introduce in software testing experiments . Papadakis et al. demonstrate that the existence of redundant mutants introduces a significant threat by "artificially inflating the apparent ability of a test technique to detect faults" . 
+
+One of the recent solutions to alleviate this problem is to use mutant subsumption . Mutant A truly subsumes mutant B if and only if all inputs that kill A also kill B. This means that mutant B is redundant, since killing A is sufficient to know that B is also killed. It is possible to provide a more accurate analysis of a testing experiment by determining and discarding the redundant mutants. However, it is often impossible to check mutants for every possible input to the program in practice. Therefore, as a compromise, dynamic mutant subsumption is used instead .  Mutant A dynamically subsumes mutant B with regards to test set T if and only if there exists at least one test that kills A, and every test that kills A also kills B. 
+Given the fact that mutant subsumption  only recently  has been at the center of attention, there are no mature tools that can perform dynamic mutant subsumption analysis on real-life Java programs. This, however, is necessary to facilitate further research on the topic. Therefore we aim to fill this void by developing such tool.
+
+We used LittleDarwin(https://littledarwin.parsai.net/) mutation testing framework to implement the features needed to perform dynamic mutant subsumption analysis. LittleDarwin is an extensible and easy to deploy mutation testing tool for Java programs . LittleDarwin has  been used previously in several other studies , and it is shown to be capable of analyzing large and complicated Java software systems .
+
+The rest of the paper is organized as follows: 
+In Section , background information about mutation testing is provided. 
+In Section , the current state of the art is discussed.
+In Section , we provide details on how LittleDarwin can help performing dynamic mutant subsumption analysis. 
+Finally, we present our conclusions in Section .
+
+Background
+
+The idea of mutation testing was first mentioned by Lipton, and later developed by DeMillo, Lipton and Sayward . The first implementation of a mutation testing tool was done by Timothy Budd in 1980 .
+Mutation testing is performed as follows: First, a faulty version of the software is created by introducing faults into the system (Mutation). This is done by applying a known transformation (Mutation Operator) on a certain part of the code.  After generating the faulty version of the software (Mutant), it is passed onto the test suite. If there is an error or failure during the execution of the test suite, the mutant is marked as killed (Killed Mutant). If all tests pass, it means that the test suite could not catch the fault, and the mutant has survived (Survived Mutant) .
+
+If the output of a mutant for all possible input values is the same as the original program, it is called an equivalent mutant. It is not possible to create a test case that passes for the original program and fails for an equivalent mutant, because the equivalent mutant is indistinguishable from  the original program. This makes the  creation of equivalent mutants undesirable, and leads to false positives during mutation testing.  In general, detection of equivalent mutants is undecidable due to the halting problem . Manual inspection of all mutants is the only way of filtering all equivalent mutants, which is impractical in real projects due to the amount of work it requires. Therefore, the common practice within today's state-of-the-art is to take precautions to generate as few equivalent mutants as possible, and accept equivalent mutants as a threat to validity (accepting a false positive is less costly than removing a true positive by mistake ). 
+
+
+
+Mutation testing allows software engineers to monitor the fault detection capability of a test suite by means of mutation coverage (see Equation ) .
+A test suite is said to achieve full mutation test adequacy whenever it can kill all the non-equivalent mutants, thus reaching a mutation coverage of 100. Such test suite is called a mutation-adequate test suite. 
+
+State of the Art
+
+
+    
+    
+        
+    An Example Mutated Method
+    
+Mutant subsumption is defined as the relationship between two non-equivalent mutants A and B in which A subsumes B if and only if all inputs that kill A is guaranteed to kill B . The subsumption relationship for faults has been defined by Kuhn in 1999 , but its use for mutation testing has been popularized by Jia et al. for creating hard to kill higher-order mutants . Later on, Ammann et al.  tackled the theoretical side of mutant subsumption . In their paper, Ammann et al. define dynamic mutant subsumption, which redefines the relationship using test cases. Mutant A dynamically subsumes Mutant B if and only if (i) A is killed, and (ii) every test that kills A also kills B.
+Kurtz et al.  use the notion of dynamic mutant subsumption graph (DMSG) to visualize the concept of dynamic mutant subsumption. Each node in a DMSG represents a set of all mutants that are mutually subsuming. Edges in a DMSG represent the dynamic subsumption relationship between the nodes. They introduce the concept of static mutant subsumption graph, which is a result of determining the subsumption relationship between mutants using static analysis techniques.
+
+
+        Range of Input Values that Kill Mutants of the Example Mutated Method (left), DMSG for the Example Mutated Method (right)
+             
+                        
+
+
+Figure  shows a Java method and its set of mutants. This method takes  and  as input, and returns  as output. To do this,  is added  times. If  is negative, both  and  are negated so that  becomes positive. Table  shows the range of input values that kills each mutant. As the table shows, M0 and M7 are equivalent mutants, since the change they introduce does not impact the program semantically. M1 and M4 are killed by the same range of inputs. The same holds true for  M2, M3, and M6. It can be seen that M1,M4 truly subsume M2,M3,M6, since any input that kills M1 or M4, also kills M2, M3, and M6; however, the opposite does not hold. Also, M2,M3,M6 truly subsume M5 for the same reason. Using a test suite that includes a test case from each of the input ranges in Table , it is possible to draw the DMSG for this method.
+
+The main purpose behind the use of mutant subsumption is to reliably detect redundant mutants, which create multiple threats to the validity of mutation testing . This is often done by determining the dynamic subsumption relationship among a set of mutants, and keeping only those that are not subsumed by any other mutant. In our example, keeping only  M1 (or M4) suffices, since it subsumes all the other mutants. 
+
+
+
+
+
+
+
+
+
+
+
+
+*[!h]
+            Dynamic Mutant Subsumption Graph for JTerminal
+    
+
+
+Dynamic Mutant Subsumption Analysis with LittleDarwin
+
+
+            Dynamic Mutant Subsumption Component I/O
+    
+
+
+
+Figure  shows the input and output of LittleDarwin's dynamic mutant subsumption (DMS) component. 
+To facilitate dynamic mutant subsumption analysis in LittleDarwin, we retain all the output provided by the build system for each mutant. As a result, we  can parse this output and extract useful information, e.g. which test cases kill a particular mutant. 
+LittleDarwin's DMS component can then use this information to determine dynamic subsumption relation between each mutant pair. This component then outputs the results in two different ways: (i) the dynamic mutant subsumption graph, to visualize the subsumption relation, and (ii) 
+a detailed report is generated in CSV(Comma-separated Values) format that contains all the information processed by the DMS component. For each mutant, mutant ID, mutant path, source path, mutated line number, whether it is a subsuming mutant, number of failed tests, the mutants it subsumes, the mutants that it is subsumed by, and the mutants that are mutually subsuming with it are provided in this report.   Since LittleDarwin is a Java mutation testing framework, the application of the DMS component is also restricted to Java programs. 
+
+
+
+
+        
+        
+    Mutants 45 and 56 of JTerminal
+    
+
+
+        
+        
+    The Test that Kills Mutant 45, but Not Mutant 56
+    
+
+To showcase the ability of LittleDarwin in performing dynamic mutant subsumption analysis, we use JTerminal(https://www.grahamedgecombe.com/projects/jterminal) as a subject.
+We improved the test suite of JTerminal by automatically generating test cases using EvoSuite . 
+ 
+The information about characteristics of JTerminal is shown in Table . 
+The DMSG for JTerminal is depicted in Figure . In this figure, each number represents a single killed mutant, each node represents a group of mutants that are killed by exactly the same set of test cases, and each edge shows the dynamic subsumption relationship between each node where the node at the end is subsumed by the node at the start. The survived mutants are not shown in this figure. 
+The double-circled nodes contain the subsuming mutant groups. In order to remove the redundant mutants, one only needs to keep one mutant from each subsuming mutant group and discard the rest. 
+
+Take M45 and M56 as an example. According to the DMSG, M56 subsumes Mutant M45. Using the CSV report, we can locate the actual mutation of the source code (Figure ). Both M45 and M56 belong to method parse     of class AnsiControlSequenceParser, and mutate the same statement on line 99. 
+M45 acts as a negation of the conditional statement. This means that any input character (except -1) that used to trigger "else if" and "else", now trigger this branch. Since this branch contains a "break" statement, it avoids the rest of the iteration of the loop to be executed. If the input is -1, the "else" branch would be executed, which wrongfully appends -1 to "text".
+M56, however, changes only two special cases. If the input is +1, the "if" branch would be executed, and the current iteration breaks. If the input is -1, the same thing as M45 happens. For any other input, the program executes as it should. This means that M56 truly subsumes M45.
+Figure  shows the test case that kills M45, but not M56. The input value here is a single control sequence, which is neither -1 or +1, and therefore cannot kill M56. However, since it should have been handled by "else if" branch and M45 does not allow that, it kills M45. Hence, in Figure  (on the left side) , we can see that M56 dynamically subsumes M45.
+Analysis such as this allows researchers to understand the relations between the mutants and reduce the effects of redundant mutants on their results. 
+
+
+
+		JTerminal Software Information
+		
+	max width=
+	 
+	
+	
+	
+
+
+
+
+
+Conclusion
+Many academic  studies in the field of software testing rely on mutation testing to use as their comparison criteria, and the existence of redundant mutants is a significant threat to their validity.  We developed a component for our mutation testing tool, LittleDarwin, to facilitate the detection of redundant mutants using dynamic  mutant subsumption analysis. 
+We performed dynamic mutant subsumption analysis on a small, real-world project to demonstrate the capabilities of our tool. 
+Using our tool, it is possible to detect and filter out redundant mutants, and help in increasing  the confidence in  results of experiments using  mutation testing as a comparison criteria. 
+
+
+ACM-Reference-Format
+ 
+

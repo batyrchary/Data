@@ -1,0 +1,75 @@
+
+
+
+
+
+op-tical net-works semi-conduc-tor
+
+
+
+Introducing Accountability to Anonymity Networks
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Michael Backes13,
+Jeremy Clark2,
+Peter Druschel 3, 
+Aniket Kate4 and
+Milivoj Simeonovski1
+1Saarland University, Germany
+
+backes,simeonovski@cs.uni-saarland.de
+4MMCI, Saarland University, Germany
+
+aniket@mmci.uni-saarland.de
+2Concordia University, Canada
+
+clark@ciise.concordia.ca
+3MPI-SWS, Germany
+
+druschel@mpi-sws.org
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+IEEEtran
+
+
+
+
+
+
+
+
+
+

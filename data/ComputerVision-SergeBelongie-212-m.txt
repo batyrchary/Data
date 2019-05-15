@@ -1,0 +1,509 @@
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
+ 
+    
+
+            
+       
+       
+       
+      
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Deep Fundamental Matrix Estimation without Correspondences 
+
+
+Deep Fundamental Matrix Estimation without Correspondences
+
+
+Omid Poursaeed* 1,2 Guandao Yang*1 Aditya Prakash*3 Qiuren Fang1 Hanqing Jiang1 Bharath Hariharan1 Serge Belongie1,2
+
+
+
+
+
+
+O. Poursaeed, G. Yang, A. Prakash, Q. Feng, and H. Jiang, B. Hariharan, S. Belongie
+
+
+
+Cornell University Cornell Tech Indian Institute of Technology Roorkee
+
+
+
+* Indicates equal contribution
+
+
+Estimating fundamental matrices is a classic problem in computer vision. 
+Traditional methods rely heavily on the correctness of estimated key-point correspondences, which can be noisy and unreliable. 
+As a result, it is difficult for these methods to handle image pairs with large occlusion or significantly different camera poses. In this paper, we propose novel neural network architectures to estimate fundamental matrices in an end-to-end manner without relying on point correspondences. New modules and layers are introduced in order to preserve mathematical properties of the fundamental matrix as a homogeneous rank-2 matrix with seven degrees of freedom. We analyze performance of the proposed models using various metrics on the KITTI dataset, and show that they achieve competitive performance with traditional methods without the need for extracting correspondences.
+
+Fundamental Matrix Epipolar Geometry Deep Learning Stereo.
+
+
+
+The Fundamental matrix (F-matrix) contains rich information relating two stereo images. 
+The ability to estimate fundamental matrices is essential for many computer vision applications such as camera calibration and localization, image rectification, depth estimation and 3D reconstruction. 
+The current approach to this problem is based on detecting and matching local feature points, and using the obtained correspondences to compute the fundamental matrix by solving an optimization problem about the epipolar constraints.
+The performance of such methods is highly dependent on the accuracy of the local feature matches, which are based on algorithms such as SIFT . 
+However, these methods are not always reliable, especially when there is occlusion, large translation or rotation between images of the scene. 
+
+In this paper, we propose end-to-end trainable convolutional neural networks for F-matrix estimation that do not rely on key-point correspondences. 
+ The main challenge of directly regressing the entries of the F-matrix is to preserve its mathematical properties as a homogeneous rank-2 matrix with seven degrees of freedom. We propose a reconstruction module and a normalization layer (Sec. ) to address this challenge. We demonstrate that by using these layers, we can accurately estimate the fundamental matrix, while a simple regression approach does not yield good results. Our detailed network architectures are presented in Sec. .
+ Empirical experiments are performed on the KITTI dataset  in Sec. . The results indicate that we can achieve competitive results with traditional methods without relying on correspondences.
+
+
+
+
+
+
+
+
+
+
+
+Background and Related Work
+
+
+
+
+
+
+Fundamental Matrix and Epipolar Geometry
+
+When two cameras view the same 3D scene from different viewpoints, geometric relations among the 3D points and their projections onto the 2D plane lead to constraints on the image points. This intrinsic projective geometry is referred to as the epipolar geometry, and is encapsulated by the fundamental matrix . 
+
+This matrix only depends on the cameras’ internal parameters and their relative pose, and can be computed as:
+
+where  and  represent camera intrinsics, and  and  are the relative camera rotation and translation respectively. More specifically:
+
+
+
+in which  is the principal point of the camera,  is the focal length of camera , and ,  and  are the relative displacements along the ,  and  axes respectively.  is the rotation matrix which can be decomposed into rotations along ,  and  axes. We assume that the principal point is in the middle of the image plane.
+
+While the fundamental matrix is independent of the scene structure, it can be computed
+from correspondences of projected scene points alone, without requiring knowledge of the cameras’ internal parameters or relative pose.
+If  and  are matching points in two stereo images, the fundamental matrix  satisfies the equation:
+
+Writing  and  and , equation  can be written as:
+
+Let  represent the 9-vector made up of the entries of . Then equation  can be written as: 
+
+A set of linear equations can be obtained from  point correspondences:
+
+
+Various methods have been proposed for estimating fundamental matrices based on equation . 
+The simplest method is the eight-point algorithm which was proposed by Longuet-Higgins . 
+Using (at least) 8 point correspondences, it computes a (least-squares) solution to equation . It enforces the rank-2 constraint using Singular Value Decomposition (SVD), and finds a matrix with the minimum Frobenius distance to the computed (rank-3) solution.  
+
+Hartley  proposed a normalized version of the eight-point algorithm which achieves improved results and better stability. The algorithm involves translation and scaling of the points in the image before formulating the linear equation .   
+
+
+The Algebraic Minimization algorithm uses a different procedure for enforcing the rank-2 constraint. It tries to minimize the algebraic error  subject to . It uses the fact that we can write the singular fundamental matrix as  where  is a non-singular matrix and  is a skew-symmetric matrix with  corresponding to the epipole in the first image. This equation can be written as , where  and  are vectors comprised of entries of  and , and  is a  matrix comprised of elements of . Then the minimization problem becomes: 
+
+To solve this optimization problem, we can start from an initial estimate of  and set  as the generator of the right null space of . Then we can iteratively update  and  to minimize the algebraic error. More details are given in. 
+
+The Gold Standard geometric algorithm assumes that the noise in image point measurements obeys a Gaussian distribution. It tries to find the Maximum Likelihood estimate of the fundamental matrix which minimizes the geometric distance
+
+in which  and  are true correspondences satisfying equation , and  and  are the estimated correspondences.  
+
+Another algorithm uses RANSAC  to compute the fundamental matrix. It computes interest points in each image, and finds correspondences based on proximity and similarity of their intensity neighborhood. In each iteration, it randomly samples 7 correspondences and computes the F-matrix based on them. It then calculates the re-projection error for each correspondence, and counts the number of inliers for which the error is less than a specified threshold. After sufficient number of iterations, it chooses the F-matrix with the largest number of inliers. A generalization of RANSAC is MLESAC , which adopts the same sampling strategy as RANSAC to generate putative solutions, but chooses the solution that maximizes the likelihood rather than just the number of inliers. MAPSAC   (Maximum A Posteriori SAmple Consensus) improves MLESAC by being more robust against noise and outliers including Bayesian probabilities in minimization.
+A global search genetic algorithm combined with a local search hill climbing algorithm is proposed in  to optimize MAPSAC algorithm for estimating fundamental matrices. 
+
+ proposes an algorithm to cope with the problem of fundamental matrix estimation for binocular vision system used in wild field. It first acquires the edge points using Canny edge detector, and then gets the pre-matched points by the GMM-based point set registration algorithm. It then computes the fundamental matrix using the RANSAC algorithm.
+  proposes to use adaptive penalty methods for valid estimation of Essential matrices as a product of translation and rotation matrices.  
+A new technique for calculating the fundamental matrix combined with feature lines is introduced in . The interested reader is referred to  for a survey of various methods for estimating the F-matrix. 
+
+
+
+
+
+
+Deep Learning for Multi-view Geometry 
+Deep neural networks have achieved state-of-the-art performance on tasks such as image recognition , semantic segmentation , object detection , scene understanding  and generative modeling  in the last few years. Recently, there has been a surge of interest in using deep learning for classic geometric problems in Computer Vision.
+A method for estimating relative camera pose using convolutional neural networks is presented in .  
+It uses a simple convolutional network with spatial pyramid pooling and fully connected layers to compute the relative rotation and translation of the camera. 
+An approach for camera re-localization is presented in  which localizes a given query image by using a convolutional neural network for first retrieving similar database images and then predicting the relative pose between the query and the database images with known poses. The camera location for the query image is obtained via triangulation from two relative translation estimates using a RANSAC-based approach.
+  uses a deep convolutional neural network to directly estimate the focal length of the camera using only raw pixel intensities as input features.
+  proposes two strategies for differentiating the RANSAC algorithm: using a soft argmax operator, and probabilistic selection. 
+ leverages deep neural networks for 6-DOF tracking of rigid objects. 
+
+  presents a deep convolutional neural network for estimating the relative homography between a pair of images. A more complicated algorithm is proposed in  which contains a hierarchy of twin convolutional regression networks to estimate the homography between a pair of images.   introduces two deep convolutional neural networks, MagicPoint and MagicWarp. MagicPoint extracts salient 2D points from a single image. MagicWarp operates on pairs of point images (outputs of MagicPoint), and estimates the homography that relates the inputs. 
+  proposes an unsupervised learning algorithm that trains a deep convolutional neural network to estimate planar homographies.
+A self-supervised framework for training interest point detectors and descriptors is presented in .  
+A convolutional neural network architecture for geometric matching is proposed in . It uses feature extraction networks with shared weights and a matching network which matches the descriptors. The output of the matching network is passed through a regression network which outputs the parameters of the geometric transformation. 
+  presents a model which takes a set of images and their corresponding camera parameters as input and directly infers the 3D model. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Network Architecture
+
+
+
+
+
+We leverage deep neural networks for estimating the fundamental matrix directly from a pair of stereo images. 
+Each network consists of a feature extractor to obtain features from the images and a regression network to compute the entries of the F-matrix from the features. 
+Feature Extraction
+We consider two different architectures for feature extraction. 
+In the first architecture, we concatenate the images across the channel dimension, and pass the result to a neural network to extract features.  
+
+Figure  illustrates the network structure. We use two convolutional layers, each followed by ReLU and Batch Normalization . We use 128 filters of size  in the first convolutional layer and 128 filters of size  in the second layer. We limit the number of pooling layers to one in order not to lose the spatial structure in the images. 
+
+*[t!]
+
+
+Single-Stream Architecture. Stereo images are concatenated and passed to a convolutional neural network. Position features can be used to indicate where the final activations come from with respect to the full-size image. 
+
+
+
+
+
+Siamese Architecture. Images are first passed to two streams with shared weights. The resulting features are concatenated and passed to the single-stream network as in figure . Position features can be used with respect to the concatenated features. 
+
+
+
+Location Aware Pooling.
+
+
+
+
+
+
+
+
+
+As discussed in Sec. , the F-matrix is highly dependent on the relative location of corresponding points in the images. However, down-sampling layers such as Max Pooling discard the location information. In order to retain this information,  
+
+we keep all the indices of where the activations come from in the max-pooling layers. At the end of the network, we append the position of final features with respect to the full-size image. Each location is indexed with an integer in  normalized to be within the range , in which ,  and  are the height, width and channel dimensions of the image respectively. In this way, each feature has a position index indicating from where it comes from. This helps the network to retain the location information and to provide more accurate estimates of the F-matrix. 
+
+The second architecture is shown in figure . We first process each of the input images in a separate stream using an architecture similar to the Universal Correspondence Network (UCN) . 
+Unlike the UCN architecture, we do not use Spatial Transformers  in these streams since they can remove part of the information needed for estimating relative camera rotation and translation. The resulting features from these streams are then concatenated, and passed to a single-stream network similar to figure . 
+We can use position features in the single-stream network as discussed previously. These features capture the position of final features the with respect to the concatenated features at the end of the two streams. We refer to this architecture as 'Siamese'. As we show in Sec. , this network outperforms the Single-Stream one. We also consider using only the UCN without the single-stream network. The results, however, are not competitive with the Siamese architecture. 
+
+
+
+Regression
+
+A simple approach 
+for computing the fundamental matrix from the features is to pass them to fully-connected layers, and directly regress the nine entries of the F-Matrix. We can then normalize the result to achieve scale-invariance. This approach is shown in figure  (left). 
+The main issue with this approach is that the predicted matrix might not satisfy all the mathematical properties required for a fundamental matrix as a rank-2 matrix with seven degrees of freedom. 
+In order to address this issue, we introduce Reconstruction and Normalization layers in the following. 
+
+
+F-matrix Reconstruction Layer. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We consider equation  to reconstruct the fundamental matrix:
+
+we need to determine eight parameters  as shown in equations (). 
+Note that the predicted  is differentiable with respect to these parameters. Hence, we can construct a layer that takes these parameters as input, and outputs a fundamental matrix . This approach guarantees that the reconstructed matrix has rank two. Figure  (right) illustrates the Reconstruction layer. 
+
+
+*[t!]
+
+
+
+
+
+
+
+
+
+
+Different regression methods for predicting F-matrix entries from the features. The architecture to directly regress the entries of the F-matrix is shown on the left. The network with the reconstruction and normalization layers is shown on the right, and is able to estimate homogeneous F-matrices with rank two and seven degrees of freedom. 
+
+
+
+Normalization Layer. 
+
+
+
+
+
+
+
+
+Considering that the F-matrix is scale-invariant, we also use a Normalization layer to remove another degree of freedom for scaling. In this way, the estimated F-matrix will have seven degrees of freedom and rank two as desired. 
+
+The common practice for normalization is to divide the F-matrix by its last entry. We call this method ETR-Norm. However, since the last entry of the F-matrix could be close to zero, this can result in large entries, and training can become unstable. Therefore, we propose two alternative normalization methods. 
+
+FBN-Norm: We divide all entries of the F-matrix by its Frobenius norm, so that all the matrices live on a 9-sphere of unit norm. Let  denote the Frobenius norm of matrix . Then the normalized fundamental matrix is: 
+
+
+ABS-Norm: We divide all entries of the F-matrix by its maximum absolute value, so that all entries are restricted within  range:
+
+
+During training, the normalized F-matrices are compared with the ground-truth using both  and  losses. We provide empirical results to study how each of these normalization methods influences performance and stability of training in Sec. . 
+
+Epipolar Parametrization
+Given that the F-matrix has a rank of two, an alternative parametrization is specifying the first two columns  and  and the coefficients  and  such that . Normalization layer can still be used to achieve scale-invariance. The coordinates of the epipole occur explicitly in this parametrization:  is the right epipole for the F-matrix . The corresponding regression architecture is similar to figure , but we interpret the final eight values differently: the first six elements represent the first two columns and the last two represent the coefficient for combining the columns. 
+
+The main disadvantage of this method is that it does not work when the first two columns of  are linearly dependent. In this case, it is not possible to write the third column in terms of the first two columns. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+Experiments
+
+To evaluate whether our models can successfully learn F-matrices, we train models with various configurations and compare their performance based on the metrics defined in Sec. . 
+The baseline model (Base) uses neither position features nor the reconstruction module. The POS model utilizes the position features on top of the Base model.  
+Epipolar parametrization (Sec. ) is used for the EPI model. EPI+POS uses the position features with epipolar parametrization. 
+The REC model is the same as Base but uses the reconstruction module. Finally, the REC+POS model uses both the position features and the reconstruction module.
+
+We use the KITTI dataset for training our models. The dataset has been recorded from a moving platform while driving in and around Karlsruhe, Germany. We use  images from the raw stereo data in the 'City' category, and split them into 1600 train,  validation and  test images. Ground truth F-matrices are obtained using the ground-truth camera parameters. The same normalization methods are used for both the estimated and the ground truth F-matrices. 
+The feature extractor and the regression network are trained jointly in an end-to-end manner.  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Evaluation Metrics
+
+
+
+
+
+
+We use the following metrics to measure how well the F-matrix satisfies the epipolar constraint (equation ) according to the held out correspondences: 
+
+
+EPI-ABS (Epipolar Constraint with Absolute Value): 
+
+
+EPI-SQR (Epipolar Constraint with Squared Value):
+   
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The first metric is equivalent to the Algebraic Distance mentioned in . We evaluate the metrics based on high-confidence key-point correspondences: we select the key-points for which the Symmetric Epipolar Distance based on the ground-truth F-matrix is less than 2. This ensures that the point is no more than one pixel away from the corresponding epipolar line. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[t!]
+ 
+
+
+1em
+Results for Siamese and Single-stream networks on the KITTI dataset. Traditional methods such as 8-point, LeMedS and RANSAC are compared with different variants of our proposed model. 
+Various normalization methods and evaluation metrics are considered. 
+-1em
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Results and Discussion
+
+Results are shown in Table . 
+ 
+ We compare our method with 8-point, LeMedS and RANSAC algorithms . On average,  pairs of keypoints are used per image. 
+
+As we can observe, the reconstruction module is highly effective, and without it the network is unable to recover accurate fundamental matrices. The position features are also helpful in decreasing the error. The Siamese network outperforms the Single-Stream architecture, and can achieve errors comparable to the ground truth. This shows that the two streams used to process each of the input images are indeed useful. 
+Note that the networks are trained end-to-end without the need for extracting point correspondences between the images, yet they are able to achieve competitive results with classic algorithms. The epipolar parametrization generally outperforms the other methods. During the inference time, we just need to pass the images to the feature extraction and regression networks to estimate the fundamental matrices.   
+
+
+
+
+
+
+
+
+Conclusion and Future Work
+We present novel deep neural networks for estimating fundamental matrices from a pair of stereo images. 
+Our networks can be trained end-to-end without the need for extracting point correspondences. We consider two different network architectures for computing features from the images, and show that the best result is obtained when we first process images in two streams, and then concatenate the features and pass the result to a single-stream network.   
+We show that the simple approach of directly regressing the nine entries of the fundamental matrix does not yield good results. Therefore, a reconstruction module is introduced as a differentiable layer to estimate the parameters of the fundamental matrix. Two different parametrizations of the F-matrix are considered: one based on the camera parameters, and the other based on the epipolar parametrization.  
+We also demonstrate that position features can be used to further improve the estimation. 
+This is due to the sensitivity of fundamental matrices to the location of points in the input images. 
+In the future, we plan to extend the results to other datasets, and explore other parametrizations of the fundamental matrix. 
+
+
+
+
+
+
+
+
+
+
+splncs04
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

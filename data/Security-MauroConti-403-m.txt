@@ -1,0 +1,1870 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The main idea of our outsourced privacy-preserving vector distance protocol is to transform the original vectors to random vectors, meanwhile, preserve the distance among vectors.
+Moreover, the transformation should be kept secret from adversaries.
+In this way, the distance can be measured on transformed vectors as on original vectors (which means light-weight computation),
+but the adversary cannot obtain the original vectors nor compute the distance between the transformed vectors and vectors from a dictionary
+to infer the original ones.
+
+
+Let the distance function of two vectors 
+ be .
+As shown in Fig. fig:advance, we design the transformation with two main building blocks: Profile Scrambling and Locality Sensitive Hash (LSH).
+The profile scrambling module works based on the observation that vector distances are dimension-order-independent,
+ that is when we randomly change the dimension order of both  and  consistently to obtain scrambled  and ,
+ we have .
+Once the scrambling order is kept secret, the original vectors are protected and a dictionary based inference is prevented.
+In case there may be some dimension-dependent characteristics of vision feature vectors,
+ , in the color histogram the dimensions representing red component usually have large values,
+ we employ the LSH module to transform the scrambled feature vectors into another low-dimensional vector space.
+LSH hides the scrambled feature vectors from all parties and makes the statistic analysis on scrambled vectors infeasible,
+ meanwhile it also preserves the distance among vectors.
+Besides, lower-dimension vectors reduce the cost for vector distance computation and vector transmission.
+On the other hand,
+ changing the dimension order of  randomly to  makes their hashes totally different,
+ because there is a random distance between them.
+Hence, the vector scrambling works like a random salt to strength the security property of LSH as well,
+ that makes the dictionary attack against LSH infeasible.
+Combining vector scrambling and LSH, we protect feature vectors of invisible users from untrusted cloud and other parties,
+ and outsource most computation to the cloud in a secure and noninteractive manner.
+
+
+
+
+
+
+
+In the following subsections,
+
+we will introduce the LSH based vector distance measurement as a preliminary,
+then present our privacy-preserving vector distance protocol.
+
+
+LSH based Vector Distance Measurement
+
+
+
+
+
+The key insight behind LSH is that it is possible to construct
+ hash functions such that close vectors will have the same hash value with higher probability than vectors that are far apart.
+
+
+
+
+
+Different LSH functions are designed for various distance metrics, , Euclidean distance, Hamming distance, cosine distance.
+In our system, we use the commonly used Euclidean distance
+.
+Particularly, for high-dimensional vector space  with Euclidean distance, an LSH function is defined as followsdatar2004locality:
+align
+() = <h_1(), h_2(),,h_m()>
+
+h_i() =  arrayll
+1 & if  
+
+0 & otherwise
+
+array .
+align
+where  is a random vector with each dimension chosen
+independently from the standard Gaussian distribution .
+Here each  is an atomic LSH function, and the LSH function 
+generates a hash vector of the input vector by concatenating 
+scalar atomic hash values. The window size  and 
+control the distance range that the mapping is sensitive to.
+In the advance system,
+ the cloud determines the hashing function  and publishes it to all participants.
+
+According to the definition of LSH,
+ the differences between hash vectors indicate the distance between original vectors.
+
+
+In this work we apply the Hamming distance between hash vectors to approximate the distance between original vectors.
+Our experimental results show that the Hamming distance between hash vectors is nearly monotonic to distance measurement between original vectors.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Outsourced Privacy-preserving Distance Computing
+
+
+
+
+
+
+Here, we assume that each user share a secure communication channel with the cloud.
+Then the transformed vectors are protected from other participants.
+In a specific round of photographing, to preserve distance between transformed vectors,
+ the challenge is that all participants (photographer and invisible neighbors)
+ must scramble their feature vectors in a consistent order individually and secretly.
+We refer to the scramble order as scramble code .
+To achieve the same , all participants first need to generate a same random seed  secretly.
+The multi-user agreement protocol requires that the untrusted cloud cannot learn the random seed and the scramble code,
+ although it controls all communications between users.
+
+
+Random number exchange.
+There are many well-designed group key agreement protocolsburmester1995secure, lee2006distributed, 
+ but most of them require multiple communication rounds among participants,
+ which could cause long delay.
+Utilizing the honest-but-curious cloud and secure communication channels between the cloud and users,
+ we adapt the practical distributed group key agreement protocol proposed inburmester1995secure to
+ achieve round optimum and computation efficient random number agreement.
+Let  be a dynamic subset of all users who want to generate a common random number
+ and our protocol is presented in Algorithm algorithm:random.
+With this protocol, the photographer and his/her invisible neighbors can obtain the same random number,
+ while the cloud learns nothing about the random number.
+
+
+
+
+
+
+algorithm[h]
+
+[1]
+  
+
+Cloud generates and publishes system parameters:
+1) a large prime number , a constant ,
+  and  of order .
+
+Each user  generates his private parameter  and public parameter  and sends  to the cloud.
+
+Cloud checks that  for all .
+
+  
+
+
+
+Cloud arranges  users' indices in a cycle and sends  and  to each .
+
+Each  computes  and sends it to cloud 
+
+Cloud sends  to each .
+
+Each  computes the random number
+
+Although each user generates  individually, all  equal to the same random number
+
+
+
+
+
+Scramble code generation.
+After obtaining consistent random seed ,
+ each participant generates the scramble code using Algorithm ,
+ and rearranges the dimension order of each feature vector according to the scramble code.
+
+[h]
+
+[1]
+  
+Vector dimension ; Random number ;
+Sorted set ;
+
+  
+Scrambled dimension sequence ;
+
+
+; ; 
+;
+
+;
+
+Remove  from ;
+
+;
+
+;
+
+
+
+
+
+
+As illustrated in Fig. , after scrambling feature vectors,
+ the photographer and invisible neighbors apply LSH to scrambled vectors to get transformed vectors for current round.
+The cloud can simply use the transformed vectors to compute distance and conduct the same graph matching algorithm
+ as in the basic scheme.
+While the membership doesn't change, the random number remains the same.
+In this case, the photographer can use the same random number to generate transformed vectors for new photos,
+ and all invisible neighbors do not need any recalculation.
+When the membership changes, the cloud can insert/remove users into/from the exiting ring of Algorithm  to update the random number for a new round.
+Note that, in this case, most users do not need to recalculate the Step  in Algorithm .
+Based on our evaluation, the runtime for random generation time is usually only 0.014s, which is negligible for human movement.
+Once the random number is updated, the system achieves randomized transformation outputs for the same feature vector in different rounds.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+In this work, we present a new approach InvisibleMe to protect users' portrait privacy during photo taking and sharing.
+With our system, users that are unwilling to be photographed will be automatically erased from the pictures in a lightweight and privacy-preserving way.
+To achieve this goal, we propose the integrated system model, a graph
+matching scheme to locate people in pictures and a privacy-preserving
+vector distance computation method.
+We have fully implemented our protocol,
+and thoroughly evaluated our design.
+
+
+[t!]
+
+Baseline system architecture.
+
+
+
+Facing critical challenges introduced in Section ,
+ we design our system to achieve both the privacy and system efficiency goals.
+
+With our graph-based portrait matching algorithm, the baseline approach is effective to protect users' visual portrait privacy
+ by accurately locating invisible people in photos and erases them automatically.
+But there is a risk of exposing portrait features to untrusted cloud and other participants.
+Furthermore, we propose an efficient privacy-preserving outsourced vector distance protocol,
+ based on which an advanced approach provides portrait feature privacy and inference privacy protection with little extra overhead for the client.
+In this section, we will sketch our system architecture.
+
+
+
+
+Overview of Baseline System
+
+In our system, there are three parties involved: the photographer, who takes the photo;
+the neighbors, who could be in the FOV of the photographer (as presented in Fig. );
+the cloud, who takes charge of location, communication and computation services.
+
+
+
+The architecture and workflow of our baseline system are illustrated in Fig. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We would like to take a typical photographing process as an example to
+describe the functionality of each component and the system workflow.
+Users create their personal portrait profiles using the Self Portrait Profile Generation component
+ and encode their portrait profiles to express their privacy requirements.
+
+In our design, a set of vision feature vectors are extracted from subregions of a portrait image.
+Both face and body features are extracted, in case that there may lack a clear front view of face.
+We introduce a graph structure to encode the extracted vision features (feature vectors are properties of nodes) and
+ use the graph as the portrait profile, as the examples in Fig. .
+Compared with uploading the original image,
+ the feature graph shows a low risk on privacy leakage without lose of matching functionality,
+ and are much more efficient for both computation and communication.
+Besides, the graph representation is highly robust for pose changes of people and cameras.
+
+
+
+
+For each invisible user,
+ his/her self portrait profile is generated once and for all until he/she updates it.
+While the face features of a user remains the same, the user could change his/her outfits.
+The portrait profile could be automatically updated when the user selfies
+ or while he/she uses the phone with the frontal camera facing himself/herself.
+In our advanced approach, transformed version of portrait graph are used to improve privacy protection.
+With portrait graphs, we convert the people matching problem to graph matching problem.
+
+
+[t!]
+
+
+Portrait graph representation.
+
+
+Triggered by a photo shooting action,
+ the Proximity Service on cloud will be automatically notified and start to check
+ if there are invisible people in the FOV of the photographer.
+If any, the cloud will inform them and start the next step.
+
+Proximity service can be realized easily using common location service and onboard compass.
+
+
+
+By restricting the number of potential matched invisible users,
+ our system can achieve high matching accuracy and low overhead.
+
+
+In the next step, after being informed by cloud,
+ invisible neighbors upload their self portrait profiles to cloud
+ (this could be done in advance to reduce the delay).
+Meanwhile, the photographer detects all people in the photo and extracts their portrait profiles with the
+FOV Portrait Profiles Generation component,
+ which works similarly to self portrait profile generation.
+
+These profiles will be uploaded to cloud as well.
+
+Then the Matching Service will match portrait profiles of invisible users to portrait profiles from the photo
+ and determine people that should be erased from the photo.
+The graph matching algorithm will be discussed in detail in Section .
+The matched results will be sent to photographer, and then the Privacy Concealing component will erase the corresponding
+ image regions of invisible people from the photo automatically by blurring
+ or other more sophisticated techniques, like image inpainting,
+ to maximize the aesthetics.
+We show an example of removing invisible people from photo in Fig. .
+For the inpainting, we use the code from Criminisi's work.
+After the removal, the photographer can store or share the photo using the cloud service.
+Note that, based on the personal specification, the whole procedure works the same way for tagged users
+ and the "erase" operation can be alternated to "tag" to augment many social applications.
+
+[t!]
+
+
+Example of automatic privacy concealing (erase invisible people from photos) by image inpainting or blur.
+
+
+
+In case there are dishonest photographers who don't complete the removal, supports verification of removal.
+All invisible users' portrait profiles have been uploaded to the cloud in the previous stage.
+Once the photo is shared through Internet, the Verification Service will check the photo as follows£º
+the cloud first conducts a people detection on the photo and extracts all portrait profiles;
+then the cloud matches these profiles with the cached profiles of invisible neighbors,
+ if there is a matching, it can tell that the photographer didn't follow the protocol.
+The verification process can be completed alone by the cloud without any interaction with users.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Overview of Advanced System
+
+
+
+The baseline protocol
+
+
+
+
+protects the visual privacy of people's portraits,
+but exposes users' portrait profile (feature vectors) to the cloud and even the eavesdroppers.
+
+
+With some feature vectors an adversary could have a chance to match them with existing photos or even reconstruct the photo.
+In the advance approach, we retains the visual portrait privacy protection and
+improve the system to protect users' portrait feature privacy and inference privacy (defined in Section ).
+The graph based profile matching scheme should be conducted in a privacy-preserving manner.
+
+
+The core of the portrait profile matching algorithm is to measure the distance between vision feature vectors.
+We cannot directly adopt existing privacy-preserving vector distance protocols based on homomorphic encryption and gabled circuit due to their large computation and communication cost.
+In we propose a highly efficient outsourced vector
+ distance protocol (see Section ).
+As shown in the red blocks in Fig. ,
+ combining a well designed scrambling scheme and locality sensitive hash,
+ all invisible neighbors can secretly transform their vectors in a distance preserving way.
+
+Then the cloud can measure vector distances using the transformed vectors
+ and match transformed portrait graph with the same algorithm as in the baseline system.
+Our scheme protects invisible users' portrait profiles (from both himself/herself and the photographer) with very little extra cost on the client side for generating transformed portrait graph.
+But, it saves computation cost for the cloud, because the distance computation of high-dimensional real number vectors is converted to
+distance of low-dimensional binary hash code.
+
+
+[t!]
+
+
+Advanced system architecture.
+
+
+The architecture of the advance system is presented in Figure ,
+ except vector transformation and verification,
+ other components are the same as that in the baseline system.
+Here, the verification is more challenging,
+ because the cloud only knows the transformed portrait graphs of invisible users.
+Without knowing the secret transformation,
+ the cloud cannot compare them with portrait graphs directly extracted from the uploaded photo.
+When an invisible user needs to check if his/her portrait has been removed,
+ he/she need to start a verification and participate in the process as follows:
+ the cloud sends all extracted feature vectors in a random order to the invisible user.
+Note that, these feature vectors are supposed to belong to preserved visible people if the photographer is honest.
+And the invisible user transforms them in the same way as his/her self feature vectors and sends the results transformed vectors to the cloud.
+Then the cloud can compare preserved people in the photo and invisible neighbors using transformed portrait graphs,
+ and detect the dishonest photographer.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Prototype Implementation
+
+
+
+
+
+
+
+We implement prototype systems of both variants.
+To support automatic people detection, we implement the most popular face detection and pedestrian detection algorithm based on the library of OpenCV.
+
+To generate portrait graph,
+
+
+
+
+
+we adopt JSeg for image segmentation.
+
+
+
+
+
+Leveraging the library of MPEG-7,
+
+ a 48-byte eigenfaces vector is extracted as the property of a node labeled with face,
+ and a 64-byte color histogram vector and a 20-byte texture vector (edge histogram with 4 blocks and 5 orientations)
+ are extracted as the property for other nodes.
+
+
+
+is compatible with any other vector-based feature descriptors.
+Obtaining the matching results, invisible people are removed from the photo by blurring and inpainting,
+ as shown in Fig. .
+Except the image processing,
+ all other building blocks are realized using Java, including portrait graph matching,
+ LSH, random number agreement, vector scrambling and the messaging module.
+The client side are developed as an app on Android system for case study.
+A user starts this app by inputting his/her portrait profile via selfieing.
+
+
+
+
+
+
+Case Study and Experiment setup
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+To test the practicality and efficiency of  the evaluation is conducted in a crowded real-life scenario:
+ a networking workshop with more than 50 attendees in a  meeting hall.
+
+10 volunteers (4 female and 6 male) acted as invisible users and also photographers.
+Within one day, the volunteers took photos freely and our system recorded the cost and photos.
+After the experiment, we got 208 photos.
+1326 pedestrians are detected which belong to 42 individuals (7
+ female and 35 male), but only 412 faces are detected.
+
+
+It implies that
+
+
+
+a whole body detection and description (, our graph model) is necessary.
+
+We manually labeled all captured people as the ground truth for the following evaluations.
+
+
+
+
+
+
+
+Experiment setting.
+In the experiments,
+ we use three types of phones as clients: HTC G10 (1024Hz CPU and 768M RAM),
+ HTC G23 (1536Hz CPU and 1G RAM) and HTC New One (1741Hz CPU and 2G RAM).
+One laptop is used as the cloud: ThinkPad X1 with i7 2.7GHz CPU and 4GB
+RAM.
+
+
+
+
+Based on our extensive evaluation, to achieve the tradeoff between matching efficiency and accuracy,
+ we set the parameter of the matching methods as  and the parameters of LSH as  and  (the hashed vector is 128 bit).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+For the random number generation,  is set to 512, which provides sufficient protection for the random number agreement protocol.
+The analysis of parameter setting is omitted due to space limitation.
+
+The the following evaluation,
+ we denote the implementation of the baseline system as  and the implementation of the advance system as .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Matching Accuracy
+
+Here we investigate the most important metric,
+the portrait matching accuracy of both variants, which determines the correctness of invisible people removal.
+
+
+*[ht]
+Portrait similarity variances.
+
+FP and FN  in basic scheme
+
+FP and FN in advanced scheme
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We start by examining the consistency and distinguishability of user's
+portrait graph
+ by self-similarity (similarity between the same entity's portrait graphs)
+ and cross-similarity (similarity between different entities' portrait graphs).
+In this evaluation, we remove the face property since it is highly distinctive
+ but cannot always be obtained.
+Figure.  presents the evaluation results using the dataset.
+The upper blue line stands for mean self-similarity for each entity,
+ and the lower red line is mean cross-similarity between this entity
+ and all other entities.
+We notice that, generally portrait graph has a good consistency, ,
+high self-similarity and small variance.
+And the obvious gap between self-similarity and cross-similarity
+ shows a good distinguishability.
+In fact, in most cases, portrait graph can provide accurate matching
+ without face features,  which implies better privacy protection.
+
+
+Then, we analyze the matching correctness by analyzing all possible combinations using the dataset.
+A false negative (FN) happens when a user A is invisible, but not removed from the photo
+due to a match score lower than a match threshold .
+A false positive (FP) happens when user A is invisible, but another visible user C is removed due to
+ a higher match scores than both the threshold and A's score.
+In matching is conducted on portrait graph with plain feature vectors.
+Fig.  illustrates the  percentage of
+FN and FP changing with different threshold .
+By selecting the threshold ,
+ achieves  false negative and  false
+ positive without using any face property.
+With face property, the false negative decreases to about  and
+false positive is less than .
+In feature vectors are transformed by scrambling and LSH.
+While the scrambling retains the accurate distance between vectors,
+LSH could cause some accuracy loss.
+Will the transformation reduce the matching accuracy?
+With appropriate parameters  and ,
+achieves comparable accuracy with , as shown in
+Fig. .
+When  ,
+ the false negative is about  and the false positive is about
+  without any face property.
+So, both variants support accurate matching and our vector transformation achieves good portrait feature privacy
+ protection with little accuracy loss.
+
+
+
+
+
+
+Based on the evaluation, in the rest experiments,
+ the threshold  is set to 0.5.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Micro Benchmark
+
+
+
+
+
+Communication cost. In each face node takes 48B and each other node takes 84B.
+The size of the portrait graph depends on the node number .
+For most applications,  is sufficient,
+so the communication cost for each portrait is 0.82KB.
+In after encoding, each vector is hashed to 128 bits,
+ which reduces the size of a portrait to 0.15KB.
+Protocol requires extra communication for random number agreement,
+ which is only about 0.19KB.
+costs each participant less than 1KB data transmission to
+enable portrait privacy protection.
+The cost for a photographer depends on the people number in the captured photo,
+ but in most cases (with less than 10 people in photo), less than 10KB overhead is incurred, which is much less than a photo.
+In general, achieves much smaller transmitted data size and better privacy protection
+ than transmitting the image itself.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Computation cost.
+In the computation cost is composed of portrait graph
+generation on the client side, and portrait matching on the cloud.
+costs extra computation for random number agreement and vector transformation by scrambling and LSH.
+The runtime is only about 3 ms to transform ten 64-dimension feature vectors.
+Table.  presents all the decomposed computing time.
+It shows that,
+ the major computation delay is caused by image processing.
+
+For a participant, it only needs to be executed once for the profile setup;
+for a photographer, it needs to be executed for every captured photo.
+The runtime of portrait detection and segmentation depend on the
+resolution and complexity of the photo,
+but the detection and segmentation results are not sensitive to scaling.
+Hence, in our prototype all images are scaled to about 240,000 pixels.
+
+For the photographer, on average it takes about 0.4s to conduct face
+and pedestrian detection.
+Given a portrait image/subimage,
+
+ the processing time of segmentation and feature extraction is about 2.6s.
+
+On average, there are 28.2 regions of each portrait.
+
+
+
+
+Microbenchmarks of Runtime (in second)
+
+
+
+
+Compared with the image processing, the runtime of graph generation and matching is nearly negligible.
+On the client side, only extra 0.014s runtime is required for random number generation in
+ . On the cloud side, the time needed to match a pair of portrait graph
+ is only about 0.04s in and decreases to 0.01s in due to the hashed feature vector.
+
+The cloud also needs 0.9s to generate system parameters for random number generation.
+The millisecond-level portrait graph transmission delay is negligible too.
+So the total computation delays for both variants are about 3s on the client
+ and 1s on the cloud, which results a 4s system computation delay.
+
+
+
+
+Now we've learned the magnitude of the time cost for each component,
+ the overall delay also depends on the number of co-located invisible neighbors.
+With more active peers sending privacy requests, the matching cost will increase,
+ but compared to the image processing cost, the matching cost on the cloud side is still quite small.
+Besides, the power consumption caused by our protocol (second-level computation) is much smaller than that caused by photo capturing itself.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Case Evaluation
+
+We conduct the case based evaluation as
+described in Section .
+
+
+When there are invisible users in the photo,
+ the false negative rate was about  and the false positive rate was .
+But when there are no invisible users in the photo,
+ the false positive rate raises to  due to the absent of any true match users,
+ and the threshold 0.5 was not high enough to exclude all false match.
+
+And the average time for successful invisible people removal is about 4 seconds.
+
+
+Compare with Alternative Solution
+
+
+
+For comparison purpose, we also realize private Euclidean distance computation
+ using a partial homomorphic encryption (Paillier encryption)
+ in the SMC manner (e.g. the method used in).
+Using the same computer and test images, the Paillier-based method takes about 0.5s for feature vector encryption
+ and 1.8s for portrait matching between a pair of feature vectors.
+But with our approach, the transformation cost is negligible and the matching cost is only 0.01s.
+Besides, our method requires no interaction during the matching process.
+The comparison shows the a significant efficiency of our system.
+Nowadays, smart devices with onboard cameras  , smart phones and
+glasses, are pervasive in our daily lives.
+These smart devices can capture and even share photos without
+ informing the  parties in the picture, thus raises many
+ concerns on people's  privacy infringement.
+Particularly, the wilder adoption of smart glasses, Google Glass,
+ leads to severe concerns for misuse because Glass can capture
+ photos/videos far less conspicuously than a traditional hand-held
+ device.
+
+Secretive photographing without clear warning beforehand and
+ possession of secretively taken photos are both privacy violations.
+Even worse, if the photos which contain information beyond what
+ users want to reveal are shared in Internet, it will make users
+ extremely susceptible to various attacks.
+
+
+To protect people's portrait privacy from unwilling photo-taking and publication,
+ many photo service providers or users have taken actions in different ways.
+For example, some Glass wearers whip their device off in inappropriate situations,
+ such as in gym locker rooms or work meetings;
+ some business bans smart glasses inside their buildings to respect
+ customers' privacy ; and
+ the Glass manufacturer (, Google) does not allow developers to
+ create applications that take photo silently.
+
+Lawmakers are also beginning to consider various privacy issues of
+ Glass, including whether it should be capable of facial recognition.
+Although face recognition is a useful function, especially for social applications,
+ face is a critical private identifiable information.
+At present, there are no facial recognition technologies built into Glass
+ and the manufacturer has no plans to use it unless they have strong privacy protections in place.
+
+These methods, however, are broad-brush and blunt which can
+ significantly hurt the applications of smart devices.
+Therefore, it is appealing to consider how one might build a system in
+ which users do not leak portrait privacy while guaranteeing a
+ comfortable usage of smart glasses/cameras.
+
+Instead of discarding the smart glasses/cameras due to privacy concerns,
+ in this work, we seek a solution for reaching an ultimate goal of
+ privacy-friendly Glass/camera, operating  transparently to
+ end users.
+Our solution will let end users to express their privacy requirements
+ and glasses/cameras or photo service providers will exert the privacy
+ protection mechanisms.
+When taking a photo/video, the smart device will detect who (in the
+picture/video) requested privacy protection, and then remove them
+ from the image automatically.
+Our protocol can also be used for automatically tagging people in a photo
+
+when a
+user expresses an interest to be tagged with his/her information.
+
+To implement such a privacy-friendly camera, we need to address
+several critical challenges.
+First, we should enable privacy-advocator efficiently and flexibly to express his/her privacy
+requirements/intentions. Several methods could be used for this task, such as
+using visible specialized tag (, QR code), or encoding the request and transmitting
+it using  wireless devices.
+For users' convenience and aesthetics, in this work, we adopt the latter approach by encoding his/her
+portrait in the request.
+Then, the second challenge is that we should accurately and efficiently associate
+ each privacy-seeking user with an image region in the photo taken by another user (the photographer ).
+Furthermore, the association process itself should not cause portrait information leakage
+ and should be accomplished in a privacy-preserving way.
+Face recognition is
+widely used to identify people in photos, but in practice it suffers when there lacks a clear front view of faces.
+
+
+Sophisticated but complicated matching schemes may cause high
+overhead and long delay. The matching problem itself is difficult due to
+the accuracy and efficiency requirements, let alone completing
+matching process in a private and non-interactive manner with untrusted server.
+Matching a user's privacy-expression with a possible people in a photo
+can be reduced to some sort of vector matching.
+
+ Many private vector matching protocols use
+multi-party computation techniques, which require frequent
+interactions among participants. Most exiting private vector matching
+methods (in both multi-party computation and outsourced manner) use
+homomorphic encryption or
+garble circuit,
+and cause high computation cost for both client and cloud.
+The third challenge is that the privacy-friendly Glass/camera should be
+ transparent to all users and cause minimal extra overhead to mobile devices.
+
+
+
+An ad hoc approach may lead to requirements for "always-on" neighbour
+ discovery, frequent information exchanging as well as complex image matching
+ computation on user devices.
+To reduce the overhead of users,
+ our protocol will outsource most of these tasks to cloud with a
+ well-designed strategy to prevent privacy leakage to untrusted cloud and other users.
+
+
+
+
+
+The main contributions of this work are as follows:
+
+
+To the best of our knowledge, we are the first to present a
+  portrait privacy preserving photo capturing and sharing approach.
+  
+  
+ With our approach in Section , people who require not to be captured in photo will be
+ automatically erased from the photo and verification of the removal is also supported.
+
+We comprehensively analyze the privacy issues during the photo
+  capturing and sharing and define three types of threats in Section . Based on
+  the proposed model, we present a solution protecting all three types of privacy information.
+
+For accurate and efficient matching between people's privacy
+  intentions and people in the photo,
+  we introduce a graph-based portrait profile and design a robust
+  matching algorithm to recognize and erase privacy-seeking people in Section .
+
+We propose a highly efficient privacy-preserving vector distance
+  protocol in a non-interactive manner with untrusted server in Section ,
+  which significantly reduces the computation complexity and communication cost than
+  existing homomorphic encryption and garble circuit based solutions.
+
+
+
+  With our protocol, most computation tasks are transferred from smart devices to the cloud in a privacy-preserving way.
+  
+  
+
+We design and implement a prototype system and verify the effectiveness of our scheme by extensive experiments as well as case studies in Section .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+op-tical net-works semi-conduc-tor
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+i.e.
+et al.
+etc.
+w.h.p.
+e.g.
+i.i.d.
+s.t.
+
+A_t
+M
+O
+p
+
+c
+P
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+theoremTheorem
+axiom[theorem]Axiom
+corollary[theorem]Corollary
+definitionDefinition
+lemma[theorem]Lemma
+remark[theorem]Remark
+protocolProtocol
+InvisibleMe 
+InvisibleMe-Basic 
+InvisibleMe-Advanced 
+
+
+
+Enable Portrait Privacy Protection in Photo Capturing and Sharing
+
+
+
+Lan Zhang1, 
+Kebin Liu 1,
+Xiang-Yang Li2,
+Puchun Feng1,
+Cihang Liu1,
+Yunhao Liu1
+1 School of Software, Tsinghua University
+2 Department of Computer Science, Illinois Institute of Technology
+
+
+
+
+
+
+
+The wide adoption of wearable smart devices with onboard cameras
+ greatly increases people's concern on privacy infringement.
+Here we explore the possibility of easing persons from photos captured by
+ smart devices according to their privacy protection requirements.
+To make this work, we need to address two challenges: 1) how to let
+ users explicitly express their privacy protection intention, and 2)
+ how to associate the privacy requirements with persons in captured photos accurately and efficiently.
+Furthermore, the association process itself should not cause portrait information leakage
+ and should be accomplished in a privacy-preserving way.
+In this work, we design, develop, and evaluate a protocol, called
+InvisibleMe, that enables
+a user to flexibly express her privacy requirement and empowers the
+ photo service provider (or image taker) to exert the privacy
+ protection policy.
+Leveraging the visual distinguishability of people in the field-of-view
+ and the dimension-order-independent property of vector similarity measurement,
+ InvisibleMe achieves high accuracy and low overhead.
+
+
+
+We implement a prototype system, and our evaluation results on both
+ the trace-driven and real-life experiments confirm
+  the feasibility and efficiency of our system.
+
+
+
+
+
+Introduction
+
+
+
+
+Privacy Requirement
+
+
+
+
+
+System Design Overview
+
+
+
+
+
+Portrait Profile Generation and Matching
+
+
+
+
+
+Improvement of Preserving Portrait Privacy
+
+
+
+
+
+Prototype Implementation and Evaluation
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Related Work
+
+
+
+
+
+
+Conclusion
+
+
+
+
+
+
+
+
+IEEEtran
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Portrait Profile Generation
+
+
+
+
+
+
+
+
+After applying a people detection on a photo,
+ we obtain portrait images (including both people faces and bodies) from this photo as shown in the first subfigure of Fig. .
+Then portrait image can be segmented into adjacent regions by different colors and textures.
+
+
+
+Given one portrait image,
+ a graph  can be constructed,
+ where  is a set of nodes representing segmented regions
+ and  are edges connecting any two regions that share a boundary.
+
+
+
+
+
+Then we measure each node's confidence of being a part of the person and remove the node with low confidence to eliminate the background.
+
+
+
+
+
+
+The confidence calculation is omitted due to space limitation.
+
+Fig.  shows examples of foreground extraction and portrait graph generation,
+ which provide more accurate graph representation of people portrait.
+The result of foreground extraction can also be employed by the privacy concealing component
+ as the accurate erase area to achieve better looking removal, as shown in Fig. .
+
+
+
+For each region of portrait, vision feature vectors, , face feature vector, color histogram and texture vector, are extracted as property of the corresponding node.
+
+
+
+
+
+We will give more detail about node properties in the implementation section (Section. ).
+
+
+
+
+
+
+
+
+
+
+Portrait Graph Matching Scheme
+
+
+To achieve accurate and efficient portrait graph matching,
+ there are several challenging issues should be addressed with low computation cost:
+ graphs structure of the same person varies due to changing illumination condition and viewpoint;
+
+ incomplete graphs could be produced due to occlusion;
+ portrait profile could still contain some noisy nodes from background.
+As a result, the matching algorithm should be elastic to node/edge division, aggregation, insertion and deletion,
+ and robust to noise nodes.
+
+Existing graph matching methods usually have application-oriented specifications,
+ , assumptions about node numbers, graph structure and pre-knowledge of correspondences,
+ make them difficult to be directly applied in this work.
+To meet the critical requirements of portrait profile matching,
+ we design a voting based strategy in which both the node similarity and graph structure are considered.
+
+
+Let graph  denote portrait profile  (say produced
+by a user) and  denote portrait profile  (say
+produced by a photographer).
+Here  and .
+Each node own some feature vectors as its property.
+In order to improve matching accuracy as well as speed up the computation process,
+ we add a label for each node, which describes its type, for example, human face or human body.
+Only nodes of the same type can be matched.
+The distance between two nodes of different types is regarded as infinite.
+
+As human face is a strong feature to identify a person,
+our matching scheme will firstly consider the matching between nodes labeled with "human face" (, Node No.5 in Fig. ),
+ then invoke an integrated graph matching.
+
+In this way, our method provides more accurate and robust matching than existing face recognition based methods.
+
+Initialization.
+Let the similarity between nodes  and  be ,
+ which can be obtained through measuring the distances between feature vectors of two graph nodes.
+Note that, if  and  have different type labels,  is set to zero.
+In Section , we will discuss the details of privacy preserving vector distance computation.
+
+During the matching process, a matrix  with  rows and  columns is built.
+
+Each entry  of the matrix is a triple
+ where  is a boolean flag indicating whether node  is a possible match for node ,
+  caches the one-hop neighbor match information and  is a counter.
+Details of these parameters will be presented in the following parts.
+A match is represented as an assignment for all ,
+ where there is at most one  equaling  for every column .
+All  are initiated to .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+After the initialization, our graph matching scheme consists of three stages.
+
+Stage 1. We eliminate wrong matches based on the similarities of node pairs.
+If  is above a pre-specified threshold ,
+ the corresponding flag  is set to , otherwise, we eliminate this match by set  to .
+
+Note that, a node in  does not necessarily have a possible match in , thus there can be rows with all  flags.
+After this stage, all node pairs with  flags are considered as candidate matches.
+
+Stage 2. We explore the one-hop neighbor matching for each candidate match.
+For each candidate match , the neighbor sets of  them are denoted as  and .
+
+We find the most likely mapping from  to .
+To achieve this, we firstly look for potential matches in matrix  for each node in .
+
+We then connect each node in  with its matched nodes in  with undirected edges.
+
+Nodes in both sets as well as the edges form a bipartite graph and the problem can be transformed to
+ find a maximum match on the bipartite graph.
+To address this problem, we apply the Hungary algorithm which outputs a mapping from  to .
+As mentioned above, the mapping is denoted as .
+
+n_ij(v^x_a) =   .
+where  and .
+
+
+
+
+
+
+
+
+
+
+
+
+
+Stage 3.
+We choose at most one assignment for each node in  by a voting based scheme.
+For each candidate match ,
+ we build two trees rooted at  and  on graph  and  respectively.
+ The two trees are traced in parallel on two graphs with the BFS method.
+Here we restrict the tree growth to the constraint that,
+once a node  on  and its matched node  are appended to the trees,
+the neighbors of  which have not been included can be added to the tree only if they have matched nodes in  according the recorded mapping .
+
+
+
+
+ When two trees have grown to the maximum size, we get a possible match for the subgraphs.
+ In this approach, we propose a voting scheme to determine the best match.
+ That is, for each candidate match  on the two trees,
+ we increase the counter value of  in entry .
+ After trees of all candidate matches  voted,
+ we check the  in each entry  and retain the largest one for each column.
+
+ Then matrix  indicates a most likely match of  and  and the similarity between the two portrait profiles are calculated by integrating similarities of all matched nodes and edges.
+
+
+where
+
+(e_ab, e_cd) =   .
+
+
+
+
+Visual Privacy Protection
+There is a trivial solution to protect image content.
+Blacking out private contents, human faces,
+  thwarts any possible violation of owners' privacy.
+For example, systems like Blinkering Surveillance
+ and use computer vision methods to hide sensitive contents from video frame.
+
+
+
+
+
+
+
+But in a photographing scenario,
+ the challenge is how to match people's privacy requests with people in the photo.
+Face recognition is a alternative way to solve the matching problem, Eigenfaces.
+
+
+
+
+
+
+
+To use face recognition approaches, it requires the people to face to cameras.
+Besides, during the information exchange process, face descriptors could be leaked to adversaries.
+There are some work providing privacy-preserving face recognition leverages homomorphic encryption,
+ by which a client can privately search for a specific face image in the face image database of a server, ,.
+
+
+
+
+
+
+Those methods provide privacy protection to the requested images
+ as well as the outcome of the matching algorithm,
+ but the computation overhead is large and the result is not secure against the service provider.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Image Segmentation and Representation.
+Many efforts have been devoted to image segmentation and content representation.
+Vijayanarasimhan et al. proposes a branch-and-cut strategy for region-based object detection. They form the problem as a prize-collecting Steiner tree problem.
+Doulamis et al. present a hierarchical image content representation approach.
+
+
+
+Graph matching.
+
+Graph matching methods have been applied in many tasks such as face recognition, fingerprint identification
+ and others.
+
+Their application-oriented specifications,
+ , assumptions about node numbers, graph structure and pre-knowledge of correspondences,
+ make them difficult to be applied in this work.
+
+
+
+
+
+
+
+Secret Exchange
+Diffie-Hellman key exchange is a well known protocol proposed to
+distribute a session key between two parties through an untrusted channel.
+Over the years, several papers have attempted to extend the well-known Diffie-Hellman
+key exchange to the multi-party setting.
+Dynamic group Diffie-Hellman protocols for authenticated key exchange are designed to work in a scenario where a group of parties want to join and leave the multicast group at any given time.
+
+Privacy-Preserving Distance Computation.
+
+
+
+
+Euclidean distance can be computed privately among parties
+ using secure multi-party computation (SMC) methods or
+garble circuit.
+However,
+ they usually require online interactions among data owners.
+Moreover, their large computation cost and ciphertext size make them unsuitable for mobile applications.
+ proposes an approach
+ using Fourier-related transforms
+ to hide accurate data values and to approximately preserve Euclidean
+ distances among them.
+It works well for some data mining purpose on large datasets,
+ but the transformation is public and deterministic and it cannot prevent malicious user from dictionary attack.
+
+Motivation
+
+
+
+To protect users' portrait privacy,
+one straight-forward approach that has already been adopted by
+business and manufacturer is to simply suppress the usage of
+smart cameras in specific place and time, , turn off the
+photographing functionality in a meeting room or forbid silent photo
+taking.  These
+methods, however, are broad-brush and blunt which can significantly
+hurt the applications of smart devices. Besides, they do not meet the
+user varying privacy intentions. In fact, not all persons are
+unwilling to be photographed and also people will feel quite
+uncomfortable if they are frequently forced to turn off their Glass.
+
+
+Thus, in this work we seek solution to give privacy control back to
+persons being photographed in a smarter way.
+
+[t!]
+
+Example application scenario of InvisibleMe: the invisible person is erased from the photo and the tagged person is labeled in the photo.
+
+
+As an example shown in Fig. ,
+when someone uses his smart Glass to take a photo, people in the field
+of view (FOV) should be notified (or the photographer should know the
+privacy protection intentions of people in FOV).
+Then persons who are unwilling to be photographed, Neighbor 1,
+should have a convenient way to specify their privacy intentions, and
+thus be automatically erased from the photo.
+We refer to them as invisible users.
+Users that would like to make friends with the photographer, , Neighbor 2,
+can be automatically tagged on the photo and share information.
+We refer to them as tagged users.
+The photographer just takes other people into the photo as usual.
+The system can motivate the photographer by mutual registry:
+ only those who protect other invisible users can be registered to be protected by others.
+Supporting tagging people automatically, which could be helpful and fun in many scenarios (, facebook),
+ also gives incentives to the photographer.
+Besides, after one time setting the solution should be transparent to
+all users and avoid incurring high overhead to their smart devices.
+Finally, the portrait privacy protection strategy should be well
+designed and avoid further leakage of any type of private information.
+
+
+Threats to Portrait Privacy
+
+
+
+
+
+
+
+Photos contain rich information, including people's appearance, location, activities, .
+
+
+
+
+Facing massive cameras and image analysis techniques , people's portrait privacy is badly in need of
+protection.
+In this work, we focus on protecting users' portrait information.
+Here, a portrait not only includes the user's face but also his/her body,
+ since clothes and accessories could also reveal identification information.
+We consider three types of threats to portrait privacy.
+
+
+Visual portrait privacy.
+ The most intuitive way to violate a user's portrait privacy
+ is to capture and publish (, through photo sharing systems) a photo containing his/her visible portrait.
+Simply blurring all faces in images, , and Google Street View,
+
+ will disable the normal photographing function.
+
+In our protocol we propose to match the people in the
+photo to their privacy protection intentions,
+ and erase only  people that should be invisible.
+
+
+
+
+As we will discuss in detail in Section ,
+a user express his/her privacy requirement by encoding his/her portrait,
+which clearly cannot be transmitted in its original form
+(otherwise his/her portrait privacy is broken by himself/herself).
+
+
+So, we need to provide privacy protections in all these operations.
+
+Portrait feature privacy.
+This type of threats occur inside some image services,  image matching or face recognition.
+These services don't use visible images of directly, but take feature
+ vectors of image as the descriptor, , Eigenfaces and color histogram.
+
+
+
+
+But users can also be identified by features of portrait image.
+For example, face images can be reconstructed from face vectors.
+During the process, the leakage of portrait features also violates users' privacy.
+
+
+
+
+
+
+
+
+
+Inference privacy.
+Even if an image system hides original images and other information such as their feature vectors,
+ an adversary with a collection of images (an image dictionary) can infer the hidden content using the similarity measurement function
+ of the system.
+ Hence, we should prevent adversaries from obtaining the similarity measuring results to enhance the privacy protection.
+
+
+
+leverages existing solutions to protect other user privacy, , location privacy, since it is not the focus of this study.
+
+
+
+
+Challenges
+
+
+There are many challenges associated with the task.
+
+First, how to let users efficiently and flexibly express his/her
+privacy requirements or intentions.
+
+Second how to accurately and efficiently associate each user that has privacy intention to an image region in a privacy preserving way.
+Some existing efforts propose to tag people in image using face recognition. That is, users send their face images to adjacent photographer and the photographer erases or tags the matched people in the photos.
+These methods, however, suffer when there lacks a clear front view of face due to the camera's view angle or weak illumination.
+According to our field studies, when there are 1326 pedestrians detected, only 412 faces are recognized.
+Besides, broadcasting face images leads to noteworthy privacy concern which is vulnerable to many attacks.
+To address the above issues, in this work we will leverage both face
+and other dimensions of human vision features such as body and
+clothing color. In fact, these features are very efficient in distinguishing people in a local area.
+
+
+Third, the protocol should respond to the privacy request accurately
+within a reasonable delay while causing minimal services disruption to
+end users.
+Notice that a key step here is to match users in the photo with users
+who requested privacy protection.
+To achieve privacy preserving match, many existing protocols
+use multi-party computation techniques, which require frequent
+interactions among participants and apply homomorphic encryption or
+garble circuit that cause high computation cost.
+Instead, we introduce a graph based matching mechanism together with
+Locality Sensitive Hashing and scramble vector, achieving highly
+matching accuracy and computation efficiency while guaranteeing user
+privacy.
+
+Fourth, how to avoid introducing extra overhead on users as well as
+ their devices.
+In existing works, the people tagging task is accomplished using face
+recognition techniques
+ and proximity wireless communication, Wi-Fi and Bluetooth.
+In this case, however,
+ the photographer needs to conduct neighbor discovery for every photo taking.
+And devices of all invisible users are required to be on the standby mode to
+ receive every  photographing notification.
+Neighbor discovery and wireless communication establishment in ad hoc
+ mode are complicated and also power-hungry,
+which makes the ad hoc solution unpleasant for mobile users.
+Besides, image matching could cause high computation overhead for the photographer and thus make photographers decline to use the functionality.
+Using an always online powerful cloud could be a better choice to provide the location service, cache and relay messages
+ as well as conduct all costly computation.
+So, in our system, there are three parties involved: the photographer, who takes the photo;
+the neighbors, who are in the FOV of the photographer;
+the cloud, who takes charge of location, communication and computation services.
+
+
+In this case, we face with the critical challenge of leveraging the resources of cloud while preventing the cloud from inferring users's privacy.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Adversary  model.
+
+
+
+
+
+
+Our approach defends a user's portrait privacy against both untrusted cloud server and malicious users.
+For the cloud, we apply the widely used "honest-but-curious" assumption.
+The cloud server will follow the protocol,
+ but might conduct extra work to harvest portrait images of invisible people,
+ reconstruct invisible portraits using feature vectors or infer the invisible content using image dictionary.
+
+
+
+Also, we assume the cloud won't collude with any client to conduct an attack.
+
+A malicious user could participate to harvest
+ other users' portrait information by eavesdropping their communication with the cloud.
+All users except the photographer should be prevented from obtaining the portrait information of invisible users.
+Although the photographer already owns the photo of invisible people,
+ he/she may misbehave to preserve the invisible people who should be erased and publish the photo through Internet.
+So, we also need a verification scheme against dishonest photographers.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

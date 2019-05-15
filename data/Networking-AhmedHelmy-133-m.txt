@@ -1,0 +1,485 @@
+
+
+
+equationsection
+
+Appendices
+
+
+
+section0
+lalala
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+.tifpng.png'convert #1 'dirname #1'/'basename #1
+.tif'.png
+
+
+
+op-tical net-works semi-conduc-tor
+
+
+
+On the Relation Between Mobile Encounters and Web Traffic Patterns: A Data-driven Study
+
+
+2018
+none
+[Technical Report for MSWIM '18 conference paper]21st ACM International Conference on Modelling, Analysis and Simulation of Wireless and Mobile SystemsOctober 28-November 2, 2018Montreal, QC, Canada.
+21st ACM International Conference on Modelling, Analysis and Simulation of Wireless and Mobile Systems (MSWIM '18), October 28-November 2, 2018, Montreal, QC, Canada
+15.00
+10.1145/3242102.3242137
+978-1-4503-5960-3/18/10
+
+printacmref=false
+
+ Babak Alipour, Mimonah Al Qathrady, Ahmed Helmy
+
+  
+  Department of Computer and Information Science and Engineering
+
+University of Florida
+  Gainesville
+  FL, USA
+
+babak.ap , mimonah , helmy@ufl.edu
+
+
+
+
+
+Mobility and network traffic have been traditionally studied separately. 
+Their interaction is vital for generations of future mobile services and effective caching, but has not been studied in depth with real-world big data.
+In this paper, we characterize mobility encounters and 
+study the correlation between encounters and web traffic profiles using large-scale datasets (30TB in size) of WiFi and NetFlow traces. 
+The analysis quantifies these correlations for the first time, across spatio-temporal dimensions, for device types grouped into on-the-go Flutes and sit-to-use Cellos. 
+The results consistently show a clear relation between mobility encounters and traffic across different buildings over multiple days,
+with encountered pairs showing higher traffic similarity than non-encountered pairs, and long encounters being associated with the highest similarity.
+We also investigate the feasibility of learning encounters through web traffic profiles, with implications for dissemination protocols, and contact tracing.
+This provides a compelling case to integrate both mobility and web traffic dimensions in future models,
+not only at an individual level, but also at pairwise and collective levels.
+We have released samples of code and data used in this study on GitHub, to support reproducibility and encourage further research (https://github.com/BabakAp/encounter-traffic).
+
+
+
+
+Introduction  Related work
+
+The effect of mobility and network traffic on wireless networks has been clearly established in the literature (e.g.). Several efforts studied models of mobility and network traffic, albeit mostly separately and in isolation. 
+There is a vast body of research focused on mobility or traffic independently, which we cannot possibly exhaustively cover.
+We refer the reader to for surveys of mobility modeling and analysis.
+Some of the most advanced studies on mobility have identified individual, pairwise (encounter), and collective (group) dimensions for mobility modeling. That study, however, did not consider traffic.
+We hope to bridge that gap by analyzing the interplay of mobility and traffic at the pairwise level.
+
+We argue that the relation between mobility and traffic needs further in-depth analysis, as it will likely be the center of many future mobile services.
+In this paper, we focus on the pairwise (encounter) dimension of mobility and study its interplay with the traffic patterns of mobile users. 
+Aside from this study's importance to realistic modeling, simulation and performance evaluation of next-generation networks, it is quite relevant to encounter-based services, e.g., content sharing, opportunistic networking, mobile social networks, and encounter-based trust and homophily (), to name a few.
+
+Encounters between mobile nodes have been studied in previous research (e.g., in) to characterize opportunities of inter-user encounters. Others (e.g.,), mainly collect encounter traces using mobile devices to analyze, model and understand communication opportunities in different settings.
+None of these studies, however, analyze traffic nor the correlation between encounters and real-world traffic patterns. 
+In this study, we focus on the interplay between traffic and encounters, while considering the score (e.g., duration, frequency) of the encounter events. 
+We use extensive data-driven analyses to quantify the correlations between network traffic and encounter scores.
+
+
+Several studies analyzed wireless traffic flows, and mobile web-visitation patterns. These studies, however, did not investigate the relation with mobility and node encounters.
+
+In addition, many research studies on mobility encounters or traffic patterns did not consider device type.
+Devices' form factor affects mode of usage, leading to varied traffic profiles 
+().
+But these studies do not study the interplay of traffic with mobility and encounters.
+These devices are also used during different modes of transportation.
+Smartphones and e-readers, which we refer to as Flutes, are devices used 'on-the-go'. On the other hand, laptops are 'sit-to-use' devices and are referred to as Cellos in this study.  
+In our earlier work, we contrast various mobility and traffic features of Flutes and Cellos, including radius of gyration, location visitation preferences,
+and flow-level statistics.
+But that study only investigated mobility and traffic features across the individual dimension.
+While we investigate the pairwise dimension here, focusing on encounter-traffic interplay while considering the device types. 
+
+
+We use extensive traces from our collected datasets (with B records, and 30TB in size) covering over 78K devices, in 140 buildings on a university campus. 
+The data includes information about WiFi associations, as well as DHCP and NetFlow traces, covering the dimensions of mobility and network traffic. 
+The data is sanitized and categorized based on buildings, days, device types (Flutes, Cellos), and encounter duration, then the analysis is done across all these dimensions.
+
+The main question addressed in this study is ‘How do device encounters affect network traffic patterns, across time, space, device type and encounter duration?’ 
+For that purpose, we: i- analyze mobility encounters patterns, ii- define web traffic profiles for users, and iii- look at their interplay.
+Although this question has not been directly studied in-depth before, our findings are quite surprising, showing that for the majority of buildings a consistent correlation exists between traffic profiles and encountered (vs. non-encountered) pairs of users. 
+We also found the correlation to be the strongest for Cello-Cello encounters on weekends.
+Further, we find that such relation strengthens for long encounters, while short encounters are not significantly different from non-encountered pairs.
+Finally, we utilized a deep learning model to learn encounters of user pairs in a day and building based on their traffic profiles alone. The model achieved a high accuracy (90+) in many settings, with major implications for encounter-based services, rumor anatomy analysis, and infection tracing.
+
+These results can potentially impact a variety of applications, 
+including those utilizing prediction of traffic load/demand using encounters, and vice versa.
+In addition, mobility modeling and protocol evaluation could benefit from deep integration of (and the interplay between) encounters and traffic.
+We hope for this paper to be the first in a series of studies on mobility and traffic, and their interplay, across individual, pairwise and collective (group) dimensions, towards fully integrated realistic traffic-mobility models.
+
+The rest of the document is organized as follows. 
+Section 2 describes the datasets used in detail and their processing. 
+Section 3 defines and analyzes mobility encounters. 
+Section 4 introduces the web traffic profiles. 
+Then, section  presents the pairwise encounter-traffic relationship. 
+Next, section  introduces our encounter learning methods and summary of results.
+Finally, Section  discusses the findings, future work and concludes the paper.
+
+
+Datasets
+
+This study utilizes multi-sourced large-scale datasets we have collected including WLAN, DHCP, NetFlow, and other external sources (e.g., maps, rDNS).
+
+Wireless LAN (WLAN)  Encounters
+The WLAN event logs were collected on a university campus during April 2012.
+Each log entry provides a timestamp, an IP address at a corresponding
+access point (AP) and MAC address of the associated user device.
+There are 1,700 APs and  devices in this dataset.
+In this study, we analyze the device behavior, as identified by its MAC address(MAC address randomization was introduced on popular platforms after our traces were collected, and does not affect our association trace.). 
+
+Pairwise user mobility behavioral patterns are represented through the patterns of encounters between two mobile nodes.
+An encounter is defined as when two user devices are associated with the same AP at an overlapping time interval. 
+The Encounter traces are generated based on WLAN logs.
+An example of a pairwise encounter record, constructed from WLAN traces, is shown in Table .
+
+
+Location Information
+To analyze traces in different places, location information of APs is required.
+Since exact locations of the APs were not available, the APs are assigned 
+approximate locations based on the building where they are installed, 
+i.e. building latitude/longitude from Google Maps API.
+The crowd-sourced service wigle.net was used to validate this positioning.
+
+From 130 matched APs (7.6 of total), in 58 buildings, 
+all were within 200m or less from their mapped location. 
+This error (1.5 of campus area) is reasonable considering the maximum AP coverage range, 
+inaccurate coarse-grained localization services and that we use
+coordinates of the center of each building whereas users
+may see an AP on the edge of a building.
+
+NetFlow
+The Netflow traces are collected from the same network, during April 2012(The last five days of NetFlow cover exam dates and are omitted, since those dates do not represent a typical campus environment.).
+A flow is a unidirectional sequence of packets transferred between two IP hosts, with each flow record
+retaining over 30 fields,
+including flow start/finish times, source/destination IP addresses and ports, transport protocol and traffic volume (packets/bytes).
+In raw format, dataset size is , providing a vast, high granularity data source for  devices. 
+Due to quadratic asymptotic growth of pairwise traffic analysis, for this study, we focus on the 10,000 most active users in terms of traffic consumption, to keep computations manageable.
+Table  provides an example flow with a subset of important features.
+
+
+Device Type Classification
+
+To classify devices into 'on-the-go' Flutes and 'sit-to-use' Cellos, 
+we build upon the same observations and heuristics of our previous work.
+First, the device manufacturer can
+be identified based on the first 3 octets of the MAC
+address (Organizationally Unique Identifier).  
+Most manufacturers produce one type of device (either
+laptop or phone), but some produce both (e.g., Apple).  
+In the latter case, OUI used for one device type is not used for another.  
+To validate, a survey was carried out and 30 MAC prefixes were accurately classified.
+OUI and survey information helped identify and classify 46 of all devices.
+Then, from the NetFlow logs of these labeled devices, we observe over 3k devices (92 of which are
+flutes) contacting admob.com; an ad platform serving mainly
+smartphones and tablets (i.e. flutes). 
+This enables further classification of the remaining MAC addresses, with reasonable accuracy, using the following heuristic: 
+(1) obtain all OUIs (MAC prefix) that contacted admob.com; 
+(2) if it is unlabeled, mark it as a flute.  
+Overall, over 97 of devices in NetFlow traces were labeled (K flutes and K cellos).
+
+This enables classification of pairwise encounters, based on the encounter pair device types:
+1) Flute-Flute (FF): encounter event between two flutes.
+2) Cello-Cello (CC): the pair are cello devices.
+3) Flute-Cello (FC): encounter event between a flute and cello.
+
+
+*[h!]
+Encounter record example
+
+max width=
+  
+
+
+
+*[h!]
+NetFlow example
+
+max width=
+  
+
+
+Mobility encounters
+Pairwise mobile encounter events provide opportunities for dissemination events such as content dissemination and infection spreading through direct encounter.
+
+Consequently, designing effective content distribution, routing schemes and infection tracing back approaches require encounter understanding and realistic modeling. 
+While encounter events have been analyzed in several previous studies (e.g.), here we develop new insights into pairwise events by considering the following: 
+
+
+1) Device types: We distinguish between encounters among the three groups in our analyses (FF, CC, FC).
+
+2) Large-scale data: The data is first of its kind in terms of its size where it covered more than 140 buildings with different categories. Also, we analyze mainly indoor (in-building) encounters, unlike most previous studies. 
+
+3) Traffic-encounter analysis: Daily encounter patterns at buildings are analyzed per device type, then their correlation to traffic patterns are studied for the first time
+in Section . 
+
+
+Daily Encounter Duration at Buildings
+The pairwise statistical summary of mobility encounters are generated from daily encounter records at each building.
+
+The total encounter duration, E, of a pair of users  during day d at building B,  is computed as:
+,
+where  is the number of encounters, and  is the duration of encounter  between  and  on day  at building , respectively. If a pair of users encounter again on a different day or in a different building, that encounter is considered separately. Overall,  have encountered at least twice in any building. 
+
+The pairs are then separated based on their pair device types.  
+
+
+
+*[h!]
+Daily Encounter Duration in Seconds
+
+max width=
+  
+
+
+[ht!]
+	
+		Encounter duration CDF based on encounter pair device type.
+	
+
+The daily encounter duration based on device types are summarized in Table . 
+From the table, it is clear that CC pairs have longer encounter duration than other kinds of pairs. For example, the mean CC daily encounter duration is 290 longer than the FF pairs. This result is beneficial when modeling the encounters based on device type, or with applications that use the encounter duration.
+   
+  Figure  shows the CDF of the encounter duration for 95 of pairs (the highest 5 is omitted for clarity). Note that 80 of FF encounters have daily encounter duration 8 minutes, while only 40 of CC encounters are 8 minutes.
+For all encounters, 33 are 38s, dubbed short, the next 33 are 317s, called medium, and 317s are long encounters.
+This definition will be used in Sec.  for pairwise analysis of the correlation between encounter duration and traffic profile similarity.
+
+Encounter Duration Statistical Distributions
+Eleven distributions are fit to the total daily encounter duration using maximum likelihood,  and goodness-of-fit test methods: Power-law (Pl), Weibull (W), Gamma (G), Lognormal (Ln), Pareto (Pr), Normal (N), Exponential (Ex), Uniform (U), Cauchy (C), Beta (B) and Log-logistic (Ll). 
+The Kolmogorov-Smirnov (KS) statistic is used to evaluate the distributions fitness. The three best-fit distributions are selected and presented in table . For example, 74 of the buildings have power-law (Pl) distribution as the best fit for their FF pair daily encounter duration, while only 39 of buildings have CC daily encounter distribution following power-law.
+ Also, table  shows the percentage of buildings that have KS-statistic with less than a threshold, specifically  and . This is calculated to see if there is a distribution that can be a good fit for the majority of buildings, even if it is not the first-best fit. 
+Power-law and log-logistic distributions usually have KS-test with 10 for 92 for FF and FC pairs.  
+
+*[tb]
+    Best fit distributions for total daily encounter pairs duration based on pairs classifications. Percentage of buildings shown in brackets.
+ (Pl: Power Law, Ll: Log Logistic, W: Weibull,  G: Gamma,  Pr: Pareto,  Ln: Log Normal, B: Beta). 
+ 
+      
+  
+  
+
+Web traffic profile
+We use NetFlow traces to analyze traffic behavior of user devices.
+In, we analyzed traffic on an individual level.
+We found cellos to generate 2x more flows than flutes, while the flute flows are 2.5x larger.
+Also, flow sizes were found to follow a Lognormal distribution, while flow inter-arrival times (IAT) follow beta distribution, with high skewness/kurtosis,
+hinting at infrequent extreme values (e.g., flutes incur more extreme periods of inactivity, caused by higher mobility).
+In this study, we conduct pairwise (vs. individual) level analysis of mobility and traffic.
+
+To analyze traffic patterns of users for all buildings and days, 
+we first define a Traffic Profile (TP) for each user based on NetFlow traces. This traffic profile is efficient to calculate and granular enough for our analysis:
+
+
+First, we select a set of popular websites for analysis based on total bytes sent and received, filtering out websites with little usage. 
+The IP address of selected websites form the dimensions of the traffic vector, denoted as .
+There are  IP addresses in , with average daily traffic from few s, and up to s.
+
+
+Next, for each address, , we calculate ,
+defined as the natural logarithm of total traffic user i, , has sent to or received from .
+This forms the initial traffic vector for  , consisting of  .
+
+
+
+Finally, we apply term frequency-inverse document frequency (TF-IDF) to the collection of traffic vectors of all users. This reduces the effect of wildly popular websites, and identifies websites that can distinguish between users' online behavior, enabling us to study the richness in the access patterns.
+In this context, each  is a term and each user traffic vector is a document.
+TF-IDF is calculated as the product of term frequency 
+(the number of times a term appears in a document, corresponding to  in our context, which reflects the bytes  exchanged with ),
+and inverse document frequency (the inverse of number of documents (users) the term (IP) occurs in).
+Each row of the resulting matrix is a traffic profile, , of user , as depicted in Fig .
+
+[ht!]
+    
+    
+
+
+
+
+
+
+
+
+
+
+
+    TF-IDF Matrix: Each row is a user profile.
+    
+
+This process is applied for NetFlow data of every building on each day, to enable spatial (across buildings) and temporal (across days) analysis of user traffic profiles(If a building on a specific day has less than 20 encountered pairs, that (building, day) pair is omitted, to maintain statistical significance.).
+For pairwise comparison of traffic profiles, we use Cosine similarity which computes the cosine of the angle between two user profiles.
+
+Pairwise encounter-traffic relationship
+With mobility encounters and traffic profiles as the pillars, here, 
+we take steps to investigate "whether physical encounters are correlated with the similarity of traffic profiles".
+This analysis outlines our initial findings in the pairwise (encounter) dimension of mobility-traffic analysis, 
+following our work in that focused on individual aspect of combined mobility-traffic modeling, and providing the foundation for collective (group) analysis in the future. We start with simple steps, and increase the complexity of methods gradually.
+
+As a first step, we seek to establish whether the traffic profiles of encountered pairs are more similar compared to traffic profiles of non-encountered pairs of users.
+For this purpose, we calculate . Here,  denotes the set of all encountered pairs of users.
+Similarly, for all non-encountered pairs, , .
+This calculation is carried out on each building every day.
+Overall, we observe that 93 of the time enc > nonenc, with
+the main exceptions being buildings close to bus stop hubs on campus, with a high pass-by rate of users; resulting in many short encounters that do not show traffic similarity.
+
+
+With that simple observation, next, we asked whether the difference between traffic similarity of encountered and non-encountered is statistically significant.
+Mann–Whitney U test was applied on the two independent sets, with the null hypothesis being the two sets are drawn from the same distribution.
+We find that for  of (building, day) tuples, we can reject the null hypothesis ().
+This shows that in most cases, the traffic profiles of encountered pairs are more similar and the difference between the two groups is statistically significant.
+Logistic regression analysis shows that similarity of traffic profiles is significantly associated with the probability of encountering for all days in several buildings, such as the computer department with a big user base, for  of days in libraries, and only for  of days in gym and recreation centers where users normally do not use networks as much.
+The next question is how consistent these differences are across: 
+
+Device type categories: 
+As discussed earlier, usage patterns of devices differ based on form factor (e.g., on-the-go flutes vs. sit-to-use cellos). 
+We compare flute-flute (FF),  cello-cello (CC), and flute-cello (FC) encounters.
+Weekday vs. Weekend: 
+We established significant differences between mobility and traffic patterns of weekdays and weekends in. Here we analyze the mobility encounter-traffic interplay across the weekdays and weekends.
+Encounter duration: 
+We define three encounter duration categories using 3 bins of equal frequency: short (), medium () and long (). 
+We then analyze each group for correlation between encounter duration and traffic profile similarity.
+
+Device type categories
+We analyze how similarity of traffic profiles for encountered pairs varies when two flutes meet (FF), two cellos meet (CC) or a flute meets a cello (FC).
+The results, as presented in Figure , show that the similarity of CC is slightly higher than the other groups, while the FF and FC groups show similar trends.
+Notably, however, all three encountered groups are significantly different from the non-encountered group ().
+This is consistent across most buildings.
+Given the context of the traces, we suspect heavy use of laptops for educational content on campus.
+Further analysis website content may shed light on the shared interests among encountered users with various forms of devices.
+We leave this for future work.
+
+[ht!]
+	
+		CDF of pairwise cosine similarity of traffic profiles across device types (vertical lines denote medians).
+	
+Weekday vs. Weekend
+Intuitively, there are significant differences between weekdays and weekends in user behavior, and consequently their mobility and traffic patterns. In, we found that numbers of user devices on campus drops significantly on weekends, but the remaining devices do not show significant differences in terms of flow size, packet count, and active duration. Here we identify and quantify the encounter-traffic correlation over weekdays/weekends for the first time.
+Results are depicted in Fig . We find that the pairwise similarities of weekend pairs to be overall higher than their weekday counterparts regardless of an encounter (or not), with weekend non-encountered pairs being more similar than weekday encountered pairs.
+This is explained by observing significantly reduced mobility of devices on weekends. 
+For example, median radius of gyration for cellos drops by 66, and by 15 for flutes. 
+In addition to decreased mobility, most activity is clustered around several academic buildings with research labs (33 of APs handle no flute traffic on weekends, while 56 receive no cello traffic).
+Thus the increase in traffic similarity
+during weekends might be explained by the presence of researchers collaborating on related fields of interest and accessing similar content.
+
+
+[ht!]
+	
+		CDF of pairwise cosine similarity of traffic profiles in weekdays and weekends (vertical lines denote medians).
+	
+Encounter duration
+Based on the encounter durations introduced in Section , we define three encounter duration categories with 3 bins of equal frequency: short (), medium () and long (). 
+As depicted in Fig. , the short encounter group is not significantly different from the group of non-encountered pairs ().
+However, the differences between the other groups are statistically significant, with the long encounter group showing the highest similarity of traffic profiles, hinting at a correlation between the duration of encounter and traffic profile similarity.
+
+[t!]
+	
+		CDF of pairwise cosine similarity of traffic profiles with different encounter durations (vertical lines denote medians).
+	
+Hence, we investigate this correlation.
+We found insignificant correlation for short and medium encounters (based on Pearson and Spearman correlation coefficients), 
+however there is a small positive linear correlation between encounter duration and traffic profile similarity for long encounters ().
+Breaking down the correlations into different device types and weekday/weekend (Fig. ), shows the highest correlation for Cello-Cello (CC) encounters on weekends, supporting our earlier observation.
+
+[ht!]
+	
+		Pearson correlation coefficient between encounter duration and traffic profile similarity. (Cello-Cello (CC) encounters on weekends show the highest positive correlation.)
+	
+Overall, the correlation between encounter duration and traffic profile similarity is dynamic, changing across space and time. 
+Fig.  shows a time-series plot of the linear correlation coefficient of several buildings on campus for more than 3 weeks.
+It shows how the correlation varies across time in different buildings, with rapid changes every 7 days (around weekends). 
+Surprisingly, a few buildings show significant negative correlations on weekends (e.g., music and theater buildings), while others show significant positive correlations on the same days (mostly academic buildings).
+Further analysis of the other buildings and its interaction with mobility encounters and traffic profiles are left for future work.
+
+[ht!]
+	
+		Pearson correlation coefficient between encounter duration and traffic profile similarity for different buildings across days (X-axis).
+	
+Learning encounters
+Given the relationships shown so far, there seems to be great potential in training a machine learning model that can learn to predict an encounter given two traffic profiles.
+Such a model has several practical applications.
+Given two traffic profiles, if it is possible to predict they have encountered on a certain day in a building with good accuracy, then there is useful information in the relationship of mobility encounter and traffic profile similarity, which could be used in design of encounter-based dissemination protocols, analysis of rumor anatomy, or tracing of disease spread even if mobility traces are not reliable for each user (for example due to MAC address randomization), but traffic profiles of users are accessible (via authentication mechanisms identifying users at a higher OSI layer).
+
+To investigate the feasibility of this task, for every pair of users, their traffic profiles in each building and on each day are coupled as input (either through concatenation or taking the absolute differences, with the former depicted in results and figures), and a binary target label is assigned based on whether the pair has encountered on that day and building.
+Since most pairs of users do not typically encounter on a day, predicting a negative label is rather trivial in this case. To prevent this bias, we sample this dataset to make sure each label is represented by an equal number of samples for our models.
+
+Random Forest
+We first used Random Forests for this classification task, which is a well-established algorithm used for supervised learning problems.
+Our work showed that on a building (the computer department) the algorithm achieved a promising  accuracy on average across all days, based on stratified k-fold cross-validation, without employing any preprocessing or parameter tuning of the model.
+Next, we applied a dimensionality reduction algorithm, using Singular-Value Decomposition (SVD) to preprocess the input vector. 
+This technique is adapted from Latent semantic analysis of natural language processing.
+Its application improved the accuracy, in the same settings, to .
+This lead to the idea of using stacked auto-encoders (SAE) to retain information and connect the SAE to a deep, fully-connected neural network (DNN) for classification.
+
+[ht!]
+	
+		Accuracy of random forest and deep learning model for encounters in the computer department across days (X-axis).
+	
+Deep learning
+We utilized several recent ideas from the field of artificial intelligence to improve our learning of encounters significantly.
+Auto-encoders are a class of artificial neural networks that are trained in an unsupervised fashion to learn an efficient representation of their input.
+In simple terms, the network consists of two stages: encoder and decoder. The encoder consists of layers of decreasing size, that is then connected to the decoder, which is made up of layers of increasing size. The objective is to reconstruct the input as accurately as possible with purely unsupervised learning.
+Stacked auto-encoders (SAE) have been used in various applications to extract features, reduce dimensionality, as well as denoising the corrupted variations of input.
+
+We use a Stacked De-noising Auto-Encoder (SDAE). This network is provided with input data corrupted by Gaussian noise, and is trained to reconstruct the original, uncorrupted input similar to a traditional auto-encoder. Thus, denoising becomes a training criterion, while dimensionality reduction of input is also achieved (We kindly refer the reader to for details of SDAE and comparison with SAE).
+Then, the encoded data points are fed to a fully connected, multi-layer neural network.
+Comparing the results to the random forest, there is a significant increase in accuracy to an average of 92 for the same building and days as the random forest classifier.
+Comparing device type categories of encounters, we find cello-cello encounters to be the most distinguishable, followed by flute-cello and flute-flute. However, the difference between accuracies for different device type categories is <5 in most locations and dates, a testimony to the robustness of the model.
+This accuracy is also stable across time, with the median of accuracy, for weekdays at 93.25, and weekends at 90.75, for the computer department samples.
+The much higher accuracy comes at the cost of high compute power costs and complexity of the model.
+Fig.  shows the results of both the random forest and the deep neural network model for this building across  weeks.
+We used stratified k-fold cross-validation, early stopping and dropout layers to regularize the network and alleviate overfitting. An illustration of the architecture is presented in Fig. .
+
+[ht!]
+	
+		Architecture of the deep learning model. Numbers show the number of neurons in each layer (internal details omitted for brevity).
+	
+Conclusions and future work
+In this study, we present the first steps to analyze and quantify the relation between mobility and traffic.
+Focusing on the pairwise (encounter) dimension of mobility, its interplay with the traffic patterns of mobile users was studied.
+This work has implications for realistic modeling and simulation, offloading through opportunistic encounters, as well as implementation and benchmarking of encounter-based services such as content sharing, mobile social networks and encounter-based trust.
+We use extensive, highly granular datasets (30TB in size), in more than 140 buildings on a university campus, including information about WiFi associations, DHCP and NetFlow, covering the dimensions of mobility and network traffic. 
+
+To answer our main question of ‘How do device encounters affect network traffic patterns, across time, space, device type, and encounter duration?’,
+We analyze mobility encounters and presented their statistical characteristics.
+We defined traffic profiles and utilized numerical statistics and machine learning techniques.
+Power law and Log logistic distributions, fitted to daily encounter duration, have KS-test 10 in 92 of buildings for Flute-Flute (FF) and Flute-Cello (FC) encounters, and 86 for Cello-Cello (CC) encounters. Also, CC pairs have longer daily encounter duration. 
+Analyzing traffic, we find significant differences between traffic profile similarity of encountered versus non-encountered pairs for device type categories (FF, CC, FC), with the highest similarity being the CC group.
+Further, comparing weekdays and weekends, in both cases, the encountered pairs are more similar, with the distinction that weekend traffic profiles are more similar than weekdays'.
+Analysis of correlation between encounter duration and traffic profile similarity revealed short and medium encounters not being significantly different from the non-encountered group, while the long encounters show significantly higher similarity.
+We also employed random forests and created a deep neural network (DNN) model to predict encounters of pairs of user traffic profiles, with a very high accuracy (up to 94 depending on settings).
+
+The findings in this paper are not currently captured by any of the existing mobility or traffic models, while having important implications in many contexts, such as predictive caching, information dissemination, opportunistic social networks and infection tracing. This provides a compelling case for integrated traffic-mobility models that consider multiple dimensions of social context (individual, pairwise, and group).
+We plan to further investigate the causal relationship between mobility and traffic for pairwise and collective (group) dimensions in the future. Exploration of applications of our learning methods, its privacy implications, and potential improvements are also left for future work.
+
+
+Acknowledgement
+This work was partially funded by NSF 1320694, and Najran University, Saudi Arabia.
+We gratefully acknowledge the support of NVIDIA Corporation with the donation of the Titan Xp GPU used for this research.
+
+
+* 
+
+IEEEtran
+
+

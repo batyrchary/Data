@@ -1,0 +1,1344 @@
+
+
+
+  
+  
+    
+  
+ 
+ 
+
+positioning
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+Deep Audio-Visual Speech Recognition
+
+
+Triantafyllos Afouras, Joon Son Chung, Andrew Senior, Oriol Vinyals, Andrew Zisserman
+
+  T. Afouras and J. S. Chung are with the University of Oxford.  
+
+  E-mail:afourast,joon@robots.ox.ac.uk
+  A. Senior and O. Vinyals are with Google DeepMind.  
+
+  E-mail:vinyals,andrewsenior@google.com
+  A. Zisserman is with the University of Oxford and Google DeepMind.  
+
+  E-mail:az@robots.ox.ac.uk
+      
+The first two authors contributed equally to this work. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   The goal of this work is to recognise phrases
+   and sentences being spoken by a talking face, 
+   with or without the audio. 
+   Unlike previous works that have
+   focussed on recognising a limited number of words
+   or phrases, we tackle lip reading as an 
+   open-world problem - unconstrained natural language sentences, and in the wild videos.
+
+   Our key contributions are: 
+   (1) we compare two  models for lip reading, one using a CTC loss, and the other using a sequence-to-sequence loss.
+Both models are built on top of the transformer self-attention architecture;
+   (2) we investigate to what extent lip reading is complementary to audio speech recognition, especially when the audio
+signal is noisy;
+   (3) we introduce and publicly release a new 
+    dataset for audio-visual speech recognition, LRS2-BBC,  consisting of
+   thousands of natural sentences from British television.
+
+
+The models that we train surpass the performance of
+all previous work on a lip reading benchmark dataset by a
+significant margin.  
+
+
+
+  Lip Reading, Audio Visual Speech Recognition, Deep Learning.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Introduction
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Lip reading, 
+the ability to recognize what is being said from visual
+information alone, is an impressive skill, and very challenging
+for a novice. It is inherently ambiguous at the word level due to 
+homophones -
+different characters that produce exactly the same lip sequence (e.g.
+'p' and 'b'). However, such ambiguities can be resolved to an
+extent using the context of neighboring words in a sentence, and/or a
+language model.
+
+A machine that can lip read opens up a host of applications:
+'dictating' instructions or messages to a phone in a noisy
+environment; 
+transcribing and re-dubbing archival silent films;  
+resolving multi-talker simultaneous speech;
+and, improving the 
+performance of automated speech recognition in general.
+
+That such automation is now possible is due to two developments that
+are well known across computer vision tasks: the use of deep neural
+network models ;
+ and, the availability of a large scale dataset for
+training .  
+In this case, the lip reading models are based on recent
+encoder-decoder architectures that have been developed for speech recognition and
+machine
+translation . 
+
+The objective of this paper is to develop neural transcription architectures for lip reading sentences.
+We compare two models: 
+one using a Connectionist Temporal Classification (CTC) loss , and the other using a 
+sequence-to-sequence (seq2seq) loss .
+Both models are based on
+the transformer self-attention architecture , so that the advantages and
+disadvantages of the two losses can be compared head-to-head, with as much of the rest
+of the architecture in common as possible.
+The dataset developed in this paper to train and evaluate the models,
+ are  based on thousands of hours of
+videos that have talking faces together with
+subtitles of what is being said.
+
+We also investigate how lip reading can contribute to audio
+based speech recognition. There is a large literature on this
+contribution, particularly in noisy environments, as well as the
+converse where some derived measure of audio can contribute to lip
+reading for the deaf or hard of hearing. To investigate this aspect
+we train a model to recognize characters from both audio and visual
+input, and then systematically disturb the audio channel. 
+
+
+Our models output at the character level.
+In the case of the CTC, these outputs are independent of each other.
+In the case of the sequence-to-sequence loss a language model is learnt implicitly, and
+the architecture incorporates a novel dual attention mechanism that
+can operate over visual input only, audio input only, or both. The
+architectures are described in Section .
+Both models are decoded with a beam search, in which we can optionally incorporate an external
+language model.
+
+Section , we describe the generation and statistics
+of a new large scale dataset, LRS2-BBC, 
+that is used to train and evaluate
+the models. The dataset contains talking faces together with subtitles of what is
+said.  The videos contain faces 'in the wild' with a significant
+variety of pose, expressions, lighting, backgrounds and ethnic
+origin.  Section  describes the network training,
+where we report a form of curriculum learning that is used to
+accelerate training.  Finally, Section  evaluates the
+performance of the models, including for visual (lips) input only, for
+audio and visual inputs, and for synchronization errors between the
+audio and visual streams.
+
+
+
+
+
+
+
+
+On the content: This submission is 
+based on the conference paper .
+We replace the WLAS model in the original paper with
+two variants of a Transformer-based model . 
+One variant was published in , and the second variant (using the CTC loss) is an original
+contribution in this paper.
+We also update the visual front-end
+with a ResNet-based one proposed by .
+The new front-end and back-end architectures contribute to
+over 22 absolute improvement in Word Error Rate (WER) over the
+model proposed in.
+Finally, we publicly release a new dataset, LRS2-BBC, that
+supersedes the original LRS dataset in which could not be made public due to license restrictions.
+
+
+ 
+                                   Outline of the audio-visual speech recognition pipeline. 
+              
+
+Background
+CTC vs sequence-to-sequence architectures
+
+For the most part, end-to-end deep learning approaches for sequence prediction
+ can be divided into two types.
+ 
+The first type uses a neural network as an emission model which outputs the likelihood of each
+output symbol (e.g. phonemes) given the input sequence (e.g. audio). These methods generally
+employ a second phase of decoding using a Hidden Markov Model. One such version of this variant is the Connectionist Temporal Classification (CTC) , where the model
+predicts frame-wise labels and then looks for the optimal alignment
+between the frame-wise predictions and the output sequence. 
+The main weakness of CTC is that the output labels are not conditioned on
+each other (it assumes each unit is independent), and hence a
+language model is  employed as a post-processing step. Note that some
+alternatives to jointly train the two step process has been proposed.
+Another limitation of this approach is that it assumes a monotonic ordering between input and output sequences. This assumption is suitable for ASR 
+and transcription for example, but not for 
+machine translation.
+
+The second type is sequence-to-sequence models  (seq2seq) that first read
+all of the input sequence before predicting the output sentence.
+A number of papers have adopted this approach
+for speech recognition : for example, 
+Chan et
+al.   proposes
+an elegant sequence-to-sequence method
+to transcribe audio signal to characters. 
+Sequence-to-sequence decodes an  output symbol at time  (e.g. character or word) conditioned on previous outputs . Thus,
+unlike CTC-based models, the model implicitly learns a language model over output symbols, and no further processing is required.
+However, it has been shown that it is beneficial to incorporate
+an external language model in the decoding of sequence-to-sequence models as
+well. This way it is possible to leverage larger text-only corpora that
+contain much richer natural language information than the limited aligned data used for training the
+acoustic model.
+
+Regarding architectures, while CTC-based or seq2seq approaches traditionally relied on recurrent networks,
+recently there has been a shift towards purely convolutional models. 
+For example, fully convolutional networks have been used for ASR with CTC or a simplified
+variant.
+
+
+Related works
+
+Lip reading.
+There is a large body of work on lip reading using non deep learning
+methods.  These methods are thoroughly reviewed in
+, and we will not repeat this here.
+A number of papers have used Convolutional Neural 
+Networks (CNNs) to predict phonemes  or visemes from still images,
+as opposed to recognising to full words or sentences. 
+A phoneme is the smallest distinguishable unit
+of sound that collectively make up a spoken word;
+ a viseme is its visual equivalent. 
+
+For recognising full words,
+Petridis et al.  
+train an LSTM classifier on 
+a discrete cosine transform (DCT)
+and deep bottleneck features (DBF).
+Similarly, Wand et al. use an LSTM with HOG input features 
+to recognise short phrases. 
+The shortage of training data in lip reading 
+presumably contributes to the continued use of
+hand crafted features. 
+Existing datasets consist of 
+videos with only a small number of subjects,
+and also a limited vocabulary (60 words),
+which is also an obstacle to progress.
+Chung and Zisserman tackles the small-lexicon problem by using faces in
+television broadcasts to assemble the LRW dataset with
+a vocabulary size of 500 words.
+However, as with any word-level 
+classification task,
+the setting is still distant from the
+real-world, given that the word
+boundaries must be known beforehand.
+Assael et al.  
+uses a
+CNN and LSTM-based network and (CTC)  to compute the labelling.
+This reports strong speaker-independent performance on the constrained
+grammar and 51 word vocabulary of the GRID
+dataset .
+
+A deeper architecture than LipNet is used by , who propose
+a residual network with 3D convolutions to extract more  powerful
+representations. The network is trained with a cross-entropy loss
+to recognise words from the LRW dataset.
+Here, the standard ResNet architecture is modified to process 3D image
+sequences by changing the first convolutional and pooling blocks from 2D to 3D.
+
+In our earlier work ,  we proposed a WLAS sequence-to-sequence model 
+based on the LAS ASR model of  (the acronym WLAS are for Watch, Listen, Attend and Spell, 
+and LAS for Listen, Attend and Spell). The WLAS model had a dual attention mechanism - one for the visual (lip) stream,
+and the other for the audio (speech) stream. It transcribed spoken 
+sentences to characters, and could handle an input of
+vision only, audio only,  or both. 
+
+In independent and concurrent work, Shillingford et al. , design a lip
+reading pipeline that uses a network which outputs phoneme probabilities and is trained with CTC
+loss. At inference
+time, they use a decoder based on finite state transducers to convert the phoneme distributions into word sequences. 
+The network is trained on a very large scale lip
+reading dataset constructed from YouTube videos and achieves a remarkable 40.9 word error rate.
+
+Audio-visual speech recognition.
+The problems of audio-visual speech recognition (AVSR)
+and lip reading are
+closely linked. 
+Mroueh et al.  employs
+feed-forward Deep Neural Networks (DNNs) to perform
+phoneme classification using a large
+non-public audio-visual dataset.
+The use of HMMs together with hand-crafted or pre-trained
+visual features have proved popular
+ -
+ encodes
+ input images using DBF; used DCT;
+ and uses a CNN pre-trained 
+ to classify phonemes;
+ all three combine these features with
+ HMMs to classify spoken digits or isolated words.
+ As with lip reading, there has been little
+ attempt to develop AVSR systems that generalise
+ to real-world settings.
+ 
+Petridis et al.  use an extended version of the
+architecture of  to learn representations from raw pixels and waveforms which
+they then concatenate and feed to a bidirectional recurrent network that jointly models
+the audio and video sequences and outputs word labels.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  *[t] 
+		                
+                Audio-visual speech recognition models.
+      (a) Common encoder:
+                The visual image sequence is processed by a spatio-temporal ResNet, while the audio
+                features are the spectrograms obtained by applying Short Time Fourier Transform
+                (STFT) to the audio signal. Each modality is then encoded by a separate Transformer
+                encoder. 
+                (b) TM-seq2seq: a Transformer model. On every decoder layer, the video (V) and audio (A) encodings are attended to
+       separately by independent multi-head attention modules. The context vectors produced for the
+       two modalities,  and  respectively, are concatenated channel-wise and fed to the
+       feed forward layers.  K, V and Q denote the Key, Value and Query tensors for the multi-head
+       attention blocks. For the self-attention layers it is always , while for the
+       encoder-decoder attentions,  =  are the encodings (V or A), while 
+       is the previous layer's output (or, for the first layer, the prediction of the
+       network at the previous decoding step).
+       (c) TM-CTC: Transformer CTC, a model composed of stacks of self-attention and
+       feed forward layers, producing CTC posterior probabilities for every input frame. 
+       For full details on the multi-head attention and feed forward blocks refer to Appendix . 
+    
+      
+Architectures
+
+
+
+
+
+
+In this section, we describe model architectures for audio-visual speech recognition, for which we explore two variants, based on the
+recently proposed Transformer model : i) an encoder-decoder
+attention structure for training in a seq2seq manner and ii) a stack of self-attention blocks for training with CTC loss.
+The architecture is outlined in Figure .
+The general model receives two input streams, one for video (V) and one for audio (A).  
+
+Audio Features 
+For the acoustic representation we use 321-dimensional spectral magnitudes, computed with a 40ms
+window and 10ms hop-length, at a 16 kHz sample rate.
+Since the video is sampled at  fps ( ms per frame), every
+video input frame corresponds to  acoustic feature frames. We concatenate the audio
+features in groups of , in order to reduce the input sequence length as is common for stable CTC training ,
+while at the same time achieving a common temporal-scale for both modalities.
+
+Vision Module (VM) 
+The input images are 224224 pixels, sampled at 25 fps and contain the speaker's face. 
+We crop a 112112 patch covering the region around the mouth, as shown in
+Figure .
+To extract visual features representing the lip movement, we use a spatio-temporal visual front-end 
+that is based on. 
+The network applies 3D convolutions on the input image sequence, with a filter width of  frames, 
+followed by a 2D ResNet that gradually decreases the spatial dimensions with depth. The layers are
+listed in full detail in Appendix .
+For an input sequence of  frames, the output is a 
+ tensor (i.e. the temporal resolution
+is preserved) that is then average-pooled over the spatial dimensions, yielding a -dimensional feature
+  vector for every input video frame.  
+
+  Common self-attention Encoder
+  Both variants that we consider use the same self-attention-based encoder architecture.
+  The encoder is a stack of multi-head self-attention layers, where the input tensor serves as the
+  query, key and value for the attention at the same time.
+A separate encoder is used for each modality as shown in Figure  (a).
+  The information about the sequence order of the 
+  inputs is fed to the model via fixed positional embeddings in the form of sinusoid functions.
+
+  Sequence-to-sequence Transformer (TM-seq2seq)
+  In this variant, separate attention heads are used for attending on the video and audio embeddings.
+  In every decoder layer, the resulting video and audio contexts are concatenated over the channel dimension and propagated to
+  the feedforward block.
+  The  attention mechanisms for both modalities receive as queries the output of the previous
+  decoding layer (or the decoder input in the case of the first layer).
+  
+  
+  The decoder produces character probabilities which are directly matched to the ground truth labels
+  and trained with a cross-entropy loss. 
+  More details about the multi-head attention and
+  feed-forward building blocks are given in Appendix .
+
+  CTC Transformer (TM-CTC)
+  The TM-CTC model concatenates the video and audio encodings and propagates the result
+  through a stack of self-attention / feedforward blocks, same as the one used in the encoders. The outputs of the network are the CTC
+  posterior probabilities for every input frame and the whole stack is trained with CTC loss.
+
+  External Language Model (LM) 
+  For decoding both variants, during inference, we use a character-level language model.
+   It is a recurrent network with 4 unidirectional layers of 1024 LSTM cells each.
+   The language model is trained to predict one character at a time, receiving only the previous
+   character as input.
+   Decoding for both models is performed with a left-to-right beam search where the LM log-probabilities are combined 
+   with the model's outputs via shallow fusion. 
+   More details on decoding are given in Appendices  and .
+
+  Single modality models 
+  The audio-visual models described in this section can be used when only one of the two modalities is
+  present. Instead of concatenating the attention vectors for TM-seq2seq or the encodings for TM-CTC, only the
+  vector from the available modality is used.
+
+
+
+
+
+
+
+
+Dataset
+*[th!]
+
+
+
+
+
+
+
+
+Top: Original still images from videos used in the making of the LRS2-BBC dataset.
+ 
+ Bottom: The mouth motions from two different speakers.
+The network sees the areas inside the red squares.
+ 
+
+In this section, we describe the multi-stage pipeline for 
+automatically generating a large-scale dataset, LRS2-BBC,  for
+audio-visual speech recognition. 
+Using this pipeline, we have been
+able to collect thousands of hours of spoken sentences and
+phrases along with the corresponding facetrack.
+We use a variety of BBC programs from Dragon's Den to Top Gear and Countryfile.
+
+
+
+The processing pipeline is summarised in Figure . 
+Most of the steps are based on the methods
+described in and,
+but we give a brief sketch of the method here.
+
+
+
+Pipeline to generate the dataset.
+ 
+
+
+Video preparation. 
+A CNN face detector based on the
+Single Shot MultiBox Detector (SSD) is used to detect face appearances in the individual frames.
+Unlike the HOG-based detector  used
+by previous works, the SSD detects faces 
+from all angles, and shows a more robust performance whilst
+being faster to run.
+
+The shot boundaries are determined by comparing color histograms
+across consecutive frames .
+Within each shot, face tracks are generated from face detections
+based on their positions, as feature-based
+trackers such as KLT  often fail
+when there are extreme changes in viewpoints.
+
+Audio and text preparation.
+The subtitles in television
+are not broadcast
+in sync with the audio.
+The Penn Phonetics Lab Forced
+Aligner  
+is used to
+force-align the subtitle to the audio signal.
+Errors exist in the alignment as the transcript is
+not verbatim -
+therefore the aligned labels are filtered by
+checking against the commercial IBM Watson Speech to Text
+service.
+
+AV sync and speaker detection.
+In broadcast videos, the audio and the video streams can be out of
+sync by up to around one second, which can cause problems when
+the facetrack corresponding to a sentence is being extracted.
+A multi-view adaptation  of 
+the two-stream network described in is used to 
+synchronise the two streams. 
+The same network is also used to determine 
+which face's lip movements match the audio,
+and if none matches, the clip is rejected
+as being a voice-over.
+
+Sentence extraction. 
+The videos are divided
+into individual sentences/ phrases using the punctuations
+in the transcript. 
+The sentences are separated by full stops, commas 
+and question marks; and
+are clipped to 100 characters or 10 
+seconds, due to GPU memory constraints.
+We do not impose any restrictions on the vocabulary size.
+
+The LRS2-BBC dataset is divided into development (train/val) and test
+sets according to broadcast date.  The dataset also has a "pre-train" set that contains sentence excerpts which may be shorter
+or longer than the full sentences included in the development set,  and
+are annotated with the alignment boundaries of every word.  The
+statistics of these sets are given in Table .
+The table also compares the 'Lip Reading Sentences' (LRS) series of datasets 
+to the largest existing public datasets.
+In addition to LRS2-BBC, we use MV-LRS and LRS3-TED for training and evaluation. 
+
+
+*[th!]
+ 
+Statistics on the Lip Reading Sentences (LRS) audio-visual datasets, and other existing large-scale lip reading datasets. Division of training, validation and test data; and the number of utterances, number of word instances and vocabulary size of each partition.
+Utt: Utterances.
+: Not available to the public due to license restrictions.
+
+
+
+
+Datasets for training external language models.
+To train the language models used for evaluation on each audio-visual dataset, we use a text corpus containing the full subtitles
+of the videos from which the dataset's training set was generated. The text-only corpus contains  words.
+
+
+
+
+
+
+Training strategy
+In this section, we describe the strategy used to effectively train the
+models, making best
+use of the limited amount of data available.
+The training proceeds in four stages: i) the visual front-end module is trained;
+ii) visual features are generated for all the training data using the vision module; 
+iii) the sequence processing module is trained on the frozen visual features; iv) the whole network is
+trained end-to-end.
+
+
+Pre-training visual features
+
+
+We pre-train the visual front-end on word excerpts from the
+MV-LRS  dataset,
+using a 2-layer temporal convolution back-end to classify every
+clip with a word label similarly to.
+We perform data augmentation in the form of horizontal flipping, 
+removal of random frames , 
+and random shifts of up to  pixels in the spatial dimensions and 
+of  frames in the temporal dimension.
+
+
+Curriculum learning  
+
+
+
+
+Sequence to sequence learning has been reported to converge very slowly when the number
+of timesteps is large, because the decoder initially
+has a hard time extracting the relevant information
+from all the input steps.
+Even though our models do not contain any recurrent modules, 
+we found it beneficial to follow a curriculum instead of immediately training on full sentences. 
+
+We introduce a new strategy where we start training only on single
+word examples, and then let the sequence length grow as the 
+network trains. 
+These short sequences are parts of the longer sentences in the dataset.
+We observe that the rate of convergence on the training set 
+is several times faster, 
+while the curriculum also significantly reduces overfitting, presumably because it 
+works as a natural way of augmenting the data.
+
+
+The networks are first trained on the frozen features of the pre-train sets from MV-LRS, LRS2-BBC and LRS3-TED.
+We deal with the difference in utterance lengths by zero-padding the sequences to a maximum length,
+which we gradually increase.
+We then separately fine-tune end-to-end on the train-val set of LRS2-BBC or
+LRS3-TED, according to which set we are evaluating on.
+
+Training with noisy audio  multi-modal training
+The audio-only models are initially trained with clean input audio.
+Networks with multi-modal inputs can often be dominated by one of the modes.
+In our case we observe that for the audio-visual models the audio signal dominates, because 
+speech recognition is a significantly
+easier problem than lip reading. 
+To help prevent this from happening,
+we add babble noise with 0dB SNR to the audio stream with
+probability  during training.  
+
+To assess and improve tolerance to audio noise, we then fine-tune the audio-only and audio-visual
+models in a setting where babble noise with 0dB SNR is always added to the original audio. 
+We synthesize the babble noise samples by mixing the signals of 20 different audio
+samples from the LRS2-BBC dataset. 
+
+
+
+Implementation details
+The output size of the network is 40, accounting for
+the 26 characters in the alphabet, the 10 digits, and tokens for [space] and [pad].
+For TM-seq2seq we use an extra [sos] token and for TM-CTC the [blank] token. We
+do not model punctuation, as the transcriptions of the datasets do not contain any.
+
+The TM-seq2seq is trained using teacher forcing - we supply the ground truth
+of the previous decoding step as the input to the decoder, while
+during inference we feed back the decoder prediction. 
+
+Our implementation is based on the TensorFlow library and trained on a single GeForce GTX 1080 Ti GPU with 11GB memory. 
+The network is trained 
+using the ADAM optimiser  with the default
+parameters and an initial learning rate of , which is reduced by a factor of 2 every time the validation error
+plateaus, down to a final learning rate of .
+For all the models we use dropout with  and label smoothing.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Experiments
+In this section we evaluate and compare the proposed architectures
+and training strategies.  We also compare our methods
+to the previous state of the art.
+
+We train as described in section  and evaluate the fine-tuned models for
+LRS2-BBC and LRS3-TED on the independent test set of the respective dataset.
+The inference and evaluation procedures are described below.
+
+Test time augmentation.  
+During inference we perform 9 random transforms (horizontal flipping of the video frames and spatial shifts up to  pixels)
+on every video sample, and pass the perturbed sequences through the network, in addition to the original.
+For TM-seq2seq we average the resulting logits whereas for TM-CTC we average the visual features. 
+
+
+Beam search.  
+Decoding is performed with beam search of width 35 for TM-Seq2seq and 100 for TM-CTC (the values
+were determined on a held-out validation set from the train-val split of LRS2-BBC).
+
+
+
+
+
+
+[t!]
+ 
+
+Word error rates (WER) on the LRS2-BBC and LRS3-TED datasets. 
+The second column (M) specifies the input modalities: V, A, and AV denote
+video-only, audio-only, and audio-visual models respectively, while
++ extLM denotes decoding with the external language model.
+ https://cloud.google.com/speech-to-text, accessed 3 July 2018.
+ 
+
+
+
+Evaluation protocol.  
+For all experiments,
+
+we report the Word Error Rate (WER) which is defined as , 
+where ,  and  are the number of substitutions, deletions,
+and insertions respectively to get from the reference to the hypothesis,
+and  is the number of words in the reference.
+
+
+
+
+
+Experimental setup.  
+The rest of this section is structured as follows: First we present
+results on lip reading, where only the video is used as input.
+We then use the full models for audio-visual speech recognition, where the video and audio are
+assumed to be properly synchronised. To assess the robustness of our models in noisy environments we also train and
+test in a setting where babble noise is artificially added to the utterances. 
+Finally we present some experiments on non-synchronised video and audio. 
+The results for all experiments are summarized in Table , where we report
+word error rates depending on whether a language model is used during decoding or not.
+
+
+Lips only
+Results.
+The best performing network is TM-seq2seq, which achieves a WER of  on LRS2-BBC
+when decoded with a language model, an absolute improvement of over  compared to the previous 
+  state-of-the-art . This model also sets a baseline for LRS3-TED at 58.9.
+
+In Figure  we show how the WER changes as a function of the number of words in a
+test sentence.
+Figure  shows the performance of the models on the 30 most common words.
+Figure  shows the effect of increasing
+the beam width for the video-only TM-seq2seq model when evaluating on LRS2-BBC. It is noteworthy
+that increasing the beam width is more beneficial when decoding with the external language model (+ extLM).
+
+
+Decoding examples.
+The model learns to correctly
+predict complex unseen
+sentences from a wide range of content -
+examples are shown in Table .
+
+
+ 
+Examples of unseen sentences that TM-seq2seq correctly predicts (video only). 
+
+
+
+ 
+                                   Word error rate per number of words in the sentence for the video-only
+                models, evaluated on the test set of LRS2-BBC. We exclude sentence sizes
+                represented by less than 5 samples in the set (i.e. 15, 16 and 19 words). The dashed lines show the average WER over all the sentences.
+                For both models, the WER is relatively uniform for different sentence sizes.
+                However samples with very few words (3) appear to be more difficult, presumably
+              because they provide less context. 
+              
+
+
+
+
+[b]
+   
+
+  
+  
+ 
+
+
+  
+  
+ 
+
+  Per word F1, Precision and Recall rates, on the 30 most common words in the LRS2-BBC
+   test set, for the video-only models.
+   The measures are calculated via the minimum edit-distance operations (details in Appendix ).
+   For all words and both models, precision is higher than recall.
+ 
+ 
+
+
+
+The effect of beam width on Word Error Rate for the video-only TM-seq2seq model, when
+evaluating on LRS2-BBC.
+ 
+
+
+
+Audio-visual speech recognition
+
+The visual information can be used to improve the performance of ASR, particularly in environments with background noise . Here, we analyse the performance of the audio-visual models described in Section .
+
+Results.
+The results in 
+Table  demonstrate that
+the mouth movements provide important
+cues in speech recognition when the audio
+signal is noisy; and give an
+improvement in performance 
+even when the audio signal is clean - for example the word error rate is
+reduced from 10.1 for audio only to 8.2, when
+using the audio-visual TM-CTC model. The gains when using the audio-visual TM-seq2seq compared to the audio-only
+model are similar.
+
+
+Decoding examples.
+Table  shows some of
+the many examples where the model fails to
+predict the correct sentence from the lips or the audio
+alone, but successfully deciphers the words when 
+both streams are present.
+
+
+ 
+Examples of AVSR results. 
+GT: Ground Truth;
+A: Audio only;
+V: Video only;
+AV: Audio-visual.
+
+
+Alignment and attention visualisation.
+The encoder-decoder attention mechanism of the TM-seq2seq model generates explicit alignment
+between the input video frames and the hypothesised character output. 
+Figure  visualises the alignment of the 
+characters "comes from one of the most beautiful parts of the world"
+and the corresponding video frames. Since the architecture contains multiple attention heads, we
+obtain the alignment by averaging the attention masks over all the decoder layers in the log domain.
+
+Noisy audio.
+We perform the audio-only and audio-visual experiments with noisy audio, synthesized by adding babble noise to the original utterances.
+Speech recognition in a noisy environment is extremely challenging,
+as can be seen from the significantly lower performance of the off-the-shelf Google S2T ASR baseline (over 60 performance degradation compared to clean). This difficulty is
+also reflected on the performance of our audio-only models, that the word error rates
+similar to the ones obtained when only using the lips.
+However combining the two modalities provides a significant improvement, with the
+word error rate dropping significantly, by up to . Notably, the audio-visual models
+perform much better than either the video-only, or audio-only ones under the presence of loud background
+noise. 
+
+AV attention visualization.
+In Figure  we compare the attention masks of different TM-seq2seq models in the
+presence and absence of additive babble noise in the audio stream.
+
+
+
+
+Out-of-sync audio and video
+Here, we assess the performance of the audio-visual models when the audio and video inputs are not temporally aligned.
+Since the audio and video have been synchronised in our dataset, we synthetically shift
+the video frames to achieve an out-of-sync effect. 
+We evaluate the performance on de-synchronised samples of the LRS2-BBC dataset.
+We consider the TM-CTC and TM-seq2seq architectures, with and without fine-tuning on randomly
+shifted samples.
+The results are shown in Figure . 
+It is clear that the TM-seq2seq architecture is more resistant to these shifts. We only need to
+calibrate the model for one epoch for the out-of-sync effect to practically vanish. This showcases the
+advantage of employing independent encoder-decoder attention mechanisms for the two modalities.
+In contrast, TM-CTC, that concatenates the two encodings, struggles to deal with the shifts, even
+after several epochs of fine-tuning.
+
+
+
+ WER scored by the audio-visual models on LRS2-BBC when the video frames are artificially shifted by 
+ a number of frames compared to audio. The TM-seq2seq model is only fine-tuned for one epoch, while
+ CTC for 4 epochs on the train-val set. 
+ 
+
+
+
+[b]0.8
+
+
+(img1)  
+  ;
+[left=of img1, anchor=south,yshift=49pt, xshift=10pt] (img2)  
+  ;
+[below=of img2,yshift=30pt] (img3)  
+  ;
+[below=of img3, xshift=-3pt,yshift=10pt, rotate=90] (img4)  
+  
+;
+[below=of img3,yshift=-8pt] (img5)  
+  ;
+[left=of img1, node distance=0cm, rotate=90, anchor=center,yshift=22pt] video frame ;
+[below=of img1, node distance=0cm, yshift=1.2cm] transcription;
+
+    Alignment between the video frames and the character output with TM-seq2seq. The alignment is produced by
+ averaging all the encoder-decoder attention heads over all the decoder layers in the log domain.  
+
+
+  
+  
+  
+ 
+ 
+ 
+ 
+  
+ 
+
+
+
+
+
+
+*[t]
+
+[b]0.66
+
+(img1)  
+  ;
+[left=of img1, node distance=0cm, rotate=90, anchor=center,yshift=-0.9cm] t (frame );
+  [below=of img1, node distance=0cm, yshift=1.2cm, xshift=0.4cm] f (kHz);
+
+
+  Clean audio spectrogram*-4em
+   [b]0.66
+
+(img1)  
+  ;
+[] () [left of = img1, xshift=-2.25cm] ;
+[below=of img1, node distance=0cm, yshift=1.2cm, xshift=0.4em] f (kHz);
+
+
+  Noisy audio spectrogram*-4em
+     
+
+[b]0.66
+
+[left=of img1, node distance=0cm, rotate=90, anchor=center,yshift=-0.9cm]  frame  ;
+(img1)  
+  ;
+
+
+  A clean*-4em
+   [b]0.66
+
+(img1)  
+  ;
+[] () [left of = img1, xshift=-2.25cm] ;
+
+
+  A noisy*-4em
+   [b]0.66
+
+(img1)  
+  ;
+[] () [left of = img1, xshift=-2.2cm] ;
+
+
+  V*-4em
+   
+[b]0.66
+
+[left=of img1, node distance=0cm, rotate=90, anchor=center,yshift=-0.9cm] frame  ;
+(img1)  
+  ;
+
+
+  AV clean - audio attention*-4em
+   [b]0.66
+
+(img1)  
+  ;
+[] () [left of = img1, xshift=-2.25cm] ;
+
+
+  AV noisy - audio attention*-4em
+   [b]0.66
+
+(img1)  
+  ;
+[] () [left of = img1, xshift=-2.2cm] ;
+
+
+  AV noisy - video attention*-4em
+   
+ 
+   Visualization of the effect of additive noise on the attention masks of the different TM-seq2seq models. We show the attentions
+   on (a) the clean audio utterance, and (b) on the noisy utterance which we obtain by adding babble
+   noise to the 25 central audio frames. 
+   Comparing (c) with (d), the attention of the audio-only models appears to be more spread around the area where the noise
+   is applied, while the last frames are not attended upon. Similarly for the audio-visual model, the audio attention
+   is more focused when the audio is clean (f) compared to when it is noisy (g).
+   The ground truth transcription of the sentence is "one of the articles there is about the queen elizabeth".
+   Observing the transcriptions, we see that the audio-only model (d) does not predict the central words correctly when noise is added, however
+   the audio-visual model (g  h) successfully transcribes the sentence, by leveraging the visual cues.
+   Interestingly, in this particular example, the transcription that the video-only model outputs
+   (e) is completely wrong; the combination of both modalities however yields a correct prediction.  
+   Finally, the attention mask of the AV model on the video input (f) has a clear monotonic
+   trend and is similar to the one of the video-only model (e); this also
+   verifies that the model indeed learns to use the video modality even when audio is present.  
+
+ 
+
+
+Discussion on seq2seq vs CTC
+
+The TM-seq2seq model performs significantly better for lip-reading in terms of WER, when no audio is supplied. For audio-only
+or audio-visual tasks, the two methods perform similarly. However the CTC models
+appear to handle background noise better; in the presence of loud babble noise, both the audio-only
+and audio-visual TM-seq2seq models perform
+significantly worse that their TM-CTC counterparts.
+
+Training time.
+The TM-seq2seq models have a more complex architecture and are harder to train, with the full
+audio-visual model taking approximately 8 days to complete the full curriculum for both datasets,
+on a single GeForce Titan X GPU with 12GB memory.
+In contrast, the audiovisual TM-CTC model trains faster i.e. in approximately 5 days on the same
+hardware.
+It should be noted however that since both architectures contain no recurrent modules and no batch
+normalization, their implementation can be heavily parallelized into multiple GPUs.
+
+
+Inference time.
+Decoding of the TM-CTC model does not require auto-regression and therefore the CTC
+probabilities need only be evaluated once, regardless of the beam width .
+This is not the case for TM-seq2seq, where for every step of the beam search, the decoder subnetwork needs
+to be evaluated  times. 
+This makes the decoding of the CTC model faster, which can be an important factor for deployment.
+
+Language modelling.
+Both models perform better when an external language model is incorporated in the beam search,
+however the gains are much higher for TM-CTC, since no explicit
+language consistency is enforced by the visual model alone.
+
+Generalization to longer sequences.
+We observed that the TM-CTC model generalizes better and adapts faster as the sequence lengths are
+increased during the curriculum learning. We
+believe this also affects the training time as the latter takes more epochs to converge. 
+
+
+Conclusion
+In this paper, we introduced a large-scale, unconstrained audio-visual dataset, LRS2-BBC,
+formed by collecting and preprocessing thousands of videos from the British television.
+
+We considered two models that can transcribe 
+audio and video sequences of speech into characters and showed that the same architectures can also be used when only one
+of the modalities is present.
+Our best visual-only model surpasses the
+performance of the previous state-of-the-art  on the LRS2-BBC lip reading dataset
+by a large margin, and sets a strong baseline for the recently released LRS3-TED. We finally demonstrate that visual
+information helps improve speech recognition performance even when
+the clean audio signal is available.  Especially in the presence of noise in the audio, combining the two modalities
+leads to a significant improvement. 
+
+
+
+
+
+ieee
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Visual front-end architecture  
+The details of the spatio-temporal front-end are given in Table .
+
+
+
+
+
+Architecture details for the spatio-temporal visual front-end. The
+strides for the residual 2D convolutional blocks apply to the first layer of the block only (i.e. the
+total down-sampling factor in the network is 32). A short cut connection is added after every pair of
+2D convolutions. The 2D convolutions are applied separately on every time-frame.
+
+
+
+Transformer architecture details 
+The details of the building blocks used by our models are outlined in Figure .
+The same multi-head attention block shown is used for both the self-attention and encoder-decoder
+attention layers of the models.
+A multi-head attention block, as described by Vaswani et al. ,
+receives a query (), a key () and a value () tensor as inputs and produces
+ context vectors, one for every attention head :
+
+where , , and  have size  and  =   is the size of every attention head.
+The  context vectors are concatenated and propagated through a feedforward block that consists of
+two linear layers with ReLU non-linearities in between.
+For the self-attention layers it is always , while for the encoder-decoder attention of the
+TM-seq2seq model,
+ =  are the encoder outputs to be attended upon and  is the decoder input, i.e. the
+network's output at the previous decoding step for the first layer and the output of the previous decoder layer for the rest.
+We use the same architecture hyperparameters as the original base model of Vaswani et al. with  and  attention heads
+everywhere. The sizes of the two linear layers in the feedforward block are ,  .
+
+[] 
+        
+                             Details of multi-head attention building blocks 
+            
+
+Seq2Seq decoding with external language model For decoding with the TM-seq2seq model, we use a left-to right beam search with width  as in ,
+with the hypotheses  being scored as follows: 
+
+
+
+where  and  are the probabilities obtained from the visual and language models respectively and
+LP is a length normalization factor LP(y) = . We did not experiment
+with a coverage penalty.
+The best values for the hyperparameters were determined via grid search on the validation set: for
+decoding without the external language model they were set to  , ,
+ and for decoding with the external language model (+ extLM) to ,  .
+
+CTC decoding algorithm with external language model 
+Algorithm  describes the CTC decoding procedure with an external language model.
+It is also a beam search with width W and hyperparameters  and  that control the
+relative weight given to the LM and the length penalty. The beam search is similar to the one
+described for seq2seq above, with some additional bookkeeping required to handle the emission of
+repeated and blank characters and normalization LP(y) = .
+We obtain the best results on the validation set with , , .
+
+[]
+  CTC Beam search decoding with Language Model adapted from. 
+    Notation: 
+    A is the alphabet;
+     and  are the probabilities of partial output transcription s resulting from paths
+  ending in blank and non-blank token respectively, given the input sequence up to time ; . 
+      -2em
+ 
+
+  Parameters CTC probabilities , word dictionary, beam width ,
+  hyperparameters , 
+
+  initialize  ; 
+   1;  0 
+
+   to  
+
+      prefixes with highest  in 
+     
+
+
+    prefix  in  
+
+       last character of 
+
+        adding a blank
+        repeated
+
+      add  to 
+
+      character  in  
+
+        
+        
+         does not end in  
+            
+                  repeated chars must have blanks in between
+            
+        
+
+         is already in  
+        
+        
+
+                  add  to 
+           
+          
+                  
+        
+ in 
+
+
+Precision and Recall from edit distance The F1, precision and recall rates shown in figure , are calculated from the
+word-wise minimum edit distance operations.
+For every sample in the evaluation set we can calculate the fewest word substitution,
+insertion and deletion operations needed to get from the ground truth to the predicted
+transcription. After aggregating those operations over
+the evaluation set for every word, we calculate the average measures per word as follows:
+
+  TP(w) = n_m(w) 
+
+  FN(w) =  _j n_s(j,w) + n_i(w) 
+ 
+  FP(w) =  _j n_s(w,j)+ n_d(w) 
+
+  Precision(w) = TP(w)TP(w)+FP(w) 
+
+  Recall(w) = TP(w)TP(w)+FN(w) 
+
+  F1(w) = 2Precision(w) Recall(w)Precision(w) + Recall(w)  
+where (w,j) is the total count over the evaluation set of substitutions of word  with word ,
+and (w), (w) and (w) are the total matches, deletions and insertions respectively of word
+.
+
+  
+  Acknowledgments
+  
+  Acknowledgment
+Funding for this research is provided by the EPSRC 
+Programme Grant Seebibyte EP/M013774/1, the EPSRC
+CDT in Autonomous Intelligent Machines and Systems, 
+and the Oxford-Google DeepMind Graduate Scholarship. We are very grateful to Rob Cooper and Matt 
+Haynes at BBC Research for help in obtaining the dataset. We would like to thank Ankush Gupta
+for helpful comments and discussion.
+
+
+
+
+  
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

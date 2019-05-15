@@ -1,0 +1,312 @@
+
+
+
+Bib    TEEnergy Efficiency of Generalized Spatial Modulation Aided Massive MIMO Systems
+
+This work was supported in part by the National Key Research and Development Program of China under Grant 2017YFE0121600.
+
+
+
+
+Shuang Zheng1, Jing Yang1, Xiaohu Ge1, Yonghui Li2, Lin Tian3,
+Jinglin Shi34
+1School of Electronic Information and Communications
+
+Huazhong University of Science and Technology, Wuhan, Hubei, China 
+
+2School of Electrical and Information Engineering
+
+ University of Sydney, Sydney, Australia
+
+3Beijing Key Laboratory of Mobile Computing and Pervasive Devices
+
+Institute of Computing Technology, Chinese Academy of Sciences, China
+
+4University of Chinese Academy of Sciences, China
+
+Contact Email: xhge@mail.hust.edu.cn
+
+
+
+
+
+One of focuses in green communication studies is the energy efficiency (EE) of massive multiple-input multiple-output (MIMO) systems. Although the massive MIMO technology can improve the spectral efficiency (SE) of cellular networks by configuring a large number of antennas at base stations (BSs), the energy consumption of radio frequency (RF) chains increases dramatically. The increment of energy consumption is caused by the increase of RF chain number to match the antenna number in massive MIMO communication systems. To overcome this problem, a generalized spatial modulation (GSM) solution is presented to simultaneously reduce the number of RF chains and maintain the SE of massive MIMO communication systems. A EE model is proposed to estimate the transmission and computation power of massive MIMO communication systems with GSM. Simulation results demonstrate that the EE of massive MIMO communication systems with GSM outperforms the massive MIMO communication systems without GSM. Besides, the computation power consumed by massive MIMO communication systems with GSM is effectively reduced.
+
+
+the fifth generation mobile communication systems, massive mimo, generalized spatial modulation, computation power, energy efficiency
+
+Introduction
+Having hundreds of antennas at base stations (BSs), the massive multiple-input multiple-output (MIMO) technology can improve the spatial diversity and array gain to increase the spectral efficiency (SE),. The conventional MIMO technology configures a separate radio frequency (RF) chain for each antenna. For massive MIMO communication systems with hundreds of antennas, the solution with one RF chain corresponding to one antenna will greatly increase the energy consumed by RF chains at BSs. To overcome the great power consumption due to the increase of RF chain number, finding new solutions for massive MIMO communications systems with limited RF chain number is an emerging challenge for the fifth generation (5G) mobile communication systems.
+
+For conventional mobile communication systems, the power consumption is divided into the transmission power, computation power and the other power consumption. The transmission power mainly represents the energy consumed by power amplifier (PA) and RF chains; the computation power is mainly consumed by baseband units (BBUs); the other power consumption mainly includes the power consumption of active cooling at BSs. In conventional mobile communication systems, the power consumption of PA is the largest part in the total power consumed at BSs, and the computation power is usually ignored or set to a fixed value. However, in 5G mobile communication systems, the transmission rate can be greatly improved by both the massive MIMO and millimeter wave (mmWave) technologies at BSs. Moreover, due to the deployment of ultra-dense small cell networks, the distance between customers and BSs is obviously reduced,. The reduced distances lead to a decrease of transmission power in 5G mobile communication systems. Meanwhile, with the rapid growth of traffic, more computation power is consumed by the signal processing in BBUs of 5G mobile communication systems. The computation power is accounted for more than 50 of the total power consumption at 5G BSs. In this case, the computation power plays a dominant role in the total power consumption of 5G mobile communication systems. Thus, it is crucial to come up with strategies of reducing the computation power in massive MIMO communication systems.
+
+Generalized spatial modulation (GSM) technology is emerging as a potential solution to maintain the SE of massive MIMO communication systems and reduce the RF chain number simultaneously. Different from the conventional MIMO technology, the GSM technology transmits the symbols by the activated antennas, which is selected by the space-domain information. Thus the information is simultaneously transmitted by the amplitude phase modulation (APM) symbols and the indices of activated antennas. Combing GSM and massive MIMO technologies, the amount of RF chains is decreased and then the power consumption of RF chains is greatly reduced,,. Therefore, a higher energy efficiency (EE) can be achieved by combining the massive MIMO technology with GSM. A simple massive MIMO communication system with GSM was investigated for indoor transmissions over line-of-sight (LoS) channels and the SE was analyzed in. A detection algorithm was proposed to improve the EE of massive MIMO communication systems with GSM in multi-cell multi-user scenarios. The proportion of computation power in the total power consumption obviously increased in 5G mobile communication systems. However, most studies related to the EE of massive MIMO communication systems with GSM have not considered the computation power, which leads to the contributions of this paper.
+
+In this paper, the EE of massive MIMO communication systems with GSM is analyzed for a single-cell multi-user scenario. Moreover, the computation power consumption model of massive MIMO communication systems with GSM is proposed. Simulation results show that the EE of massive MIMO communication systems with GSM outperforms the massive MIMO communication systems without GSM. Besides, the power of computation consumed by massive MIMO communication systems with GSM is effectively reduced.
+
+The content of this paper is constructed as follows. Section II describes a massive MIMO communication system with GSM. The capacity and total power consumption model of massive MIMO communication systems with GSM are derived in Section III. Simulations results and analysis are presented in Section IV, and the Section V concludes this paper.
+
+System Model
+
+
+The massive MIMO communication system with GSM.
+
+In Fig. , we depict a massive MIMO communication system with GSM, where  transmit antennas and  single-antenna users are configured. As described in Fig. , the input data streams are divided into  data streams and an extra space-domain data stream. The digital precoder, which consists of  baseband processing units, plays the role of allocating power. After the digital baseband processing,  RF symbols are produced.
+
+The   transmit antennas are grouped into  antenna groups and each antenna group has  transmit antennas, i.e., . Considering digital precoder design constraints,  should be satisfied in massive MIMO communication systems with GSM. After data streams processed by RF chains, the spatial-domain data stream randomly select  from  antenna groups to transmit symbols based on the GSM technology. In this case, the remaining  antenna groups are inactive.
+
+The space-domain data stream plays the role of specifying the combination of activated antenna groups. Thus the total number of valid combination of antenna groups is given by
+
+The -th activated antenna group combination is denoted by , , which follows the restriction . Therefore, the -th activated antenna group matrix  denoting the GSM matrix is expressed as
+
+Note that the transmit antennas are grouped, the group transmission power is expanded  times compared with the single antenna transmission power. In order to normalize the power of group transmit antennas, the GSM matrix is adjusted by
+
+
+
+After processed by the digital precoding and GSM technology, the symbols are transmitted to users through the channel matrix of activated antenna groups. The channel matrix is given by , where  is the instantaneous propagation channel among the -th user and transmit antennas. To simplify the derivation in this paper, a Rayleigh channel model is adopted for massive MIMO communication systems
+
+where  is a small-scale fading distribution dominated by the channel attenuation,   represents the distances among  users and transmit antennas.  follows the constraint , where  is the maximum distance between users and transmit antennas,  is the minimum distance among users and transmit antennas.  is the channel attenuation at ,  is the path loss coefficient. The digital precoding matrix is given by
+, where  is the precoding vector of the -th user. In this paper, a zero-forcing precoder is configured for the digital precoder, which is expressed as
+
+
+where  is a normalization factor.
+
+The signal received by the -th  user is formulated as
+
+where  is the Gaussian-distributed input signal vector,  is the additive white Gaussian noise.
+
+
+
+
+Energy Efficiency of massive MIMO communication systems with GSM
+
+Energy Efficiency Model
+
+Without loss of generality, in this paper the EE model is expressed as the ratio of capacity to total power consumption in massive MIMO communication systems with GSM,
+
+
+where  is the capacity of massive MIMO communication systems with GSM,  is the total power consumption of massive MIMO communication systems with GSM.
+
+Capacity of Massive MIMO Communication Systems with GSM
+
+Generally, the SE of mobile communication systems is expressed as the ratio of capacity to bandwidth. In this paper, the mutual information is used to quantify the SE between the received signal  of the -th user and input signal ,
+
+
+where  is the APM-domain mutual information after antenna groups combination is selected,  is the mutual information between the received signal  of the -th user and antenna groups combination index . Based on the definition of mutual information, we can obtain
+
+
+with
+
+
+
+Moreover, the APM-domain mutual information after selecting antenna groups combination is simplified as
+
+
+
+Similarly,  is expressed as
+
+
+which is simplified as
+
+
+
+Therefore, the SE of -th user in massive MIMO communication systems with GSM is derived as
+
+
+where  is the covariance matrix of  considering the -th activated antenna groups
+
+
+As a consequence, the capacity of massive MIMO communication systems with GSM is derived by
+
+
+where  is the bandwidth.
+
+To compare with massive MIMO communication systems with GSM, the capacity of conventional massive MIMO communication systems is expressed as
+
+
+
+Total Power Consumption Model
+ In this paper the power consumption of massive MIMO communication systems with GSM is classified into the transmission power, computation power and the fixed power.
+
+Transmission Power
+
+The transmission power  includes three parts: the energy consumed by PA , the energy consumed by RF chains , and the energy consumed by switches . The transmission power is given by
+
+
+The energy consumed by PA  is calculated by
+
+
+where  is the exchange of PA. Note that the power allocation vector is simultaneously depended on the space-domain data stream and instantaneous channel state information (CSI). Besides, the maximum power of receiver is less than or equal to a fixed value . The energy consumed by RF chains is calculated by
+
+where  is the energy consumed by each RF chain.  is the energy consumption of switches when the space-domain data stream selects the activated antenna groups
+
+where  is the energy consumption of each switch.
+
+In the end, the transmission power is quantified as
+
+
+
+Computation Power
+
+In this power consumption model, the computation power is taken into account and cannot be treated as a fixed value. The computation power  includes three parts: the energy consumption for channel estimation , the energy consumption for channel coding , and the energy consumption for linear processing 
+
+
+Without loss of generality, coherent blocks per unit time is assumed by , where  represents the bandwidth and  represents the coherent block. The CSI estimation of massive MIMO communication systems with GSM based on the pilot is performed once for each block. The proposed system receives the pilot signal which is denoted as a  matrix. The user's channel is evaluated by multiplying with the pilot sequence of length . Therefore, the energy consumed by channel estimation is calculated by
+
+
+where  is the computation efficiency in massive MIMO communication systems with GSM. The power required for channel coding is given by
+
+where  is the coding power (in Watt per bit/s).
+
+The power consumed by linear processing is expressed as
+
+
+where the first item  is the power required for the computation of zero-forcing precoding matrix. The precoding matrix is calculated once in each coherent block. The zero-forcing precoding requires  floating-point operations. The second item  is the energy consumption of conducting one matrix-vector multiplication for each symbol.
+
+Therefore, the computation power is quantified as
+
+
+
+Fixed Power
+
+The fixed power  is a constant quantity mainly including the energy consumed by site-cooling and control signaling, which is configured as .
+
+
+In the end, the total power consumption of massive MIMO communication systems with GSM is quantified as
+
+
+
+
+
+Simulation Results and Discussions
+In this section, simulations are performed to verify the remarkable performance of massive MIMO communication systems with GSM. Moreover, the computation power is specifically analyzed. Simulation results indicate that the computation power plays a significant role in massive MIMO communication systems with GSM. The default simulation parameters are specified in Table I.
+
+[!htbp]
+        SIMULATION PARAMETERS                
+         
+
+
+
+
+
+
+
+Fig. 2 compares the total power consumption of massive MIMO communication systems with GSM and without GSM under different numbers of users. In Fig. 2, the total power consumption increases as the number of users increases. The massive MIMO communication systems with GSM consumes less power than conventional massive MIMO communication systems as the number of users is constant.
+
+Fig. 3 depicts the computation power of BSs under different numbers of users. It is seen that the computation power increases with the increase of the number of users. The reason is that the computation power for channel estimation and linear processing is in proportion to the number of users. Moreover, the computation power of massive MIMO communication systems with GSM is always less than that of conventional massive MIMO systems as the number of users is constant. Based on the consequences in Fig. 2 and Fig. 3, it is clearly observed that the total power consumption and computation power are reduced by massive MIMO communication systems with GSM. Besides, the computation power is accounted for more than 50 in the total power consumption, which can not be ignored or treated as a fixed value in 5G mobile communication systems.
+
+
+
+
+
+ 
+
+The total power of BSs under different numbers of users.
+
+
+
+The computation power of BSs under different numbers of users.
+
+
+
+
+Spectral efficiency under different numbers of users.
+
+
+
+
+Energy efficiency under different numbers of users.
+
+
+
+
+Energy efficiency under different numbers of RF chains.
+
+Fig. 4 depicts the SE performance under different numbers of users. In Fig. 4, the SE increases with the increase of the number of users. The SE of massive MIMO communication systems with GSM is slightly lower compared to that of conventional massive MIMO communication systems as the number of users is constant,. The EE performance under different numbers of users is illustrated in Fig. 5. In Fig. 5, the EE increases with the increase of the number of users. The EE of massive MIMO communication systems with GSM is maximally improved by approximately 56 compared with conventional massive MIMO communication systems. The reason is that the total power consumption is greatly reduced while the SE is slightly decreased in massive MIMO communication systems with GSM.
+
+Finally, the EE performance with respect to the number of RF chains (with , , ) is depicted in Fig.6. As seen from the figure, when the number of RF chains increases, the EE of massive MIMO communication systems with GSM decreases while the EE of conventional massive MIMO communication systems remains almost constant. Compared with the conventional massive MIMO communication systems, the EE of massive MIMO communication systems with GSM is also improved. Therefore, the higher EE is achieved in massive MIMO communication systems with GSM.
+
+Conclusion
+In this paper, the EE of massive MIMO communication systems with GSM considering the computation power is investigated. Compared with conventional massive MIMO communication systems, simulation results show that the total power consumption and computation power of massive MIMO communication systems with GSM are reduced. As a consequence, the EE of our proposed system is maximally improved by 56 compared with conventional massive MIMO communication systems. Therefore, the lower computation power and higher EE is achieved by massive MIMO communication systems with GSM.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+00
+L. Lu, G. Y. Li, A. L. Swindlehurst, A. Ashikhmin, and R. Zhang, "An Overview of Massive MIMO: Benefits and Challenges," IEEE Journal of Selected Topics in Signal Processing, vol. 8, no. 5, pp. 742-758, 2014.
+
+X Ge et al., "Spatial Spectrum and Energy Efficiency of Random Cellular Networks," IEEE Transactions on Communications, vol. 63, no. 3, pp. 1019 - 1030, 2015.
+
+E. Bjornson, L. Sanguinetti, J. Hoydis, and M. Debbah, "Optimal Design of Energy-Efficient Multi-User MIMO Systems: Is Massive MIMO the Answer?," IEEE Transactions on Wireless Communications, vol. 14, no. 6, pp. 3059-3075, 2015.
+
+L. Xiang et al., "Energy Efficiency Evaluation of Cellular Networks Based on Spatial Distributions of Traffic Load and Power Consumption," IEEE Transactions on Wireless Communications, vol. 12, no. 3, pp.961-973, 2013.
+
+G. Auer, O Blume, and V Giannini, "D2.3: Energy efficiency analysis of the reference systems areas of improvements and target breakdown," 2012. Available at: http://www.ict-earth.eu/.
+
+
+C. Desset et al., "Flexible power modeling of LTE base stations," Proc. IEEE Wireless Communications and Networking Conference, 2012, pp. 2858-2862.
+
+J. G. Andrews et al., "What Will 5G Be?," IEEE Journal on Selected Areas in Communications, vol. 32, no. 6, pp. 1065-1082, 2014.
+
+X. Ge et al., "5G Ultra-Dense Cellular Networks," IEEE Wireless Communications, Vol. 23, no. 1, pp.72-79, 2016.
+
+X Ge et al., "User Mobility Evaluation for 5G Small Cell Networks Based on Individual Mobility Model," IEEE Journal Selected Areas Communications, Vol. 34, no. 3, pp. 528-541, 2016.
+
+X Ge et al., "Energy Efficiency of Small Cell Backhaul Networks Based on Gauss-Markov Mobile Models,"  IET Networks, Vol. 4, no. 2,  pp. 158-167, 2015.
+
+
+X. Ge, J. Yang, H. Gharavi, and Y. Sun, "Energy Efficiency Challenges of 5G Small Cell Networks," IEEE Communications Magazine, vol. 55, no. 5, pp. 184-191, 2017.
+
+
+J. Wang, S. Jia, and J. Song, "Generalised Spatial Modulation System with Multiple Active Transmit Antennas and Low Complexity Detection Scheme," IEEE Transactions on Wireless Communications, vol. 11, no. 4, pp. 1605-1615, 2012.
+
+M. D. Renzo, H. Haas, and P. M. Grant, "Spatial modulation for multiple-antenna wireless systems: a survey," IEEE Communications Magazine, vol. 49, no. 12, pp. 182-191, 2011.
+
+X Ge et al., "5G Wireless Backhaul Networks: Challenges and Research Advances," IEEE Network, Vol. 28, no. 6, pp. 6-11, 2014.
+
+X Ge et al., "Capacity analysis of a multi-cell multi-antenna cooperative cellular network with co-channel interference," IEEE Transactions on Wireless Communications, vol. 10, no. 10, pp.3298-3309, 2011.
+
+L. He, J. Wang, C. Pan, and J. Song, "Spectral Efficient Generalized Spatial Modulation Aided mmWave Massive MIMO,"  Proc. IEEE Global Communications Conference, 2017, pp. 1-6.
+
+P. Patcharamaneepakorn et al., "Spectral, Energy, and Economic Efficiency of 5G Multicell Massive MIMO Systems With Generalized Spatial Modulation," IEEE Transactions on Vehicular Technology, vol. 65, no. 12, pp. 9715-9731, 2016.
+
+L. He, J. Wang, and J. Song, "On Generalized Spatial Modulation Aided Millimeter Wave MIMO: Spectral Efficiency Analysis and Hybrid Precoder Design," IEEE Transactions on Wireless Communications, vol. 16, no. 11, pp. 7658-7671, 2017.
+
+X. Gao, O. Edfors, F. Rusek, and F. Tufvesson, "Massive MIMO in real propagation environments," Eprint Arxiv, vol. 14, no. 7, pp. 1-1, 2014.
+
+Z. An, J. Wang, J. Wang, S. Huang and J. Song, "Mutual Information Analysis on Spatial Modulation Multiple Antenna System," IEEE Transactions on Communications, vol. 63, no. 3, pp. 826-843, 2015.
+
+G. Auer et al., "How much energy is needed to run a wireless network?," IEEE Wireless Communications, vol. 18, no. 5, pp. 40-49, 2011.
+
+X. Gao, L. Dai, Y. Sun, S. Han, and I. Chih-Lin, "Machine learning inspired energy-efficient hybrid precoding for mmWave massive MIMO systems,"  Proc. IEEE International Conference on Communications, 2017, pp. 1-6.
+
+X Ge et al.,"Energy Efficiency Optimization for MIMO-OFDM Mobile Multimedia Communication Systems with QoS Constraints," IEEE Transactions on Vehicular Technology, vol. 63, no. 5, pp. 2127 - 2138, 2014.
+
+S. K. Mohammed, "Impact of Transceiver Power Consumption on the Energy Efficiency of Zero-Forcing Detector in Massive MIMO Systems," IEEE Transactions on Communications, vol. 62, no. 11, pp. 3874-3890, 2014.
+
+E. Bjornson, L. Sanguinetti, J. Hoydis, and M. Debbah, "Optimal Design of Energy-Efficient Multi-User MIMO Systems: Is Massive MIMO the Answer?," IEEE Transactions on Wireless Communications, vol. 14, no. 6, pp. 3059-3075, 2015.
+
+
+
+
+

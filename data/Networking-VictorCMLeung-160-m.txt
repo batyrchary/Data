@@ -1,0 +1,585 @@
+
+
+theoremTheorem[section]
+lemma[theorem]Lemma
+proposition[theorem]Proposition
+corollary[theorem]Corollary
+
+
+
+
+op-tical net-works semi-conduc-tor
+
+Delay-Optimal Biased User Association in Heterogeneous Networks
+Fancheng Kong, Xinghua Sun, Member, IEEE, Victor C. M. Leung, Fellow, IEEE, and Hongbo Zhu
+F. Kong, X. Sun, and H. Zhu are with the Jiangsu Key Laboratory of Wireless Communications, College of Telecommunications and Information
+Engineering, Nanjing University of Posts and Telecommunications, Nanjing 210003, China (e-mail: kfcshimaidi@163.com; xinghua.sun.cn@ieee.org; zhb@njupt.edu.cn).
+
+V. C. M. Leung is with the Department of Electrical and Computer Engineering, University of British Columbia, Vancouver, BC V6T 1Z4, Canada (e-mail: vleung@ece.ubc.ca).
+
+
+  In heterogeneous networks (HetNets), load balancing among different tiers can be effectively achieved by a biased user association scheme with which each user chooses to associate with one base station (BS) based on the biased received power. In contrast to previous studies where a BS always has packets to transmit, we assume in this paper that incoming packets intended for all the associated users form a queue in the BS. In order to find the delay limit of the network to support real-time service, we focus on the delay optimization problem by properly tuning the biasing factor of each tier. By adopting a thinned Poisson point process (PPP) model to characterize the locations of BSs in the busy state, an explicit expression of the average traffic intensity of each tier is obtained. On that basis, an optimization problem is formulated to minimize a lower bound of the network mean queuing delay. By showing that the optimization problem is convex, the optimal biasing factor of each tier can be obtained numerically.
+  When the mean packet arrival rate of each user is small, a closed-form solution is derived.
+  The simulation results demonstrate that the network queuing performance can be significantly improved by properly tuning the biasing factor.
+  It is further shown that the network mean queuing delay might be improved at the cost of a deterioration of the network signal-to-interference ratio (SIR) coverage, which indicates a performance tradeoff between real-time and non-real-time traffic in HetNets.
+
+
+heterogeneous network, biasing factor, average traffic intensity, network mean queuing delay
+
+IntroductionWith widespread use of portable devices such as smart phones and tablets, cellular networks are facing an exponential growth of mobile data traffic.
+Meanwhile, real-time applications such as video chat and online gaming become more and more popular, which imposes stringent delay requirements on the network.
+To deal with this ever-growing demand and high service requirement, micro base stations (BSs) such as pico and femto BSs are deployed to undertake the traffic pressure of macro BSs.
+The network architecture is thus evolving to more dense and irregular heterogeneous networks (HetNets).
+
+Among all the techniques used in HetNets, load balancing plays a key role to determine the network performance. For example, if the traditional maximum downlink received power association scheme is adopted, users would tend to connect to macro BSs with a high transmission power. Macro BSs may thus easily become overloaded.
+To purposely push users to micro BSs, a simple and efficient approach called the biased association scheme was proposed in, with which each user assigns a biased value to the measured received power from BSs of each tier, and associates with the BS that has the largest mean biased received power.
+Ye et al. demonstrated in that the user's long-term rate can be greatly improved by carefully tuning the biasing factor.
+With fixed locations of BSs and users, no tractable expression of a performance metric such as the signal-to-interference-plus-noise ratio (SINR) or rate coverage can be derived, and the optimal biasing factor could only be found empirically.
+Stochastic geometry was then adopted in to characterize the spatial distributions of BSs and users, and to quantify the average performance metric of the network.
+For example, a Poisson point process (PPP) was adopted in to represent the irregular deployment of the BSs. The optimal biasing factor for BSs of each tier was obtained therein to maximize the rate coverage. With a similar PPP model, the biasing factor was optimized in by maximizing the logarithm of the mean user rate.
+
+Related Works and Motivations
+Previous studies assumed that the BSs always have packets to transmit, which presents a worst case for the SINR and rate coverage.
+In practice, the BS load could vary significantly over a day.
+In particular, the amount of user service requests can drop dramatically during non-peak traffic hours. The BSs are thus more likely to be idle during such periods, but still consume energy.
+On the other hand, due to a high deployment density, one micro BS would cover a small area.
+The void cell problem then emerges, where some micro BSs don't have any associated users. Such BS thus solely acts as an interfering source.
+To improve energy efficiency and reduce the interference, the techniques to selectively switch off a fraction of BSs according to the traffic load have attracted extensive attention. For example, the authors in proposed a distributed on/off switching based algorithm in cellular networks to decide the minimum set of active BSs.
+By arguing that a cellular BS could operate in normal mode, sleep mode, or expansion mode, Guo et al. proposed a scheme that determines which mode the BS should choose based on the load condition, such that the energy consumption is minimized.
+Dhillon et al. adopted a thinned-PPP model by assigning an active probability to BSs of each tier and thus characterized the network signal-to-interference ratio (SIR) coverage. With the same model, Cao et al. derived the optimal BS density of each tier to minimize the network energy consumption under a certain rate constraint.
+
+The aforementioned studies focused on the traffic load variance over a large time scale, i.e., peak and non-peak hours, and did not consider queuing in each BS. Most of them aimed to improve the network energy efficiency.
+One BS, nevertheless, can vary between busy and idle states over a small time scale due to the dynamic packet arrivals of its associated users, in which case the packet delay could be taken into account.
+In practice, with the proliferation of real-time multimedia applications, the packet delay is becoming an important quality-of-service (QoS) metric.
+For example, an end-to-end latency over 250 ms for real-time multimedia is generally considered to be unacceptable.
+In the literature, there has been limited studies on the queuing analysis.
+The queuing performance of a single cell was evaluated in and in CDMA systems for the first time, based on which the packet blocking probability and the packet queuing delay were characterized. These studies focused on only one independent queue by assuming constant interference over the entire cell.
+In HetNets, nevertheless, BSs of various types are deployed with higher densities, and the queuing behavior of one BS is closely related with others, leading to the coupled-queue problem.
+Specifically, whether a BS transmits or not will affect the interference level experienced by other BSs that occupy the same spectrum resources, and will consequently determine the service rates of these co-channel BSs.
+The service rate in turn affects the chance that one BS has packets to transmit or not.
+
+The analysis of coupled queues is a long-standing open problem, and even solving a special case of two interacting queues is challenging.
+Zhuang et al. modeled multiple interacting queues as a continuous-time Markov chain (CTMC) with fixed BS locations in the network.
+By minimizing the average packet queuing delay, the optimal spectrum allocation pattern was obtained for each BS.
+Similarly, Cheng et al. optimized the average queuing delay of network subjected to the BS power constraints.
+They formulated a Markov decision process (MDP) problem based on the instantaneous channel state information and queue state information, and proposed an adaptive user scheduling and power control policy. However, the state space of the Markov process may become huge as the network scales up, and the analysis would become intractable. Hence, this motivates us to deal with the coupled queue problem with the tool of stochastic geometry to account for the random BS deployment, and derive the mean performance metrics analytically such that some insights can be gained for system design.
+
+Our Approaches and Contributions
+In this paper, we consider a -tier HetNet where users and BSs of all tiers are randomly distributed, i.e., follow a PPP distribution.
+Similar to previous studies, it is assumed that each user adopts a biased association scheme to choose one BS with the maximum biased received power.
+In contrast to previous studies, we consider that the packet requests from the users form a queue in their associated BSs.
+The traffic intensity of one BS thus varies with the aggregate packet requests of all its associated users.
+To simplify the analysis, frequency partitioning across tiers is assumed in this paper.
+Although the queues of BSs from different tiers are not correlated, the queuing performance of one BS would affect the experienced interference of other co-channel BSs in the same tier.
+To decouple the queuing behavior of BSs in the same tier, we resort to the approximation of replacing each BS's individual traffic intensity with the average traffic intensity of its tier.
+The spatial distribution of BSs in the busy state can thus be approximately characterized by a thinned-PPP model.
+The SIR coverage of each tier is then obtained, based on which an explicit expression of the average traffic intensity of each tier is further derived, and is shown to be an increasing function of the biasing factor of each tier.
+
+
+In order to find the delay limit that the network can achieve, an optimization problem is formulated to minimize a lower bound of the network mean queuing delay by optimizing over the biasing factor of each tier based on the derived average traffic intensity.
+It is shown that the optimization problem is convex, and the optimal biasing factor can be numerically obtained.
+When the mean packet arrival rate of each user is small, an explicit expression of the optimal biasing factor of each tier is obtained. With equal bandwidth allocation across tiers, it is further shown that each user should associate with its nearest BS.
+A case study of a 2-tier HetNet shows that the optimal biasing factor is sensitive to the bandwidth allocation of each tier.
+To characterize the network capacity to support non-real-time services, the network SIR coverage is further derived.
+The contributions of this paper are summarized as follows.
+
+  By assuming queuing in each BS, an explicit expression of the average traffic intensity of each tier is derived, which is shown to be an increasing function of the biasing factor of each tier.
+  An optimization problem of a lower bound of the network mean queuing delay is formulated, and is shown to be convex with respect to the biasing factor of each tier. When the mean packet arrival rate of each user is small, an explicit solution is obtained.
+  Simulation results of a 2-tier case demonstrate that the network mean queuing delay can be significantly reduced by properly tuning the biasing factor of each tier. In the meanwhile, a tradeoff is revealed between the network mean queuing delay and the network SIR coverage, which indicates that the service provider should strike a balance between the performance of real-time and non-real-time services.
+
+The rest of this paper is organized as follows. The system model is presented in Section . An optimization problem to minimize a lower bound of the network mean queuing delay is formulated and studied in Section . A case study of a 2-tier HetNet is presented in Section . Conclusions and future works are given in Section .
+System Model
+Consider a -tier heterogeneous network where BSs in the th tier form an independent PPP  with an intensity of , .
+Users, on the other hand, form another independent homogeneous PPP  with an intensity of  over the whole network.
+Frequency partitioning across tiers is assumed in this paper. In particular, BSs of the same tier share the spectrum with a bandwidth of , , and BSs of different tiers occupy non-overlapping frequency bands.
+Therefore, for each user in the downlink, the associated BS acts as a desired signal transmitter, and other BSs of the same tier are interfering sources.
+
+Consider a typical user located at the origin.
+Denote the distance between this typical user and a Tier- BS as , and the transmission power of a Tier- BS as . The received power  for a typical user from this BS can then be written as
+
+where  is a small-scale fading coefficient, which is assumed to follow an i.i.d exponential distribution of unit mean, i.e., , and  is the path-loss coefficient, which is assumed to be the same for all BSs in the network. Note that shadowing, i.e., log-normal fading, can be modeled by the randomness of the BSs' and users' locations.
+
+In this paper, we consider a biased association scheme where users associate with one BS according to the maximum mean biased received power. In particular, for a typical user located at the origin, it measures the mean received power from each tier's BSs, and chooses a Tier- BS if
+
+where  denotes the biasing factor of Tier  and  is the distance between the user and the nearest Tier- BS.
+
+For each user in the network, assume that its packet requests follow an independent Poisson process with a mean arrival rate , and the packet length is exponentially distributed with mean . The incoming packets for all users form a queue in the associated BS, and the BS will transmit these packets in a first-in-first-serve (FIFS) fashion.
+
+To avoid users in poor channel conditions occupying the BS, we consider a fixed rate modulation and coding format.
+In particular, a BS will serve a user only when its instantaneous SIR exceeds a threshold , and will drop its packet request otherwise.
+Note that due to a high BS deployment intensity, the background noise is dominated by the interference, and is therefore ignored in this paper.
+According to Shannon's formula, the service rate for each user that is associated to a Tier- BS can be obtained as
+
+For a randomly selected Tier- BS, , its traffic intensity, , can be obtained as
+
+where  is the mean aggregate packet arrival rate of all its associated users.
+Note that  can also be interpreted as the busy probability or the utilization of  when .
+Due to a varied association region, each BS has a different mean aggregate packet arrival rate and thus has a different traffic intensity.
+Queuing Delay
+In this section, we will formulate an optimization problem of the network mean queuing delay, which is an important performance metric of QoS.
+As the mean queuing delay of a BS increases with a higher busy probability, we will first characterize the average traffic intensity of each tier's BSs, .
+Average Traffic Intensity of Tier- BSs, For a randomly selected Tier- , since it delivers a packet only when the SIR exceeds a certain threshold , its mean aggregate packet arrival rate can be obtained as
+_k,i = N_k,iPr[SIR_k,i>]
+where  is the number of users that are associated to  and  denotes the SIR coverage of , i.e., the probability that the SIR of a random user associated to  is larger than the threshold .
+By combining ServiceRate-RealArrivalRate, the average traffic intensity of Tier- BSs can be obtained as
+
+_k = E[ _k,i ] = E[ N_k,iPr[SIR_k,i>]_k ] &= _k  E[ N_k,i ]  E[ Pr[SIR_k,i>] ] 
+
+&=LW_k_2( 1 +  ) E[ N_k ]  P[ SIR_k >  ],
+where  denotes the average number of users associated with a Tier- BS and  denotes the SIR coverage of all Tier- BSs, i.e., the probability that the SIR of a typical user associated with a Tier- BS exceeds the threshold .
+As the average traffic intensity, , is determined by the average number of associated users, , and the SIR coverage, , we will characterize these two components in the following.
+
+According to, the average number of users associated with a Tier- BS, , has been obtained as
+E[N_k]=_uA_k_k,
+where  denotes the probability for a typical user to be associated with a Tier- BS. Note that the association probability  has been derived in as
+
+where , , and  denote the normalized intensity, the normalized transmission power, and the normalized biasing factor of Tier , respectively, conditioned on Tier  being a serving tier.
+
+
+
+Recall that BSs of Tier  form a PPP  with an intensity of . Moreover, for a randomly selected  where , the traffic intensity  can be interpreted as its busy probability when .
+The set of Tier- BSs being busy, therefore, forms a thinned point process  by including  with the probability .
+Since the traffic intensity of one BS is different from each other, the thinned point process  is non-homogeneous.
+To simplify the analysis, it can be approximately viewed as a homogeneous PPP with intensity
+
+It will be demonstrated in Section  that the average traffic intensity achieves a good approximation.
+For a typical user that is associated with a Tier- BS, the interference all comes from busy BSs of the same tier. According to RecPower, the SIR of this typical user can then be written as
+
+where  and  denote the distance from the typical user to the associated BS  and the th interfering Tier- BS, respectively;  and  denote the small-scale fading coefficient of  and the th interfering Tier- BS, respectively.
+In SIR,  and  denote the associated Tier- BS of this typical user and the set of interfering Tier- BSs, respectively. Note that as frequency partitioning is assumed across tiers, there is no inter-tier interference, and the interfering sources consist of all the busy Tier- BSs besides the associated .
+Following a similar approach in, we have the following lemma that presents the SIR coverage of a Tier- BS.
+
+
+Lemma 1. The SIR coverage of a Tier- BS can be written as
+
+where , and the probability  for a typical user to be associated with a Tier- BS is given in AssoProb.
+
+
+According to Lemma 1, the outage probability of Tier , , can be written as .
+If Tier- BSs are always busy, i.e., , the outage probability  reduces to [6, Eq. (17)].
+
+By combining BusyProb, AvNum, and SIRCoverage, the average traffic intensity  of Tier- BSs can be derived as
+ _k =  - _kR_k + [ ( _kR_k )^2 + 4_u_kA_k^2R_kLZ ]^122A_k_kR_kZ
+where
+ R_k = W_k_2( 1 +  ),
+and  denotes  for simplicity.
+It is indicated in rho_k that  is critically determined by the mean packet arrival rate of each user  and the association probability . It is clear that  increases as  increases. On the other hand, the following lemma presents the monotonicity of the average traffic intensity  of Tier-k BSs with respect to the association probability .
+
+
+Lemma 2. The average traffic intensity  of Tier- BSs is an increasing function of its association probability, .
+
+
+See Appendix B.
+
+
+Intuitively, as the probability of a user being associated with a Tier- BS increases, more users from other tiers will be offloaded to BSs of Tier , i.e.,  becomes larger, which leads to an increment of the traffic intensity.
+
+
+
+To this end, an explicit expression of  has been derived in rho_k. When the mean packet arrival rate of each user  is small, the average traffic intensity  of Tier-k BSs can be approximately written as
+
+&_k =  - 1 + [1 + 4_uA_k^2( _kR_k )^ - 1LZ]^122A_kZ&^(a)  - 1 +  1 + 2_uA_k^2( _kR_k )^ - 1LZ 2A_kZ 
+
+& =_uLA_k_kR_k,
+where (a) follows from the fact that
+[1 + 4_uA_k^2LZ_kR_k]^12 1 + 2_uA_k^2LZ _kR_k  .
+
+
+Queuing Delay Optimizationmytempeqncnt2
+*[!t]
+ D = _k = 1^K _k_j = 1^K _jD_k=_k = 1^K 2A_k_k^2LZ_j = 1^K _j ( 2A_k_kZR_k + _kR_k - [ ( _kR_k )^2 + 4_u_kA_k^2R_kLZ ]^12 )
+
+
+mytempeqncnt1
+*[!t]
+ DA_k &= 2_KZ  R_K( 1 - _j = 1^K - 1 A_j  )^ - 2 - R_K^2( 1 - _j = 1^K - 1 A_j  )^ - 3[ R_K^2( 1 - _j = 1^K - 1 A_j  )^ - 2 + 4_u_K^ - 1R_KLZ ]^ - 12 2ZR_K + R_K( 1 - _j = 1^K - 1 A_j  )^ - 1 - [ R_K^2( 1 - _j = 1^K - 1 A_j  )^ - 2 + 4_u_K^ - 1R_KLZ ]^12 ^2
+&- 2_kZ  R_kA_k^ - 2 - R_k^2A_k^ - 3( R_k^2A_k^ - 2 + 4_u_k^ - 1R_kLZ )^ - 12[ 2ZR_k + R_kA_k^ - 1 - ( R_k^2A_k^ - 2 + 4_u_k^ - 1R_kLZ )^12 ]^2=0, k1,,K-1.
+
+
+In this section, we will further minimize a lower bound of the network mean queuing delay based on the average traffic intensity by optimally tuning the biasing factors of all tiers.
+As each BS can be modeled as a M/D/1 queuing system, the mean queuing delay  of Tier  BSs can be obtained as
+
+Since DelayTierk is difficult to characterize, we resort to its lower bound using the convexity of , i.e., we have
+
+By combining ServiceRate, rho_k and DelayTierkLowerBound, the lower bound of the mean queuing delay of the whole network  can then be written as DelayTotal, which is shown on the top of next page.
+
+
+
+It can be observed from DelayTotal that the lower bound of the mean queuing delay  is critically determined by the association probability . To minimize , we have the following optimization problem
+
+
+
+_k<1,k1,,K.
+
+Note that instead of directly optimizing over the biasing factor of each tier, we optimize over the association probabilities  in DelayOptimizationp to obtain the optimal solution .
+The optimal normalized biasing factor of Tier  conditioned on Tier , , can then be readily obtained as
+B^*_k=P_i (_i A^*_k)^2P_k (_k A^*_i)^2,k1,...,K,
+according to AssoProb.
+On the other hand, the constraint Constraints1p comes from the fact that each user should associate with one BS, and the constraint Constraints2p ensures that the lower bound of the network's mean queuing delay is bounded, which leads to the following lemma.
+
+
+Lemma 3.
+For the lower bound , when the mean packet arrival rate , it is bounded if the association probability
+
+otherwise, it will become unbounded.
+When , it is always bounded.
+
+
+See Appendix C.
+
+
+According to Lemma 3, constraint Constraints2p can be further written as
+ ,
+where .
+First note that Constraints2pr does not have a feasible region if and only if
+>_k  ( Z + 1 )_kR_k_uL 
+and
+_k = 1^K _kR_k_uL - _kR_kZ  < 1,
+according to Constraints2pr.
+Intuitively, when the mean packet arrival rate of each user  is too large, Constraints2pr can be written as  for each Tier , , which leads to  according to judge2. In this case, the lower bound of the network mean queuing delay will always be unbounded.
+If judge does not hold, the feasible region of the optimization problem DelayOptimizationp can be further written as
+
+&A=( A_1,...,A_K-1 ), 0<A_j <1, _jR_j_uL - _jR_jZ, .  &j 1...,K - 1 ; 0,1 - _KR_K_uL - _KR_KZ<_j = 1^K - 1 A_j
+ &  <1 ,
+where  is eliminated according to the constraint Constraints1p without loss of generality.
+It is shown in Appendix D that the objective function Problemp is convex within the feasible region .
+Nevertheless, there may not exist a solution in  through solving Patial, which is shown at the top of this page, by setting the partial derivative of  with respect to the association probability  to zero.
+The following lemma rules out this possibility and guarantees that the optimal association probabilities  can always be obtained by finding the solution of Patial within .
+
+
+Lemma 4.
+Patial has a unique solution within the feasible region , which is the optimal association probabilities .
+
+
+See Appendix E.
+
+
+So far we have demonstrated how to find the optimal association probability of each tier  by solving Patial numerically. Recall that it is indicated in Lemma 3 that when the mean packet arrival rate of each user , we have the average traffic intensity  for all tiers, and the lower bound of the mean queuing delay  is always bounded for each tier. In this case, the average traffic intensity  is simply written as rho_app, and an explicit optimal association probability  for each tier can be obtained, which is shown in the following lemma.
+
+
+
+
+
+
+  
+  
+  
+  
+  
+ 
+
+
+
+
+
+
+
+
+Lemma 5.
+When the mean packet arrival rate of each user , the optimal association probability of Tier   to minimize the lower bound of the network mean queuing delay  can be written as
+
+
+
+The detailed derivation can be found in Appendix F.
+
+Intuitively, if the bandwidth of Tier  is larger than that of Tier , i.e., , the service rate of Tier  will be larger, indicating a better queuing performance. Therefore, the Tier- BSs will undertake more traffic from other tiers by having a larger association probability.
+With equal bandwidth allocation among all tiers, i.e., , , the optimal association probability of a Tier- BS can be further written as
+
+according to Optimal. The corresponding optimal normalized biasing factor  of Tier , conditioned on Tier , is thus given by
+
+where  is the normalized transmission power of Tier  conditioned on Tier .
+It is indicated in OptimalEQBW that in this case, each user chooses the nearest BS.
+The traffic load is thus evenly distributed among all BSs, which leads to similar queuing performance with the same service rate of each tier's BSs.
+
+[t]
+Procedure to optimize the association probability when the mean packet arrival rate of each user 
+  1: Input: ,  for each tier, and other system parameters
+ , , , .
+
+  2: Initialize: a set of index  where optimal
+ association probability of Tier  is not determined.
+
+  3: Calculate the solution set  by Optimal.
+
+  4: for , construct a set .
+
+  5: if , return .
+
+  6: else, for , let  and , delete  from .
+
+  7: end if
+
+  8: go to Step 3.
+
+
+Note from Optimal that if there exists one tier, say Tier , such that , and then we have .
+To minimize the lower bound of the network mean queuing delay, the association probability of Tier  should be close to zero.
+Intuitively, if the bandwidth of Tier  is much smaller than that of other tiers, then few users should associate with Tier- BSs due to the low service rate.
+In this case, the association probability  could then be simply set as , i.e., Tier- BSs are turned off.
+The procedure to obtain the optimal association probability when  is summarized in Algorithm 1.
+
+Case StudyIn this section we will demonstrate the analytical results in Section  by simulations of a 2-tier HetNet. The base stations and the users are drawn from PPPs with high intensities, and the background noise is ignored in the simulations. This setting, for example, can correspond to a dense heterogeneous network that consists of macro cellular BSs and micro Wi-Fi access points, each of which uses a non-overlapping frequency band. Each point of the simulation results is obtained by averaging all the BSs on a time scale of .
+The system parameters used in simulations are summarized in Table I.
+
+
+Simulation Parameters
+
+
+
+Average traffic intensity of each tier  versus the normalized biasing factor  with various values of the mean packet arrival rate of each user . , , and .
+
+Fig.  illustrates how the average traffic intensity of each tier, i.e.,  and , varies with the normalized biasing factor  with various values of the mean packet arrival rate of each user .
+It can be observed from Fig.  that the average traffic intensity of Tier 1, , decreases as the normalized biasing factor  increases, while that of Tier 2, , increases.
+Intuitively, since the association probability of a Tier-2 BS, , increases as the normalized biasing factor  increases according to AssoProb, more users that associate with Tier-1 BSs would be offloaded to Tier-2 BSs, which leads to an increment of  according to Lemma 2.
+Moreover, due to a larger deployment intensity of the Tier-2 BSs, the users that originally associate with only one Tier-1 BS can be offloaded to several neighboring Tier-2 BSs.
+Hence, the decline rate of  is larger than the increasing rate of .
+It can be clearly seen from Fig.  that the simulation results match with the analysis well with a wide range of the normalized biasing factor, indicating that replacing each BS's traffic intensity by the average traffic intensity in ThinnedIntensity achieves a good approximation.
+
+
+Network mean queuing delay  and its lower bound  versus the normalized biasing factor  with various values of the mean packet arrival rate of each user . , , and .
+
+
+Fig.  further demonstrates how the network mean queuing delay , as well as its lower bound , vary with the normalized biasing factor .
+For the sake of comparison, the y-axis on the left hand side of Fig.  denotes the network mean queuing delay  while on the right hand side it denotes the lower bound .
+To obtain the network mean queuing delay in simulations, BSs that have an unbounded queuing delay are not taken account of.
+It can be observed from Fig.  that the trend of the network mean queuing delay  resembles that of its lower bound . Both  and  are very sensitive to the normalized biasing factor .
+If  is not carefully tuned, the delay performance could be greatly degraded.
+For example, when , the network mean queuing delay  is as high as 135 ms with the normalized biasing factor , which is not acceptable to many delay-sensitive applications.
+Moreover, due to a similar trend between the network mean queuing delay  and its lower bound , the optimal normalized biasing factor of  is close to that of .
+Therefore, by properly tuning the normalized biasing factor  according to AssoProbtoBF and Patial, the mean queuing delay performance can be improved significantly.
+With the mean packet arrival rate of each user , for instance, the optimal normalized biasing factor is obtained as , and the corresponding network mean queuing delay  can be reduced to be 48 ms.
+
+
+
+
+
+Minimum lower bound of the network mean queuing delay  versus the mean packet arrival rate of each user . , , and .
+
+
+[]
+
+[]
+
+Optimal normalized biasing factor  and the minimum lower bound of the network mean queuing delay  versus the bandwidth ratio of Tier 2  with various values of the mean packet arrival rate of each user .  and . (a) Optimal normalized biasing factor . (b) Minimum lower bound of the network mean queuing delay .
+
+Recall that it is indicated in Lemma 5 that when the mean packet arrival rate satisfies , the minimum lower bound of the network mean queuing delay  can be obtained by combining DelayTotal and Optimal.
+Fig.  further compares the minimum lower bound of the network mean queuing delay  obtained by combining DelayTotal and Patial with that by combining DelayTotal and Optimal, respectively.
+It can be observed from Fig.  that the gap between the two curves diminishes as the mean packet arrival rate of each user  decreases.
+When , the minimum lower bound of the network mean queuing delay  obtained by combining DelayTotal and Optimal is quite close to that obtained by combining DelayTotal and Patial.
+When the mean packet arrival rate of each user  is large, i.e., , there is a large gap between the curves in Fig. . Therefore, the optimal association probabilities  should be instead obtained by numerically solving Patial. As Lemma 4 guarantees, Patial has a unique solution within the feasible region A, which is the optimal association probability .
+
+
+[]
+
+[]
+
+[]
+
+The network SIR coverage and the network mean queuing delay performance with various bandwidth ratios of Tier 2 . , , and . (a) Network SIR coverage . (b) Network mean queuing delay . (c) Lower bound of the network mean queuing delay .
+
+Fig.  further illustrates how the optimal normalized biasing factor, , and the corresponding minimum lower bound of the network mean queuing delay, , vary with the bandwidth ratio of Tier 2, , with various values of the mean packet arrival rate of each user .
+Note that the total bandwidth  is fixed here.
+It can be observed from Fig.  that for a given , the optimal normalized biasing factor  increases as  increases. Intuitively, as the bandwidth of Tier 2, , increases, Tier-2 BSs can provide a higher service rate to the associated users. The optimal  should thus become larger so as to encourage more users to be associated with Tier-2 BSs.
+Moreover, it can be observed from Fig.  that as  increases, the optimal normalized biasing factor  becomes insensitive to the mean packet arrival rate of each user .
+The minimum lower bound of the network mean queuing delay , on the other hand, decreases as  increases, as Fig.  demonstrates.
+
+
+
+
+While minimizing the network mean queuing delay is desirable for real-time traffic, the SIR coverage is an important performance metric to support non-real-time traffic for service providers.
+According to SIRCoverage, the network SIR coverage  can be written as
+&P[ SIR >  ] = _k = 1^K A_k P[ SIR_k >  ] 
+
+&= _k = 1^K A_kA_k_kZ( ,,1 ) + 1.
+Fig.  demonstrates how the network SIR coverage  varies with the normalized biasing factor  with various values of the bandwidth ratio .
+It can be observed from Fig.  that there exists an optimal normalized biasing factor with which the network SIR coverage is maximized.
+Intuitively, when  is too large, a large fraction of users that are originally associated with Tier-1 BSs are offloaded to Tier-2 BSs.
+As these users are close to the interfering Tier-1 BSs and have long distances to their associated Tier-2 BSs, they have very poor channel conditions, which leads to a low SIR coverage of the network.
+Similarly, when  is too small, the network SIR coverage also deteriorates.
+In addition, it can be seen from Fig.  that the optimal normalized biasing to maximize  is insensitive to the bandwidth allocation. In the meanwhile, the optimal normalized biasing factor  to minimize  increases as  increases, as illustrated in Fig.  indicating a tradeoff between the network mean queuing delay and the network SIR coverage. For example, if , the optimal normalized biasing factor is obtained as , with which the network SIR coverage greatly deteriorates.
+In this case, the service providers should properly tune the biasing factor in HetNets such that a desired point on the tradeoff curve can be achieved to balance the performances of real-time traffic and non-real-time traffic.
+
+
+[]
+
+[]
+
+[]
+
+The network SIR coverage and the network queuing delay performance with various values of the SIR threshold . , , and , (a) Network SIR coverage . (b) Network mean queuing delay . (c) Lower bound of the network mean queuing delay .
+As the SIR threshold  critically determines the network mean queuing delay and the network SIR coverage, Fig.  further demonstrates the impact of the SIR threshold  on these two performance metrics.
+It can be observed from Fig.  that for a given normalized biasing factor , the network SIR coverage  decreases as the SIR threshold  increases. In the meanwhile, both the network mean queuing delay  and its lower bound  decrease as  increases. Intuitively, with a higher SIR threshold , the mean aggregate packet arrival rate of each BS becomes lower while the service rate becomes higher, leading to a better queuing performance.
+In addition, it is illustrated in Fig.  that the optimal normalized biasing factor to maximize the network SIR coverage  is insensitive to the SIR threshold , while the optimal normalized biasing factor  to minimize  increases as  decreases, as Fig.  demonstrates. Intuitively, although the service rates of both macro and micro BSs become lower with a smaller , macro BSs are more likely to become overloaded as their deployment density is much lower than that of micro BSs. The optimal normalized biasing factor  should thus become larger to undertake the load pressure from macro BSs.
+By comparing Fig.  with Fig.  and Fig. , it can be found that with a smaller SIR threshold , the deterioration of the network mean queuing delay  becomes much more severe if the normalized biasing factor is optimally tuned to maximize the network SIR coverage , indicating a more significant tradeoff between the network SIR coverage and the network mean queuing delay.
+
+Conclusion and Future WorkIn this paper we have studied how to optimally tune the biasing factor of each tier in HetNets in order to minimize a lower bound of the network mean queuing delay.
+It is shown that the network queuing performance can be significantly improved when the biasing factor of each tier is optimally tuned.
+The characterization of the optimal biasing factor provides guidance for real-time service provisioning in HetNets.
+The case study of a 2-tier HetNet further illustrates that the network mean queuing delay and the network SIR coverage might not be optimized simultaneously by tuning the biasing factor, indicating a performance tradeoff between real-time and non-real-time services.
+
+It is worth mentioning that it is assumed in this paper that one BS will serve a user with a constant rate if its SIR exceeds a threshold.
+In practice, nevertheless, the service rate could depend on the channel conditions. In this case, as the biasing factor of one tier decreases, the mean service rate of this tier increases as the users located at the edge of the cells are offloaded. The queuing performance of this tier can thus be improved due to a lower mean aggregate packet arrival rate and a higher mean service rate. Therefore, there would exist an optimal biasing factor for each tier such that the traffic load is balanced across tiers and the network mean queuing delay is minimized.
+On the other hand, if the biasing factor of one tier is too large, the SIR coverage of this tier degrades, which would drag down the network SIR coverage.
+Therefore, the network mean queuing delay may be optimized at the cost of the network SIR coverage.
+The tradeoff between the network SIR coverage and the network mean queuing delay in this case is an interesting issue that needs further study.
+
+In addition, it is assumed that orthogonal spectrum resources are allocated to different tiers. In practice, nevertheless, universal frequency reuse may be adopted so that all the other BSs may act as interfering sources for one BS.
+Therefore, the average traffic intensities of different tiers would be correlated.
+The characterization of the queuing performance under such circumstances deserves much attention in future study.
+
+
+Proof of Lemma 2
+
+According to rho_k, the first-order derivative of the average traffic intensity  with respect to  is given by
+d_kdA_k = 4L_u_k^2R_k^2A_k^2Z^2^ - 12 - _kR_kZ(  - _kR_k + ^12 )2( A_k_kR_kZ )^2,
+where .
+The numerator on the right hand side of AppendixB1 can be further written as
+
+4L_u_k^2R_k^2A_k^2Z^2^ - 12 - _kR_kZ(  - _kR_k + ^12 ) = _k^2R_k^2Z[ ( _k^2R_k^2 + 4_u_kR_kA_k^2 LZ )^12 - _kR_k ]^12 >0.
+By combining AppendixB1 and AppendixB2, we have , which indicates that  monotonically increases as  increases.
+
+
+Proof of Lemma 3
+
+It has been shown in Lemma 2 that the average traffic intensity  monotonically increases as the association probability  increases. With , we then have
+
+_k= - _kR_k + [ ( _kR_k )^2 + 4_u_kR_kA_k^2LZ ]^122A_k_kR_kZ< - _kR_k + [ ( _kR_k )^2 + 4_u_kR_kLZ ]^122_kR_kZ.
+In the following, we divide the discussion into two parts:
+
+ If , i.e., , we have
+_k<1
+according to AppendixC1. In this case,  will always be bounded if .
+
+ If   will be bounded if and only if
+
+Accordingly, we have
+
+Proof of Convexity of DelayOptimizationp
+
+According to DelayTierkLowerBound, the second-order derivative of  with respect to  can be written as
+
+Substituting AppendixB1 into convex1 yields
+
+&d^2D_kdA_k^2 > LR_k( 1 - _k )^2 [ 2( d_kdA_k )^2 + d^2_kdA_k^2 ] 
+
+& = LR_k( 1 - _k )^2A_k^4Z^2 (4_uL_k^2R_k^2Z^2A_k^3 + 2&  + 2_kR_kA_kZ^12 + _k^2R_k^2 - 2A_kZ- _kR_k^12) 
+
+&>LR_k( 1 - _k )^2A_k^4Z^2 [4_uL_k^2R_k^2Z^2A_k^3 
+
+&  + _kR_k( 2A_kZ^12 + _kR_k - ^12 )],
+where .
+Since ,
+we further have
+
+&d^2D_k)dA_k^2)>LR_k( 1 - _k )^2A_k^4Z^2) [4_uL_k^2R_k^2Z^2A_k^3 
+
+& + _kR_k( 2A_k)Z^12) + _k)R_k) - ^12) )] &> LR_k( 1 - _k )^2)A_k^4Z^2) [4_uL_k^2R_k^2Z^2A_k^3 
+
+& + _kR_k( 2_kR_kA_kZ + _kR_k - ^12) )] 
+
+&> ^( a ) 4_uL^2_k^2R_k( 1 - _k ))^2A_k>0,
+where (a) follows from the fact that ,
+As the constraints Constraints1p and Constraints2p are linear, it can be concluded from convex3 that the optimization problem is convex with respect to .
+
+Proof of Lemma 4
+
+We divide the proof into two parts.
+
+
+1) If , then the mean queuing delay  of all tiers go to infinity as  approaches to 1. Therefore, according to DelayTotal, the lower bound of the network mean queuing delay, , goes to infinity at the boundary of . As  is convex within the region , Patial always has a unique solution of the optimal association probabilities .
+
+2) If , then there exists at least one tier such that the lower bound of its mean queuing delay is always bounded.
+Without loss of generality, denote this tier as Tier . For Tier , we have , and the feasible region  is then written as
+
+A=( A_1,...,A_K-1 ), 0<A_k < 1,_kR_k_uL - _kR_kZ, .k 1...,K - 1 ; 0<_k = 1^K - 1 A_k<1 .
+For each , we have
+
+&_A_k 0 DA_k= 2_KZR_KA_K^ - 2[1-( 1 + 4_u_K^ - 1A^2_KR^-1_KLZ )^ - 12][ 2ZR_K + R_KA_K^ - 1 - ( R_K^2A_K^ - 2 + 4_u_k^ - 1R_kLZ )^12 ]^2<0
+according to Patial.
+
+Following a similar approach, if , we have
+
+Otherwise, if , the lower bound  goes to infinity as  approaches , and thus we have
+
+By combining Patial2-right2, it can be concluded that Patial always has only one solution within the region , .
+
+Furthermore, if , i.e., , we always have ,  by substituting  into Patial. This indicates that the solution is not in the region where . Therefore, Patial has a unique solution in region  when .
+
+
+
+
+Derivation of Optimal
+By combining rho_app, DelayTotal, and Constraints1p, when the mean packet arrival rate of each user satisfies , the lower bound of the network mean queuing delay can be written as
+&D=1_j = 1^K _j _k = 1^K _k^2L_kR_k- _uLA_k  =1_j = 1^K _j [ 
+ &_k = 1^K-1 _k^2L_kR_k - _uLA_k + _K^2L_KR_K - _uL(1 - _j = 1^K - 1 A_j )]
+where  is given by Rate.
+By setting the partial derivative of  with respect to  to zero, we have
+
+DA_k = _k^2_j = 1^K _j  _u( _kR_kL - _uA_k )^2- _K^2_j = 1^K _j  _u[ _kR_kL - _u( 1 - _j = 1^K - 1 A_j  ) ]^2= 0,k1,,K-1.
+By combining Constraints1p and Derivative, Optimal can be obtained.
+
+1
+
+
+
+J. Andrews, S. Buzzi, C. Wan, S. Hanly, A. Lozano, A. Soong, and J. Zhang,"What will 5G be?," IEEE J. Sel. Areas Commun., vol. 32, no. 6, pp. 1065-1082, June 2014.
+
+J. Andrews, S. Singh, Q. Ye, X. Lin, and H. Dhillon, "An overview of load balancing in hetnets: old myths and open problems," IEEE Trans. Wireless Commun., vol. 21, no. 2, pp. 18-25, Apr. 2014.
+
+H. M. Carlos, B. Mehdi, and L. Matti, "Statistical analysis of self-organizing networks with biased cell association and interference avoidance," IEEE Trans. Veh. Technol., vol. 62, no. 5, pp. 1950-1961, Feb. 2013.
+
+Q. Ye, B. Rong, Y. Chen, M. Al-Shalash, C. Caramanis, and J. Andrews, "User association for load balancing in heterogeneous cellular networks," IEEE Trans. Wireless Commun., vol. 12, no. 6, pp. 2706-2716, June 2013.
+
+H. Dhillon, R. Ganti, F. Baccelli, and J. Andrews, "Modeling and analysis of K-tier downlink heterogeneous cellular networks," IEEE J. Sel. Areas Commun., vol. 30, no. 3, pp. 550-560, Apr. 2012.
+
+H. Jo, Y. Sang, P. Xia, and J. Andrews, "Heterogeneous cellular networks with flexible cell association: A comprehensive downlink
+SINR analysis," IEEE Trans. Wireless Commun., vol. 11, no. 10, pp. 3484-3495, Oct. 2012.
+
+S. Singh, H. Dhillon, and J. Andrews, "Offloading in heterogeneous networks: modeling, analysis, and design insights," IEEE Trans. Wireless Commun., vol. 12, no. 5, pp. 2484-2497, May 2013.
+
+S. Singh, and J. Andrews, "Joint resource partitioning and offloading in heterogeneous cellular networks," IEEE Trans. Wireless Commun., vol. 13, no. 2, pp. 888-901, Feb. 2014.
+
+Y. Lin, W. Bao, W. Yu, and B. Liang, "Optimizing user association and spectrum allocation in HetNets: a utility perspective," IEEE J. Sel. Areas Commun., vol. 33, no. 6, pp. 1025-1039, Mar. 2015.
+
+F. Kong, X. Sun, and H. Zhu, "Optimal biased association scheme with heterogeneous user distribution in HetNets," Wireless Personal Commun., vol. 90, no. 2, pp. 575-594, Sept. 2016.
+
+J. Wu, Y. Zhang, M. Zukerman, and E. K .Yung, "Energy-efficient base-stations sleep-mode techniques in green cellular networks: a survey," IEEE Commun. Surveys  Tutorials, vol. 17, no. 2, pp. 803-826, 2015.
+
+C. H. Liu and L. C. Wang, "Random cell association and void probability in Poisson-distributed cellular networks," in Proc. IEEE ICC, June 2015, pp. 2816-2821.
+
+C. T. Peng, L. C. Wang and C. H. Liu, "Optimal base station deployment for small cell networks with energy-efficient power control," in Proc. IEEE ICC, June 2015, pp. 1863-1868.
+
+H. Jung, H. Roh, J. Lee, "Energy and traffic aware dynamic topology management for wireless cellular networks," in Proc. IEEE ICCS, 2012, pp. 205-209.
+
+E. Oh, K. Son, and B. Krishnamachari, "Dynamic base station switching-on/off strategies for green cellular networks," IEEE Trans. Wireless Commun., vol. 12, no. 5, pp. 2126-2136, 2013.
+
+W. Guo, T. Farrell, "Dynamic cell expansion: traffic aware low energy cellular network," in Proc. IEEE VTC, Sept. 2012, pp. 1-5.
+
+H. Dhillon, R. Ganti, and J. Andrews, "Load-aware modeling and analysis of heterogeneous cellular networks," IEEE Trans. Wireless Commun., vol. 12, no. 4, pp. 1666-1677, Apr. 2013.
+
+D. Cao, S. Zhou, and Z. Niu, "Optimal combination of base station densities for energy-efficient two-tier heterogeneous cellular networks," IEEE Trans. Wireless Commun., vol. 12, no. 9, pp. 4305-4362, Apr. 2013.
+
+W. Tu, and W. Jia,"Adaptive playback buffer for wireless streaming media," in Proc. IEEE ICON, 2004, pp. 191-195.
+
+T. Bonald and A. Prouti'ere, "Wireless downlink data channels: user performance and cell dimensioning," in Proc. ACM MOBICOM, 2003, pp. 339-352.
+
+S. Borst, "User-level performance of channel-aware scheduling algorithms in wireless data networks," in Proc. IEEE INFOCOM, 2003, pp. 321-331.
+
+I. J. B. F. Adan, J. Wessels, and W. H. M. Zijm, "A compensation approach for two-dimensional Markov processes," Adv. Appl. Probab., vol. 25, no. 4, pp. 783-817, Dec. 1993.
+
+B. Zhuang, D. Guo, and M. L. Honig, "Traffic-driven spectrum allocation in heterogeneous networks," IEEE J. Sel. Areas Commun., vol. 33, no. 10, pp. 2027-2038, Oct. 2015.
+
+
+
+
+
+A. Cheng, J. Li, Y. Yu, and H. Jin,"Delay-sensitive user scheduling and power control in heterogeneous networks," IET Networks, vol. 4, no. 3, pp. 175-184, 2015.
+
+B. Blaszczyszyn, M. K. Karray, and H. P. Keeler, "Using Poisson processes to model lattice cellular networks," in Proc. IEEE INFOCOM, Apr. 2013, pp. 773-781.
+
+D. Stoyan, W. Kendall, and J. Mecke, Stochastic Geometry and Its Applications., John Wiley  Sons, 1996.
+
+
+
+
+

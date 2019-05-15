@@ -1,0 +1,1282 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+theoremTheorem
+definitionDefinition
+propositionProposition
+lemmaLemma
+corollaryCorollary
+propertyProperty
+questionQuestion
+exampleExample
+lemLemma
+thmTheorem
+defnDefinition
+
+
+
+sgn
+
+
+0
+ 
+ 
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Amazon in the White Space: Social Recommendation Aided Distributed Spectrum Access
+
+Xu Chen, Member, IEEE,  Xiaowen Gong, Student Member, IEEE, Lei Yang, Member, IEEE, and Junshan Zhang, Fellow, IEEE
+
+
+
+
+
+
+
+
+
+Distributed spectrum access (DSA) is challenging since an individual secondary user often has  limited sensing capabilities only. One key insight is that channel recommendation among secondary users can help to take advantage of the inherent correlation structure of spectrum availability in both time and space, and enable users to obtain more informed spectrum opportunities. With this insight, we advocate to leverage the wisdom of crowds, and devise  social recommendation aided DSA mechanisms to orient secondary users to make more intelligent spectrum access decisions, for both strong and weak network information cases. We start with the strong network information case where secondary users have the statistical information.  To mitigate the difficulty due to the curse of dimensionality in  the stochastic game approach, we take the one-step Nash approach and cast the social recommendation aided DSA decision making problem at each time slot as a strategic game. We show that it is a potential game, and then  devise an algorithm to achieve the Nash equilibrium by exploiting its finite improvement property. For the weak information case where secondary users do not have the statistical information, we develop a distributed reinforcement learning mechanism for social recommendation aided DSA based on the local observations of secondary users only. Appealing to the maximum-norm contraction mapping, we also derive the conditions under which the distributed mechanism converges and characterize the equilibrium therein. Numerical results  reveal that the proposed social recommendation aided DSA mechanisms can achieve superior performance using real social data traces and its performance loss in the weak network information case is insignificant, compared with the strong network information case.
+
+
+
+Distributed spectrum access, Social Channel Recommendation, Game Theory
+
+
+
+
+
+
+
+
+
+
+
+
+
+ieeetran
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Conclusion
+In this paper, we study the social recommendation aided DSA mechanism design in both strong and weak network information cases. For the strong network information case, we model the social recommendation aided DSA problem at each time slot as a strategic game and exploit the structure property of the game to devise the Nash equilibrium computation algorithm. For the weak network information case, we develop a distributed reinforcement learning mechanism using only the local observations of secondary users. We also derive the convergence conditions and characterize the equilibrium of the learning mechanism. The efficacy of the proposed mechanisms is further demonstrated through extensive numerical evaluations using real social data trace.
+
+For future work, we will consider related security and privacy issues. We are utilizing the techniques such as private matching and attribute-based encryption and signatures to design secure and privacy-preserving social recommendation mechanisms for DSA.
+IntroductionDistributed spectrum access (DSA) is a promising
+technique to alleviate the problem of spectrum under-utilization. It is envisaged that future generation wireless devices would be able to sense the
+communication environment, through built-in spectrum sniffers as well as other   devices that are
+wirelessly-connected in the vicinity, and cognitive radio users (secondary
+users) can leverage DSA to opportunistically access the licensed
+channels owned by legacy spectrum holders (primary
+users).
+
+
+A comparison of recommendation systems in e-commercial industry and cognitive radio networks. Similar to the product recommendation, for the channel recommendation we can treat secondary users (SUs) as customers and the channels as products. For example, SUs A and C who have just successfully accessed channel  recommend this channel to their common friend, SU B. Accordingly, SU B can achieve more informed decision making for spectrum access. We will outline the major differences in Section . 
+
+
+Efficient spectrum access decision making among secondary users is challenging for
+several reasons: (1) spectrum opportunities for secondary users often change fast in frequency, time, and space, due to stochastic traffic and random activity patterns of primary users; (2) individual secondary users often have limited observations of the entire network environments due to the limited
+spectrum sensing capability.
+
+In this paper, we explore social intelligence of secondary users for DSA decision makings, through cooperative social interactions. One main motivation for considering social intelligence is to overcome the challenges due to incomplete network
+information and limited capability of individual secondary users. Intuitively, usage-based channel recommendation offers efficient proactive sensing, by leveraging the wisdom of the crowd in the vicinity. Specifically, we will study social recommendation aided DSA mechanisms, where a secondary user provides
+the recommendation (review) of the channel it just accessed to nearby secondary users who have social trust with it (e.g., friends). As a result, a secondary user can collect the channel recommendations from nearby social friends. When a secondary user needs to transmit data, it can check the recommendations from
+other secondary users with social trust and choose a channel to access accordingly(Clearly, the performance of social recommendation based DSA hinges
+heavily on the number of trusted users in the vicinity, and we will elaborate
+further on this.).
+
+
+
+
+This study is inspired by the recommendation
+system in the e-commerce industry  but goes beyond it by addressing unique challenges arised in DSA.  For example, in Amazon.com existing owners of various products can
+provide recommendations (reviews), so
+that other potential customers can pick the products
+that best suit their needs. For cognitive radio networks, spectrum usage exhibits correlation in both the temporal and spatial domains that can be exploited for designing efficient
+channel recommendation system: (1) temporal correlation: spectrum availabilities are correlated in time, indicating that
+very recent observations can be useful in the near future; (2) spatial correlation: secondary users
+close to one another may experience similar spectrum availabilities.
+As illustrated in Figure , we can treat secondary users as "customers" and the
+channels as "goods", and use recommendations to guide secondary users to find the channels they need. Such a channel recommendation system enables secondary users to take advantages of the correlations in both time and space and hence make more informed decisions.
+
+
+The underlying rationale for channel recommendation is built upon the insight that the hand-held devices
+are typically carried by human beings and the intrinsic social relationships among users can be exploited to promote effective and trustworthy cooperation. Indeed, with the explosive
+growth of online social networks such as Facebook and
+Twitter, more and more people are actively involved in
+online social interactions, and social connections among
+people are being extensively broadened. This has opened
+up a new avenue to integrate the social interactions for
+cooperative networking design.
+
+We caution that different from  recommendation in e-commercial systems, to embrace the pronounced benefits of social recommendation for dynamic spectrum access, one needs to take into account the following unique characteristics of cognitive radio networks: (1) time-varying channel occupancies: since primary users' activities are dynamic, the accessibility of each channel may change with time, and this is in sharp contrast to the product quality in e-commercial systems; (2) user-specific  channel recommendations: different from many e-commercial systems such as Amazon in which the recommendations (reviews) are  accessible online by any customer, in cognitive radio networks, due to the diverse social relationships among secondary users, different users may receive different channel recommendations in a time slot; (3) interference over recommended channels: in e-commercial systems, different customers
+can purchase the same commodity by adopting the same recommendation, without any confliction. In cognitive radio networks, however, a recommended channel may be accessed by multiple secondary users, thus causing interference among them. We hence need to balance between exploitation of recommended channels and exploration of un-recommended channels.
+
+
+We tackle the above technical challenges by considering two different scenarios where secondary users may have strong and weak information, respectively. For the strong information case where secondary users have the statistical information, we model social recommendation aided DSA problem at each time slot as a strategic game and derive the Nash equilibrium solution. For the weak information case where secondary users do not have the statistical information, we develop a distributed reinforcement learning scheme such that secondary users adjust their spectrum access policy based on their local observations only.
+
+Intuitively, when a secondary user has a larger number of trusted users in the proximity for channel recommendation (e.g., a user would often stay in some regular locations such as work place and home), then the user can achieve better performance. However, when the channel recommendation information is limited, each secondary user will make the DSA decision based on either the prior channel statistical information (for the strong network
+information case) or its learned spectrum access experience in the unrecommended states (for
+the weak network information case). This ensures that the proposed social recommendation aided DSA mechanisms can also achieve good performance, even when the number of trusted users in proximity is relatively small.
+
+Summary of Main Contributions
+
+The main contributions of this paper are as follows:
+
+Social Recommendation Aided DSA Framework: We propose a social recommendation aided DSA framework, which exploits the temporal and spatial correlations for spectrum utilization and leverages social trust among secondary users for cooperative channel recommendation, to overcome the challenges due to limited observations of network environment by individual secondary users. This framework highlights the interplay between the physical coupling among secondary users for DSA and the exploitation of social tie structure among users to stimulate effective and trustworthy cooperation for channel recommendation.
+
+DSA with Strong Network Information: We study the social recommendation aided DSA mechanism design with strong network information. To mitigate the difficulty due to the curse of dimensionality in  the stochastic game  approach, we take the one-step Nash approach (i.e., a myopic approach) and model the social recommendation aided DSA decision making problem at each time slot as a strategic game. We show that the game is a potential game by constructing a potential function based on the physical and social coupling structure of social recommendation aided DSA. By exploiting the finite improvement property of the potential game, we further devise an algorithm that can achieve the Nash equilibrium.
+
+DSA with Weak Network Information: We investigate the social recommendation aided DSA mechanism design with weak network information. We develop a distributed reinforcement learning mechanism based on the local observations of secondary users only. By resorting to the tool of maximum-norm contraction mapping, we derive the conditions under which the learning mechanism converges to the solution of the fixed point equation. We further characterize the equilibrium and show that the learning mechanism achieves the maximum expected throughput approximately, given users' observed channel recommendation states.
+
+
+Related WorkThe social aspect is now becoming a new and important dimension for
+communication system design. As the development
+of online and mobile social networks such as Facebook and Twitter, more and more
+real-world data and traces of human social interactions are being generated. This enables researchers
+and engineers to observe, analyze, and incorporate the social
+factors into engineering system design in a way never previously
+possible. Gao et al. in exploited social structures such as social
+community to design efficient data forwarding and routing algorithms in delay tolerant networks. Hui et al. in used the social betweenness and centrality as the forwarding metric. Costa et al. in proposed predictions based on metrics of social interaction to identify the best information carriers for content publish-subscribe. Han et al. in utilized the social influence phenomenon to devise efficient data dissemination mechanisms for mobile networks. Two key social phenomena of social trust and social reciprocity are exploited for cooperative D2D communication mechanism design in. In this paper, we explore social intelligence of secondary users for DSA via channel recommendation.
+
+
+Recent works study the channel recommendation schemes, by assuming that the network information is complete and all the secondary users are cooperative, i.e., the interest of all users is aligned and  the underlying social graph for channel recommendation is complete (i.e., all the users are willing to help each other). In this paper, we eliminate these restrictive assumptions and consider that secondary users have strong/weak but incomplete network information. More importantly, we leverage the endogenous incentive which comes from the intrinsic social relationships among secondary users to promote effective and trustworthy cooperation for channel recommendation. We hence consider a general social graph among secondary users for channel recommendation. For the extreme case of the complete social graph, since a secondary user can receive the channel recommendations from any other users, all users would have the same observations of the channel recommendation states in each time slot. While for the case of a  general social graph, due to diverse social relationships among secondary users for channel recommendations,  users would have heterogenous observations of the channel recommendation states in each time slot, making the spectrum access mechanism design much more challenging.
+
+
+
+
+
+
+
+
+*[tt]
+Dynamics of users' expected throughput
+by Nash equilibrium computation algorithm
+Dynamics of potential function value
+by Nash equilibrium computation algorithm
+Average number of iterations for convergence by Nash equilibrium computation algorithm
+
+
+*[tt]
+System performance of the distributed
+reinforcement learning with different parameters 
+System throughput with 
+secondary users and different social link probabilities
+System throughput with  secondary users and different interference ranges
+
+
+Numerical Results
+In this section, we evaluate the performance of the proposed social
+recommendation aided DSA schemes with strong and weak
+network information by numerical studies.
+
+We first consider a dynamic spectrum access network that consists of
+ secondary users and  primary channels. For each channel
+, we set the channel state transition probabilities .
+We consider a Rayleigh fading channel environment such that the channel
+gain of a secondary user  on an idle channel  in each time
+slot  follows the exponential distribution with the mean channel
+data rate  being randomly assigned from the set 
+Mbps. For the idle channel contention, the contention probability
+ of a secondary user will be randomly assigned from the set
+. We consider that the secondary users are randomly scattered across a square area with a side length of 
+m and construct the interference graph  by setting
+the interference range  m, i.e., there is an interference
+edge between two secondary users if their distance is less than 
+m. For the social graph  for channel recommendation,
+we will consider two types of social graphs: Erdos-Renyi social graph
+and the real data trace based social graph.
+
+
+
+
+
+
+Erdos-Renyi Social Graph
+
+We first consider the case that the social graph 
+is represented by Erdos-Renyi (ER) graph model where a
+social link exists between any two secondary users with a probability
+of .
+
+We first show the dynamics of the Nash equilibrium computation algorithm
+in Algorithm  for the social
+recommendation aided DSA with strong network
+information in Figure . We see that the
+algorithm can converge to an equilibrium in less than  steps
+of iterations. To verify that the equilibrium is a Nash equilibrium,
+we show the dynamics of the potential function value 
+of the social recommendation aided DSA game in Figure
+. We see that the algorithm can drive
+the potential function to a maximal point, which is a Nash equilibrium
+according to the property of potential game. We also show the average number of iterations for convergence by Algorithm  in a time slot in Figure  with different number of users . We see that the algorithm increases linearly as the number of users increases. This demonstrates the algorithm can scale well as the system size increases. This implies that Algorithm  has a very low complexity in practice. For example, in practical network systems each time slot has many scheduling mini-slots, and each of which has a length of several microseconds (e.g., 9 microseconds for 802.11a). In this case, if in the social recommendation system we allow a time budget of 1 millisecond for computing the Nash equilibrium during a time slot, then a secondary base-station can accommodate over 100 associated users.
+
+
+Note that we consider a slotted time structure and assume that the channel state is fixed during a time slot (but may change across different time slots). As long as such an assumption holds, during each time slot we can still compute the Nash equilibrium given users' received recommendation states using Algorithm 1. If the channel availability changes at a fast time scale, then a shorter time slot should be defined in the system to ensure the assumption above is valid. In this case, the allowable time budget for computing the Nash equilibrium during a time slot may be shortened and hence the number of associated users that a secondary base-station can accommodate may decrease. Nevertheless, the activities of primary users typically change over the time scale of milliseconds,  which implies that we have sufficient time budget for computing the Nash equilibrium during a time slot in practice. For the distributed learning algorithm in the weak information case, each user updates its strategy locally based on its recommendation information during a time slot, and hence the time overhead for such an update can be ignored. Thus, the distributed learning algorithm can also well perform.
+
+
+We then evaluate the distributed reinforcement learning algorithm
+with different choices of parameter  for social recommendation
+aided DSA with weak network information. The
+result in Figure  shows the system
+performance with different parameters , and demonstrates that
+a proper parameter can achieve a balance between exploration and exploitation
+and offer the best performance. When  is small, the secondary
+users tend to select the channels more randomly (i.e., over-exploration)
+and the performance gap can be large according to Theorem .
+When  is very large, the algorithm may not converge
+due to over-exploitation and the performance is again negatively affected.
+In the following simulations we set  since it can achieve
+a good system performance.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+To evaluate the impact of social link density of the social graph,
+we implement the simulations with different social link probabilities
+, respectively. For each given ,
+we average over  runs. As the benchmark, we also compare the
+social recommendation aided DSA mechanisms with the following schemes:
+
+(1) Static channel recommendation: We implement the static channel
+recommendation scheme in, such that all the secondary users
+are assumed to be cooperative to recommend channels to each other
+and a user will put more weight on selecting a recommended channel
+according to a constant branching probability . Specifically,
+suppose a user has  recommended channels in a time slot, then
+the user will choose a recommended channel with a probability of 
+and an un-recommended channel with a probability .
+We obtain the optimal constant branching probability  by
+exhaustive search.
+
+(2) Adaptive channel recommendation: We implement the adaptive channel
+recommendation scheme in, such that all the secondary users
+will select channels adaptively in order to maximize the average system
+throughput. The optimal channel selection policies of all the secondary users
+are computed by the global optimization approach - Model Reference
+Adaptive Search method. Note that the adaptive channel recommendation
+scheme provides the performance upper-bound for the proposed social
+recommendation mechanisms, since it maximizes the system-wide performance
+by assuming that the network information is complete and all the secondary
+users are cooperative (i.e., the interest of all users is aligned
+and the underlying social graph for channel recommendation is complete).
+
+(3) Belief-based spectrum access: We implement the belief-based
+spectrum access scheme in, such that each user shares the
+sensing result of the chosen channel with its social neighbors at
+the end of each time slot. Accordingly, a user  updates two vectors
+ and 
+with  and  denoting the number of time slots
+in which channel  is idle, and the number of time slots in which
+the channel  has been accessed, respectively. Then a user 
+computes its belief as 
+and chooses a channel  with a probability 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We show the average system throughput by all the schemes in Figure
+. We see that the performance of
+social recommendation schemes with strong and weak network information
+increases as the social link probability  increases. This is due to the fact that as the increase of cooperative social interactions, each individual secondary user benefits more from the channel recommendation by having a better view of the network environment and achieving more informed spectrum access decision making. Compared
+with the adaptive channel recommendation scheme, the performance losses
+of social recommendation schemes with strong and weak network information
+are at most  and , respectively. This demonstrates that the proposed schemes can still achieve a good performance even when the number of social friends for channel recommendations is small. When the social link
+probability  is large, the performance losses can be further
+reduced to  and , respectively. We also observe that
+the social recommendation schemes with strong and weak network information
+can achieve at least  and  performance gain over the
+belief-based spectrum access scheme in all cases. Compared with the
+static channel recommendation scheme, the performance gains of social
+recommendation schemes with strong and weak network information are
+up-to  and , respectively. Furthermore, compared with the case of strong network information, the performance loss of social recommendation aided DSA with weak network information is at most 
+
+We next investigate the impact of interference range  on the system performance. We fix the number of users  and the social link probability  and set different interference ranges m, respectively. We show the average system performance by both social recommendation aided DSA mechanisms in Figure . We observe that the system performance decreases as the interference range  increases. This is because the increase of  the interference range leads to severe interferences among users for spectrum access. When interference range is large enough (e.g., m), the physical graph is very close to the fully meshed case, and hence the system degradation levels off.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Number of social links of the social
+graphs based on real trace Brightkite
+
+
+System throughput with different
+number of secondary users
+
+
+
+
+Real Trace Based Social Graph
+
+
+
+We then evaluate the proposed social recommendation schemes with the social graphs for channel recommendation
+generated according to the friendship network of the real data trace
+Brightkite. Brightkite contains
+an explicit friendship network among the users. Different from
+the Erdos-Renyi (ER) social graph, the friendship network of
+Brightkite is scale-free such that the node degree distribution
+follows a power law. We implement simulations with the number of secondary
+users , respectively. The total number of social
+links among these users of the social graphs is shown in Figure . For a given social graph with a fixed user size, we randomly assign the node IDs in the social graph to the secondary users in the social recommendation DSA system and repeat over  times to compute the average performance.
+
+We show the average system throughput in Figure .
+We see that the performance losses of social recommendation schemes
+with strong and weak network information are at most  and ,
+respectively, compared with the adaptive channel recommendation scheme.
+Moreover, the social recommendation schemes with strong and weak network
+information can achieve up-to  and  performance gain
+over the belief-based spectrum access scheme, respectively. Compared
+with the static channel recommendation scheme, the performance gains
+of social recommendation schemes with strong and weak network information
+are up-to  and , respectively. The performance loss of social recommendation aided DSA with weak network information is at most  with respect to the strong network information case. This demonstrates the
+efficiency of the proposed social recommendation aided DSA mechanisms when the real social network is used in practices.
+
+We also observe from Figure  that when the network size is small (e.g., ), the system-wide performance grows almost linearly. This is mainly due to that the performance gain from the spectrum spatial reuse (i.e., more spectrum opportunities are utilized at more locations) is more significant than the increase of the cost by information exchange and interference. When the the network size becomes larger (e.g., ), the system-wide performance grows sub-linearly and then max out beyond a certain network size (e.g., ). This is because that the cost by information exchange and severe interference among users becomes very heavy and dominates the gain by the spectrum spatial reuse when the network size is large.
+
+
+Social Recommendation Aided DSA: The Strong Information Case
+In this section, we first consider the social recommendation aided
+DSA mechanism design with strong network
+information. For this case, a secondary user  has strong knowledge
+of the network environment, including the channel state transition
+matrix , the mean channel throughput
+, and the channel contention
+probabilities  of its interfering
+users. Note that in the strong network information case, a secondary user
+does not have the complete network information, since a user
+may not know other secondary users' mean channel throughputs and channel recommendation states. The motivation of considering the strong network information case is two-fold: (1) the strong network information case  can
+be relevant to the scenario that there exists a supporting infrastructure
+(e.g., secondary access point) to collect and analyze the statistical
+network information; (2) the strong information case can serve as the benchmark for the weak information case in Section .
+
+At a time slot , according to the channel state transition model in Section ,
+a secondary user  can compute the
+channel idle probability  for the next time slot , based on a channel 's recommendation state  as
+
+where  is the mapping function defined as follows:
+
+
+
+
+
+
+
+Based on the channel idle probabilities  of all channels,
+a secondary user  will then make spectrum access decision for the next
+time slot . Let  denote the channel selection decision
+of a secondary user  and 
+be the channel selection decisions of all secondary users. We
+can then obtain the expected throughput of secondary user  at
+the next time slot as
+
+    U_n(a(t+1))= & _a_n(t+1)^n(t+1)B_a_n(t+1)^n
+
+  & p_n_kN_n^a_n(t+1)(a(t+1))(1-p_k).Here 
+is the set of interfering secondary users that select the same channel
+as secondary user . Note that for the ease of exposition, similar to many previous studies in spectrum sensing (e.g., and the references therein), we assume that secondary users would experience the same spectrum availability on the same channel during a time slot. This can correspond to the practical case that the primary users (e.g., TV broadcast towers) have a much larger wireless transmission coverage area than the secondary users. Nevertheless, the proposed model in this paper can be extended for the case that secondary users may experience the heterogenous spectrum availability, by modifying the channel idle probability computing function  that maps a user's received channel recommendation states to the idle probability of a channel.  For example, when a user's received recommendation states diversify, we can adopt the approach in that exploits the correlations among users' spectrum observations to compute the channel idle probability.
+
+
+Problem Formulation
+
+We next consider the distributed decision making problem among the
+secondary users for maximizing their throughputs. One possible approach is to formulate the DSA decision making problem as a stochastic game, such that the game state at each time slot  is defined as the channel recommendation states  of all the users. However, due to the curse of dimensionality and the strong coupling among the users in both social and physical dimensions, such a stochastic game is computationally intractable and extremely difficult to analyze. To enable tractable analysis, in this paper we take the one-step Nash approach (i.e., myopic policy), such that in each time slot  we compute the Nash equilibrium for the stage game based on the current game state only. For the problem under consideration, the one-step Nash solution can be an efficient approximate solution for the stochastic game approach, since secondary users would like to diversify their channel selections at the Nash equilibrium (to mitigate congestion effect in DSA) and this would also lead to efficient channel recommendations (i.e., due to the gain of getting more recommendation information by exploring more channels) for improving the future DSA decision makings. Numerical results in Section  corroborate that the one-step Nash approach can achieve superior performance.
+
+
+Specifically, at a time slot , let  be the set of channel selections chosen by all
+other users except user  for the next time slot. Given the other users' spectrum access
+decisions , user  would like to choose a channel 
+to maximize its expected throughput at the next time slot, i.e.,
+
+
+
+The distributed nature of the problem above naturally leads to a game theoretic formulation
+such that each secondary user aims to maximize its expected throughput for the next time slot.
+We thus formulate the DSA decision making problem among the secondary users at time slot  as a
+strategic game ,
+where the set of secondary users  is the set of players,
+the channel set  is the set of strategies for each  user,
+and the throughput function  of each user  is the payoff
+function of player . In the sequel, we call the game 
+as the social recommendation aided DSA game at the time slot . Note that at different time slot , the channel recommendation states  can be different and hence the underlying specific social recommendation aided DSA game can be different. Our analysis in the following section holds for a general social recommendation aided DSA game.
+
+
+Structural Property
+
+We next explore the property of the social recommendation aided DSA game at a time slot . We first study the existence of Nash equilibrium, which
+is defined as follows.
+
+A spectrum access profile 
+is a Nash equilibrium of the social recommendation aided DSA game  if no secondary user can improve its expected throughput
+by unilaterally changing its channel selection, i.e., 
+
+To show the the existence of Nash equilibrium, we resort to a useful
+tool of potential game.
+
+A game is called a potential game if it admits a potential function
+ such that for every  and
+, given any , we have
+
+where  is the sign function.
+
+
+The event where a player  changes to an action  from
+the action  is a better response update if and only if .
+
+An appealing property of the potential game is that it admits the finite improvement property, such that any asynchronous better response
+update (no more than one player updates the strategy at any given time) must be finite and leads to a Nash equilibrium. This is because that due to (), when a user unilaterally carries out a better response update to improve its utility function, implicitly this will also lead to an increase in the potential function. Since the potential function is upper-bounded (i.e., can not keep increasing infinitely) and the strategy space is finite, the asynchronous better response update process must stop within some finite steps and reaches a Nash equilibrium wherein no further improvement by any user can be carried out.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We can show that the social recommendation aided DSA
+game  is indeed a potential game with a potential function given as
+
+& (a(t+1))=  _n=1^N-(1-p_n)
+
+& (_iN_n^p(a(t+1))(1-p_i)2+(_a_n(t+1)^n(t+1)B_a_n(t+1)^np_n)).
+The social recommendation aided
+DSA game  is a potential game with the potential
+function  in (), and hence possesses the finite improvement property and always
+has a Nash equilibrium.
+
+The proof is relegated to the appendix. Intuitively, we can interpret the potential function above from a graphical point of view. Specifically, given a strategy profile of all secondary users , we can construct a "virtual" interaction graph such that each user  is a vertex in the graph with the vertex weight of , and there exists an undirected edge between two interfering users  and  that access the same spectrum (i.e., ) and the edge weight is . Thus, the potential function in () represents the total weight of the interaction graph such that  is the total weight of all the vertices and  is the total weight of all the edges. When a user  unilaterally changes its channel from  to , the change of the total weight of the interaction graph consists of two parts: the first part is due to the change in the vertex weight of user , i.e., *
+-(1-p_n)&  ( (_a_n(t+1)^n(t+1)B_a_n(t+1)^np_n). 
+
+          &  .  -(_a_n^'(t+1)^n(t+1)B_a_n^'(t+1)^np_n)),
+and the second part is due to the change in the edge weight by adding new edges between user  and the new interfering users  and removing old edges between user  and the previous interfering users , i.e.,*
+-(1-p_n)&  ( _iN_n^p(a^'(t+1))(1-p_i)-_iN_n^p(a(t+1))(1-p_i)).
+
+
+Thus, the change of the total weight of the interaction equals to , and hence the condition in () is satisfied. That is, when a user  unilaterally changes its channel from  to  to improve its utility function, this will also lead to an increase in the total weight of the interaction graph (i.e., the potential function). 
+
+
+
+The result in Theorem  implies
+that any asynchronous better response update process is guaranteed
+to reach a Nash equilibrium within a finite number of iterations.
+This motivates the algorithm design for computing the Nash equilibrium for each time slot 
+in the following section.
+
+
+Computing Nash Equilibrium
+
+We next propose a scheme to compute a Nash equilibrium in Algorithm
+, which is carried out at
+the channel selection stage of each time slot .
+The key idea of algorithm design is to let secondary users asynchronously
+improve their channel selections according to the finite improvement
+property of the social recommendation aided DSA game
+.
+
+[tt]
+[1]
+initialization:
+ set initial channel selection profile .
+ set the iteration index .
+end initialization
+
+ is not a Nash equilibrium
+        Secondary user  mod ) choose the best channel  that maximizes the expected throughput according to ().
+
+        set the index .
+ Nash equilibrium computation algorithm for social recommendation aided DSA
+with strong network information
+
+Further, we assume that when a secondary user enters the system,
+the supporting infrastructure (e.g., secondary access point) will
+assign it with a unique ID, say index as (When the supporting infrastructure is not available, we can achieve asynchronous the best response update by allowing that secondary users adopt the random backoff mechanism such as CSMA to content for the channel selection update opportunities. This can also converge to a Nash equilibrium, due to the finite improvement property of the social recommendation aided DSA game.). For the initial iteration ,
+we set the initial channel selection decision profile for the next time slot  as the channel
+selections adopted by the secondary users at the current time slot , i.e., , for .
+Then for each iteration , a secondary user  mod ) is
+scheduled by the infrastructure to carry out the best response update
+in turn (according to the assigned IDs). Specifically, the scheduled
+secondary user  will select a channel  that
+maximizes its expected throughput for the next time slot  as
+
+a_n^l(t+1) =  _aM  &  U_n ( a,a^l_-n(t+1)),where  denote the current channel selection decisions of all the other users except user  at the current iteration . According to (), to carry
+out the best response update in (),  a secondary user  needs to observe the current channel selection decisions
+of its interfering users , besides the knowledge of its own mean channel throughput, the channel state transition probabilities, and its own channel recommendation states. This can be achieved
+such that each secondary user  broadcasts the channel selection  when its decision has been updated. Such a best
+response update procedure continues until that a Nash equilibrium
+is achieved, i.e., no secondary users can carry out any channel selection
+update (i.e., ).
+According to the finite improvement property of the social recommendation
+based DSA game , such an asynchronous best response
+update process is guaranteed to achieve a Nash equilibrium within a finite number of iterations. Note that during each iteration a user will choose the best channel among  channels, and hence the computational complexity of Algorithm  at one iteration is . Now suppose it takes  iterations for the algorithm to converge. Then the total computational complexity of Algorithm  is . Numerical results show that the algorithm can converge quickly, with the number of iterations . In this case, the computational complexity of Algorithm  is , which increases linearly as the user size increases. Note that it would incur extra time overhead to obtain the social recommendation information for computing the Nash equilibrium. Nevertheless, in practice we do not need to update such information at every iteration slot since the length of a scheduling mini-slot for each iteration is at the time scale of microseconds, while the recommendation states (due to primary users' activities) change at the much larger time scale of milliseconds/seconds. In this case, for instance, we can update the social recommendation information only at the first iteration slot of the Nash equilibrium computation process, which would help to significantly reduce the time overhead. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+System Model
+
+In this section we first introduce the system model of social recommendation
+aided DSA, which can be projected onto two domains: the
+physical domain and the social domain. In the physical domain, different
+secondary users have different physical coupling due to their heterogeneous
+interference relationships. In the social domain, different secondary
+users have different channel recommendation relationships due to the
+diverse social tie structure among secondary users. We next discuss both
+physical and social domains in detail.
+
+
+
+
+
+
+
+Physical Graph Model
+
+We consider a dynamic spectrum access network with a set 
+of heterogeneous primary channels. A set  of
+secondary users try to access these channels, in a distributed manner,
+when the channels are not occupied by primary (licensed) transmissions.
+
+To capture the physical coupling, we construct the interference graph
+ based on the interference
+relationships among secondary users. Here the vertex set 
+is the secondary user set, and the edge set 
+is the set of interference edges with  being the distance
+between secondary users  and  and  denoting the interference
+range. If there is an interference edge between two secondary users,
+then they cannot successfully transmit their data on the same idle
+channel simultaneously due to collision. In the sequel, we denote
+the set of interfering users with user  as .
+
+We consider a time-slotted system model as follows:
+
+(1) Channel state: For each primary channel , the channel state
+at a time slot  is given as  if channel  is busy, and  if channel  is idle.
+
+
+
+
+
+
+
+(2) Channel state transition: Similar to many studies
+(e.g., and the references therein), the state change of a channel  is modeled as a two-state Markovian process(The proposed mechanisms can be extended to other channel state models (e.g., high-order Markovian channel model) by following the ideas developed in this paper.).
+We denote the channel state probability distribution at time 
+as . It follows that  ,
+with the transition matrix 
+
+
+ where  and  are the state transition probabilities. Furthermore, the average channel idle probability  of
+a channel  can be obtained from the stationary distribution of
+the Markov chain as 
+
+
+
+
+(3) Channel throughput: For a secondary user ,
+its realized channel throughput  on an idle channel
+ evolves according to an i.i.d. random
+process with a finite mean . Here the channel throughput
+can be user-specific, which is useful to model the scenario that users
+may adopt heterogeneous coding/modulation transmission schemes and
+experience different channel conditions due to their local environmental
+effects such as fading. For example, in a Rayleigh fading channel
+environment, the channel gain in each time slot is a random variable
+that follows the exponential distribution.
+
+(4) Channel contention: To resolve the transmission collision when
+multiple interfering secondary users access the same idle channel,
+we adopt the random access scheme for medium access control. Specifically,
+each secondary user  will contend for the idle channel with a
+probability of  and a collision occurs if multiple interfering
+users contend for the same channel at the same time. In this case,
+the probability that secondary user  can successfully grab the
+idle channel for data transmission is given as  where  denotes the channel selection
+profile of the secondary users and 
+is the set of interfering users that choose the same channel 
+as user .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Social Graph Model
+In order to carry out channel recommendation, we assume that
+there exists a common control channel for the information exchange
+among the secondary users
+(Please refer to for the details on how to set up and maintain
+a reliable common control channel in cognitive radio networks.
+). When the common control channel approach is not feasible, we can
+adopt the device-to-device (D2D) communication approach, such that
+secondary users equipped with the radio interfaces such as blue-tooth/WiFi-direct
+can communicate with each other directly for the channel recommendation. Alternatively, users can publish their recommendations in a cloud-based platform that other users have access to.
+
+Since information exchange would incur overhead such as energy consumption, to achieve trustworthy collaboration among secondary users for channel
+recommendation, we leverage the social trust among users. The underlying
+rationale of using social trust is that hand-held devices are carried
+by human beings and the knowledge of human social ties (e.g., kinship,
+friendship, or colleague relationship) can be utilized to achieve
+effective and trustworthy collaboration for channel recommendation. Moreover,  building upon the social trust among secondary users, we can prevent the potential attacks of releasing false channel recommendations by untrusted/unacquainted users and enhance the security level of DSA.
+
+Specifically, we introduce the social graph 
+to model social recommendation relationships due to the social trust
+among secondary users. Here the vertex set is the same as the user
+set  and the edge set is given as 
+where  if and only if users  and  have social
+trust between each other and can also exchange information with each
+other. In practice we can adopt the private matching protocol in such that two secondary users can locally identify the social relationships among them in a privacy-preserving manner. Note that the size of data packet for encapsulating recommendation information is very small. For example, for a 8-bit packet, we can use the first 7 bits to denote the channel ID (in this case we have up to 128 channel IDs available) and the last bit to indicate the idle/busy state of the channel. Thus, the recommendation information exchange can be carried out quickly during a slot. 
+
+
+
+
+
+Social Recommendation Aided DSA
+
+Based on the physical and social graph models above, we devise
+the social recommendation aided DSA mechanism.
+A key idea is that secondary users provide the channel recommendations (reviews) of
+the channels they have just accessed to their social neighbors for spectrum
+access decision marking. Specifically, each secondary user 
+executes the following five stages during each time
+slot :
+
+(1) Spectrum sensing: Sense the channel based on channel selection
+decision made at the end of the previous time slot. The purpose of
+spectrum sense is to detect the presence of primary users, in order
+to avoid causing harmful interference to primary users.
+
+(2) Channel contention: If the channel sensing result is idle,
+compete for the channel with the random access mechanism described
+in Section .
+
+(3) Data transmission: Transmit data packets if user  successfully
+grabs the channel.
+
+(4) Channel recommendation: User  informs its social neighbors
+ about the channel recommendation (review),
+which contains the channel ID and the channel quality (idle or busy)
+that it has just selected to access. At the same time, user  collects
+the channel recommendations from its social neighbors. Based on the
+recommendations, user  then has an observation of the channel
+availability of all channels as 
+at current time slot , where
+*
+That is, we have  if channel  is recommended
+as idle by some social neighbors,  if channel 
+is recommended as busy by some social neighbors, and 
+if no recommendations about channel  are available. We call 
+as the channel recommendation state in the sequel.
+
+(5) Channel selection: Based on the channel recommendation states
+, user  will make the decision
+of choosing a channel  to access for the next time slot
+ according to the algorithms in Sections and .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+For the ease of exposition, in this paper we use the OR rule as study case to fuse recommendations from social neighbors, i.e., the recommendation state of a channel  (, respectively) as long as the channel is  recommended as idle (busy, respectively) by at lease one social neighbor. This is reasonable due to the social trust among the users such that they are willing to recommend channels cooperatively and truthfully. Our model can also apply when other rules are adopted for recommendation information fusion. For example, to further enhance the robustness, we can use the majority voting rule such that the recommendation state of a channel  (, respectively) if the number of idle (busy, respectively) recommendations by the social neighbors is major (e.g., greater than ). Furthermore, in this case we focus on designing efficient spectrum access strategy given the fused recommendation information and hence do not consider the collusion effect in information fusion (e.g., a group of users collude to broadcast biased recommendation information). How to design a collusion-resistant recommendation information fusion scheme is very challenging and will be addressed in a future work.
+
+We shall emphasize that the algorithm design in Sections  and  does not simply let the users  choose the recommended channels blindly. A key step here is
+how to achieve efficient distributed decision makings among the secondary users based on the channel recommendation states . This is challenging because: (1) Although spectrum availabilities are correlated in time, the channel states might change later due to the dynamic activities of primary users;  (2) due
+to the diverse social relationships among secondary users, different users may have different number of social friends nearby and hence have different channel recommendation states . Therefore, secondary users may have heterogeneous views of the network environment; (3)
+subject to the physical coupling among secondary users, if multiple
+interfering users choose to access the same recommended idle channel, they may
+cause severe collision among each other, leading to a poor system performance. We hence need to balance between exploitation of recommended channels and exploration of un-recommended channels.
+In the following Sections   and , we will address these challenges by
+considering the cases that the secondary users have strong and weak
+network information, respectively. In Section , we will discuss the security and privacy issues of social recommendation aided DSA. Similar to many studies in dynamic spectrum access (e.g.,), to enable tractable analysis and get useful insights, in the paper we consider the static user case in which the physical graph  and the social graph  are fixed. This is also motivated by that users' locations would change at the time scale of seconds/minutes and the proposed algorithms are implemented at a much smaller time scale of microseconds. The dynamic case that both users' locations and the physical/social graph change very fast is very challenging and will be considered in a future work. 
+
+Social Recommendation Aided DSA: The Weak Information Case
+In this section we consider the social recommendation aided DSA mechanism design with the weak network information, by removing the assumptions in the strong information
+case that a secondary user  has the information of the channel
+state transition matrix , the
+mean channel throughput , and
+the channel contention probabilities 
+of its interfering users. In the weak information case, a secondary
+user  only observes its channel recommendation states 
+at each time slot .
+
+
+DSA Using Distributed Reinforcement Learning
+
+For the weak network information case, we propose a distributed
+reinforcement learning algorithm for social recommendation aided DSA, such that each secondary user learns to adjust its spectrum access strategy adaptively based on its local observations. A
+key idea here is to extend the principle of single-agent reinforcement
+learning to a multi-agent setting. Such multi-agent reinforcement
+learning algorithm has also been applied to the game theoretic models in. Here we generalize  the learning algorithm to the social recommendation aided DSA problem wherein a user's payoff depends on the interference graph structure and the environment is time varying (i.e., the channel recommendation states are varying in different time slots). This
+leads to significant differences in analysis from those in. For example,
+we show that the convergence condition for the learning
+algorithm depends on the structure of interference graph,
+which is different from those results in.
+
+Specifically, a secondary user  makes the spectrum access decision
+based on the perception values ,
+where  represents the user 's current perception
+of the expected throughput of choosing channel  when the channel
+recommendation state  of channel  is . At the
+channel selection stage of each time slot , a
+secondary user  updates its perceptions based on the received
+throughput  of the chosen channel  as
+
+where  are the smoothing factors satisfying that  and . Roughly speaking, () implies  that a secondary user only changes the perception
+of accessing the channel  in recommendation state ,
+and keeps the perceptions of the channel  in other recommendation
+states  and other channels  in all recommendation
+states unchanged.
+
+Then, a secondary user  makes the spectrum access decision and
+chooses a channel  for the next time slot
+ according to the spectrum access strategy ,
+where  is the probability of choosing channel
+. The strategy  is generated according
+to the secondary user 's current channel recommendation states  and the
+perception values . Similar to the single-agent
+learning, we choose the Boltzmann distribution as the mapping from
+perceptions to the spectrum access strategies, i.e.,
+
+where the parameter  controls the degree of channel sampling (i.e., channel exploration). When  is very small, (e.g., ), each secondary  user tends to choose to access channels purely randomly (in this case we have maximum degree of channel exploration). When  is large (e.g., ), user  will tend to exploit the channel with the current best perception value among all channels (in this case we have minimum degree of channel exploration). As shown in,  the channel sampling plays a very important on the restless bandit based spectrum access problem. In general, without appropriate sampling the restless bandit algorithm may converge to sub-optimal solution, due to the sampling bias. Similarly, for our proposed learning mechanism, we will show later that a moderately small  (which increases the randomness of the spectrum access strategy) is required to ensure sufficient channel sampling over the states so that user's perception values can be constantly updated and guarantee that the distributed learning converges to an efficient equilibrium with small performance loss.
+
+We summarize the
+distributed reinforcement learning algorithm for social recommendation
+aided DSA in Algorithm . Note that in Algorithm , each user performs perception update and channel selection among  channels in parallel. Hence Algorithm  has a very low computation complexity of  in a time slot.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[tt]
+[1]
+initialization:
+ set the initial perception values .
+end initialization 
+ for the channel selection stage of each time slot  and each secondary user  in parallel:
+update the perception values  according to ().
+select a channel  for the next time slot  according to ().
+Distributed reinforcement
+learning algorithm for social recommendation aided DSA
+with weak network information
+
+
+
+Convergence of DSA Using Distributed Reinforcement Learning
+
+We now study the convergence of the proposed distributed reinforcement
+learning algorithm. First, the perception value update in () can
+be written in the following equivalent form (),
+
+where  is the update value defined as
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+For the sake of brevity, we denote the perception values, update values,
+spectrum access strategies, and channel recommendation states of all
+the secondary users as ,
+,
+
+and 
+respectively.  Moreover, we define the mapping from the perceptions  to
+the conditional expected throughput of secondary user  choosing channel
+, given the recommendation state , as 
+
+where  is taken with respect to the spectrum
+access strategies  of all users (i.e., the
+perceptions  of all users due to ()).
+We have the following result.
+
+For the distributed reinforcement
+learning algorithm, if the parameter  satisfies  the condition
+
+the mapping from the perceptions to the expected throughput 
+forms a maximum-norm contraction mapping, i.e.,
+
+
+
+ where .
+
+The proof is relegated to the appendix. Lemma  implies that when the interference
+among secondary users becomes more severe (i.e., the maximum degree
+ of the interference
+graph becomes larger), a smaller  is needed to guarantee the
+convergence. This is because that interference relationship among
+users becomes more complicated and users should put more weight to
+explore the environment. Based on the property of contraction mapping, we know that the sequence  will converge to a fixed point .
+
+For the distributed reinforcement
+learning algorithm, if the parameter  satisfies (), then the sequence 
+converges to the solution  of the fixed point equation, which satisfies
+that
+
+
+The proof is given in the appendix. We next explore the property of the equilibrium 
+of the distributed reinforcement learning algorithm. Since ,
+from Theorem , we see that a secondary
+user  can achieve an accurate estimation of the expected throughput
+based on the perception value  at the equilibrium.
+Moreover, for the spectrum access strategy 
+generated according to () based on perception values
+, we can show the following result.
+
+For the distributed reinforcement learning algorithm, given a secondary user 's channel
+recommendation states ,
+the spectrum access strategy  at the equilibrium  maximizes its expected throughput approximately, i.e.,
+
+
+
+where the approximation gap  is at most .
+
+We first consider the following optimization problem:
+
+The optimization formulation in () is motivated by that the distributed learning mechanism can converge to an equilibrium that drives a good balance between the channel exploration and channel exploitation. Thus, in the optimization formulation in () the term  measures the performance of channel exploitation using the spectrum access strategy  and the entropy term   measures the randomness of the spectrum access strategy , which indicates the degree of channel exploration. Thus, the physical meaning of the optimization formulation in () is that we would like to find the optimal spectrum access strategy that strikes the best trade-off between the channel exploration and channel exploitation.  Since the problem is a convex optimization problem, by the KKT condition,
+we can derive the optimal solution as
+
+
+
+Since  at the equilibrium
+, we hence have that 
+i.e., the spectrum access strategy 
+at the equilibrium  is the optimal solution to
+the problem in (). It follows that
+
+Furthermore, it is easy to check that
+
+Then from (), (), and due to the fact that  uniform distribution yields the largest entropy, i.e.,
+ we know that
+*
+
+
+Theorems  and together illustrate the trade-off between the channel exploration and exploitation
+through the choice of . As we have shown in Theorem , a moderately small  is required
+to ensure the necessary degree of channel sampling for network environment exploration so that user's perception values can be constantly updated, and guarantees the convergence of distributed learning mechanism to an equilibrium. Furthermore, by deriving the approximation gap in Theorem , we show that when a moderate  is used, the equilibrium by the distributed learning mechanism is an efficient approximate solution with a small performance loss.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Further DiscussionsWe have studied social recommendation aided DSA with both strong and weak network information in Sections  and , respectively. For the strong network information case, to meet the requirement that a secondary user has strong knowledge
+of the network environment, a supporting infrastructure (e.g., secondary access point) to collect and analyze the statistical network information is typically needed, which would demand significant implementation overhead and high deployment cost in practice. This motivates us to explore the weak network information case and devise a more practical social recommendation aided DSA mechanism, such that each secondary user adapts its spectrum access decision based on local observations. Another major motivation of considering the strong network information case is that it can serve as the benchmark for the weak information case. Performance evaluation in Section  demonstrates  that the social recommendation aided DSA mechanism with weak network information can achieve superior performance, with a small performance loss (at most ) with respect to the strong network information case.
+
+An innovative feature of the proposed mechanisms in this paper is that we explore the social dimension of DSA and leverage the endogenous social incentive which comes from the intrinsic social ties among secondary users. The underlying
+rationale is that hand-held devices are carried by human beings and the social trust stemming from human social ties (e.g., kinship, friendship, or colleague relationship) can be utilized to stimulate effective and trustworthy collaboration for channel recommendation. Building upon the social trust among secondary users, we can prevent the potential attacks of releasing false channel recommendations by untrusted/unacquainted users and enhance the security level of DSA. Moreover, by participating in collaborative channel recommendation with social neighbors,  each individual user can receive exogenous incentive by benefiting from possessing a better view of the entire network environment and achieving more informed spectrum access decision making. Numerical results in Section  corroborate that the performance of social recommendation aided DSA improves as the social link density among the secondary users increases (due to the increase of cooperative social interactions).
+
+As discussed in Section , to preserve the privacy among secondary users, the social relationship identification
+procedure can be carried out prior to the spectrum access. Specifically, two secondary users in proximity can locally initiate the "matching" process to detect the common social features between them. For example, two users can match their contact lists. If they have the phone numbers of each other or many of their phone numbers are the same, then it is very likely that they know each other. As another example, two device users can match their home and working addresses and identify whether they are neighbors or colleagues. To preserve the privacy of the secondary users, the private matching protocol in can be adopted to design a privacy-preserving social relationship identification mechanism.  Moreover, to thwart the tampering and falsification attacks on the channel recommendation messages by malicious users, we can adopt the techniques of attribute-based encryption and signatures in and such that two secondary users with social trust (e.g., family members)  can encrypt/decrypt and authenticate the messages based on their common and shared social features (e.g., home address and birthday). The focus of this paper is to devise efficient social recommendation aided DSA mechanisms by considering different network information settings. Due to space limitation, we will pursuit a thorough understanding of the security and privacy issues of the social recommendation aided DSA in future work.
+
+
+
+
+
+
+
+
+
+
+
+
+

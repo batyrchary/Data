@@ -1,0 +1,817 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  
+  
+  
+
+
+
+
+
+
+
+
+
+tr
+diag
+chol
+dchol
+Cov
+Var
+Gamma
+Exp
+sech
+U
+argmin
+argmax
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+plotmarks
+
+/pgf/number format/.cd, 1000 sep=
+
+every axis/.append style=
+  grid style=line width=0.6pt,dotted,gray
+
+every axis/.append style=
+  legend style=inner xsep=1pt, inner ysep=0.5pt, nodes=inner sep=1pt, text depth=0.1em,draw=none,fill=none
+
+
+every axis/.append style=
+  colorbar style=width=3mm,xshift=-2mm,major tick length=2pt
+
+
+
+
+
+
+
+
+
+
+same
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Infinite-Horizon Gaussian Processes
+
+
+
+
+  Arno SolinThis work was undertaken whilst AS was a Visiting Research Fellow with University of Cambridge. 
+
+  Aalto University 
+
+  arno.solin@aalto.fi
+  
+  James Hensman 
+
+  PROWLER.io
+
+  james@prowler.io
+  
+  Richard E. Turner 
+
+  University of Cambridge 
+
+  ret26@cam.ac.uk
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  Gaussian processes provide a flexible framework for forecasting, removing noise, and interpreting long temporal datasets. State space modelling (Kalman filtering) enables these non-parametric models to be deployed on long datasets by reducing the complexity to linear in the number of data points. The complexity is still cubic in the state dimension  which is an impediment to practical application. In certain special cases (Gaussian likelihood, regular spacing) the GP posterior will reach a steady posterior state when the data are very long. We leverage this and formulate an inference scheme for GPs with general likelihoods, where inference is based on single-sweep EP (assumed density filtering). The infinite-horizon model tackles the cubic cost in the state dimensionality and reduces the cost in the state dimension  to  per data point. The model is extended to online-learning of hyperparameters. We show examples for large finite-length modelling problems, and present how the method runs in real-time on a smartphone on a continuous data stream updated at 100 Hz.
+
+
+Introduction
+Gaussian process (GP,) models provide a plug  play interpretable approach to probabilistic modelling, and would perhaps be more widely applied if not for their associated computational complexity: naive implementations of GPs require the construction and decomposition of a kernel matrix at cost , where  is the number of data. In this work, we consider GP time series ( GPs with one input dimension). In this case, construction of the kernel matrix can be avoided by exploiting the (approximate) Markov structure of the process and re-writing the model as a linear Gaussian state space model, which can then be solved using Kalman filtering (see, ,). The Kalman filter costs , where  is the dimension of the state space. We propose the Infinite-Horizon GP approximation (IHGP), which reduces the cost to . 
+
+As  grows with the number of kernel components in the GP prior, this cost saving can be significant for many GP models where  can reach hundreds. For example, the automatic statistician searches for kernels (on 1D datasets) using sums and products of kernels. The summing of two kernels results in the concatenation of the state space (sum of the s) and a product of kernels results in the Kronecker sum of their statespaces (product of s). This quickly results in very high state dimensions; we show results with a similarly constructed kernel in our experiments.
+
+We are concerned with real-time processing of long (or streaming) time-series with short and long length-scale components, and non-Gaussian noise/likelihood and potential non-stationary structure. We show how the IHGP can be applied in the streaming setting, including efficient estimation of the marginal likelihood and associated gradients, enabling on-line learning of hyper (kernel) parameters. We demonstrate this by applying our approach to a streaming dataset of two million points, as well as providing an implementation of the method on an iPhone, allowing on-line learning of a GP model of the phone's acceleration. 
+
+For data where a Gaussian noise assumption may not be appropriate, many approaches have been proposed for approximation (see, , for an overview). Here we show how to combine Assumed Density Filtering (ADF, a.k.a. single-sweep Expectation Propagation, EP) with the IHGP. We are motivated by the application to Log-Gaussian Cox Processes (LGCP,). Usually the LGCP model uses binning to avoid a doubly-intractable model; in this case it is desirable to have more bins in order to capture short-lengthscale effects, leading to more time points. Additionally, the desire to capture long-and-short-term effects means that the state space dimension  can be large. We show that our approach is effective on standard benchmarks (coal-mining disasters) as well as a much larger dataset (airline accidents).
+
+The structure of the paper is as follows. Sec.  covers the necessary background and notation related to GPs and state space solutions. Sec.   leverages the idea of steady-state filtering to derive IHGP. Sec.  illustrates the approach on several problems, and the supplementary material contains additional examples and a nomenclature for easier reading. Code implementations in Matlab/C++/Objective-C and video examples of real-time operation are available at https://github.com/AaltoML/IHGP.
+
+[!t]
+  
+  yticklabel style=rotate=90, ylabel style=yshift=-15pt,clip=true,scale only axis,axis on top,clip marker paths,legend style=row sep=0pt,legend columns=-1,xlabel near ticks
+  
+  
+
+  [b].48
+    
+
+  
+  
+  [b].48
+    
+
+    
+
+  (Left) GP regression with  observations and a Matern covariance function. The IHGP is close to exact far from boundaries, where the constant marginal variance assumption shows. (Right) Hyperparameters  optimised independently for both models.
+  
+
+
+
+
+Background
+
+We are concerned with GP models admitting the form:
+   and  ,
+where the data  are input-output pairs,  the mean function, and  the covariance function of the GP prior. The likelihood factorizes over the observations. This family covers many standard modelling problems, including regression and classification tasks. Without loss of generality, we present the methodology for zero-mean () GP priors. We approximate posteriors of the form (see for an overview):
+
+where  is the prior covariance matrix, , and the (likelihood precision) matrix is diagonal, . Elements of  are non negative for log-concave likelihoods. The predictive mean and marginal variance for a test input  is  and .
+A probabilistic way of learning the hyperparameters  of the covariance function (such as magnitude and scale) and the likelihood model (such as noise scale) is by maximizing the (log) marginal likelihood function .
+
+Numerous methods have been proposed for dealing with the prohibitive computational complexity of the matrix inverse in dealing with the latent function in Eq. eq:posterior. While general-purpose methods such as inducing input, basis function projection, interpolation approaches, or stochastic approximations do not pose restrictions to the input dimensionality, they scale poorly in long time-series models by still needing to fill the extending domain (see discussion in). For certain problems tree-structured approximations or band-structured matrices can be leveraged. However, have shown that for one-dimensional GPs with high-order Markovian structure, an optimal representation (without approximations) is rewriting the GP in terms of a state space model and solving inference in linear time by sequential Kalman filtering methods. We will therefore focus on building upon the state space methodology.
+
+
+
+
+
+
+
+
+State space GPs
+In one-dimensional GPs (time-series) the data points feature the special property of having a natural ordering. If the GP prior itself admits a Markovian structure, the GP model can be reformulated as a state space model. Recent work has focused on showing how many widely used covariance function can be either exactly (, the half-integer Matern class, polynomial, noise, constant) or approximately (, the squared-exponential/RBF, rational quadratic, periodic, ) converted into state space models.
+In continuous time, a simple dynamical system able to represent these covariance functions is given by the following linear time-invariant stochastic differential equation (see):
+
+where  is an -dimensional white noise process, and , ,  are the feedback, noise effect, and measurement matrices, respectively. The driving process  is a multivariate white noise process with spectral density matrix . The initial state is distributed according to . For discrete input values , this translates into
+
+with . The discrete-time dynamical model is solved through a matrix exponential , where .
+For stationary covariance functions, , the process noise covariance is given by . The stationary state (corresponding to the initial state ) is distributed by  and the stationary covariance can be found by solving the Lyapunov equation
+  . Appendix  shows an example of representing the Matern () covariance function as a state space model. Other covariance functions have been listed in.
+
+
+
+
+
+
+
+
+
+
+Bayesian filtering
+The closed-form solution to the linear Bayesian filtering problem-Eq. eq:ss with a Gaussian likelihood -is known as the Kalman filter. The interest is in the following marginal distributions:
+   
+   (predictive distribution),
+   
+   (filtering distribution), and
+  
+   (decomposed marginal likelihood).
+The predictive state mean and covariance are given by  and . The so called 'innovation' mean and variances  and  are
+ 
+  v_i = y_i - ^p_i and 
+  s_i = ^p_i  + _n^2.
+
+The log marginal likelihood can be evaluated during the filter update steps by . The filter mean and covariances are given by
+
+where  represents the filter gain term. In batch inference, we are actually interested in the so called smoothing solution,  corresponding to marginals . The smoother mean and covariance is solved by the backward recursion, from  backwards to :
+
+where  is the smoother gain at . The computational complexity is clearly linear in the number of data  (recursion repetitions), and cubic in the state dimension  due to matrix-matrix multiplications, and the matrix inverse in calculation of .
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[!t]
+  
+  yticklabel style=rotate=90, ylabel style=yshift=-15pt,clip=true,scale only axis,axis on top,clip marker paths, xlabel near ticks
+  
+  
+
+  [b].48
+    
+
+  
+  
+  [b].48
+    
+
+    
+
+  (Left) Interpolation of  (dots solved, solid interpolated). The dashed lines show elements in  (prior stationary state covariance). (Right) The Kalman gain  evaluated for the s.
+  
+
+
+
+
+
+Infinite-horizon Gaussian processes
+
+We now tackle the cubic computational complexity in the state dimensionality by seeking infinite-horizon approximations to the Gaussian process. In Sec.  we revisit traditional steady-state Kalman filtering (for Gaussian likelihood, equidistant data) from quadratic filter design (see, , and for an introduction), and extend it to provide approximations to the marginal likelihood and its gradients. Finally, we present an infinite-horizon framework for non-Gaussian likelihoods.
+
+
+Steady-state Kalman filter for 
+
+In steady-state Kalman filtering (see, Ch. 8.4, or, Ch. 4, for the traditional perspective) we assume , where  is the longest time scale in the covariance function, and equidistant observations in time ( and ). After several  (as ), the filter gain converges to the stationary limiting Kalman filter gain . The resulting filter becomes time-invariant, which introduces approximation errors near the boundaries ( Fig. ).
+
+In practice, we seek a stationary filter state covariance (corresponding to the stationary Kalman gain) . Solving for this matrix thus corresponds to seeking a covariance that is equal between two consecutive filter recursions. Directly from the Kalman filtering forward prediction and update steps (in Eq. ), we recover the recursion (by dropping dependency on the time step):
+
+This equation is of the form of a discrete algebraic Riccati equation (DARE, see, ,), which is a type of nonlinear matrix equation that often arises in the context of infinite-horizon optimal control problems. Since ,  is P.S.D., and the associated state space model being both stabilizable and observable, the DARE has a unique stabilising solution for  that can be found either by iterating the Riccati equation or by matrix decompositions. The Schur method by solves the DARE in , is numerically stable, and widely available in matrix libraries (Python scipy.linalg.solvediscreteare, Matlab Control System Toolbox DARE, see also SLICOT routine SB02OD).
+
+The corresponding stationary gain is . Re-deriving the filter recursion with the stationary gain gives a simplified iteration for the filter mean (the covariance is now time-invariant):
+
+for all . This recursive iteration has a computational cost associated with one  matrix-vector multiplication, so the overall computational cost for the forward iteration is  (as opposed to the   in the Kalman filter). 
+
+
+
+Marginal likelihood evaluation:
+The approximative log marginal likelihood comes out as a by-product of the filter forward recursion: , where the stationary innovation covariance is given by  and the innovation mean by .
+
+Steady-state backward pass: To obtain the complete infinite-horizon solution, we formally derive the solution corresponding to the smoothing distribution , where  is the stationary state covariance. Establishing the backward recursion does not require taking any additional limits, as the smoother gain is only a function of consecutive filtering steps. Re-deriving the backward pass in Equation eq:rts-smoother gives the time-invariant smoother gain and posterior state covariance
+
+where  is implicitly defined in terms of the solution to a DARE. The backward iteration for the state mean: . Even this recursion scales as .
+
+
+
+
+
+
+
+
+
+
+[!t]
+  Infinite-horizon Gaussian process (IHGP) inference. The GP prior is specified in terms of a state space model. After the setup cost on line 2, all operations are at most .
+  
+[1]
+   Input:  targets, model, likelihood
+
+
+   Set up , , and  for  solve DAREs for a set of likelihood variances, cost 
+
+    initialize
+
+    to 
+
+
+     Evaluate  find predictive covariance
+
+     
+ latent
+     Gaussian likelihood
+        if ,  and  become time-invariant
+     
+
+       Match  match moments
+        equivalent update
+     
+
+      gain
+     ; 
+             mean and covariance
+   
+
+   ;  initialize backward pass
+    to 
+     ;  mean and covariance
+   
+
+   Return:  mean, variance, evidence
+
+
+
+
+
+
+Infinite-horizon GPs for general likelihoods
+
+In IHGP, instead of using the true predictive covariance for propagation, we use the one obtained from the stationary state of a system with measurement noise fixed to the current measurement noise and regular spacing. The Kalman filter iterations can be used in solving approximate posteriors for models with general likelihoods in form of Eq. eq:posterior by manipulating the innovation  and  (see). We derive a generalization of the steady-state iteration allowing for time-dependent measurement noise and non-Gaussian likelihoods.
+
+We re-formulate the DARE in Eq. eq:Pp-dare as an implicit function  of the likelihood variance, 'measurement noise', :
+
+The elements in  are smooth functions in , and we set up an interpolation scheme-inspired by who use cubic convolutional interpolation in their KISS-GP framework-over a log-spaced one-dimensional grid of  points in  for evaluation of . Fig.  shows results of  grid points (as dots) over  (this grid is used throughout the experiments). In the limit of  the measurement has no effect, and the predictive covariance returns to the stationary covariance of the GP prior (dashed). Similarly, the corresponding gain terms  show the gains going to zero in the same limit. We set up a similar interpolation scheme for evaluating  and  following Eq. . Now, solving the DAREs and the smoother gain has been replaced by computationally cheap (one-dimensional) kernel interpolation.
+
+Alg.  presents the recursion in IHGP inference by considering a locally steady-state GP model derived from the previous section. As can be seen in Sec. , the predictive state on step  only depends on . For non-Gaussian inference we set up an EP scheme which only requires one forward pass (assumed density filtering, see also unscented filtering), and is thus well suited for streaming applications. We match the first two moments of  and  w.r.t. latent values  (denoted by , implemented by quadrature). The steps of the backward pass are also only dependent on the local steady-state model, thus evaluated in terms of s.
+
+Missing observations correspond to , and the model could be generalized to non-equidistant time sampling by the scheme in for calculating  and . 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Online hyperparameter estimation
+Even though IHGP can be used in a batch setting, it is especially well suited for continuous data streams. In such applications, it is not practical to require several iterations over the data for optimising the hyperparameters-as new data would arrive before the optimisation terminates. We propose a practical extension of IHGP for online estimation of hyperparameters  by leveraging that (i) new batches of data are guaranteed to be available from the stream, (ii) IHGP only requires seeing each data point once for evaluating the marginal likelihood and its gradient, (iii) data can be non-stationary, requiring the hyperparameters to adapt.
+
+We formulate the hyperparameter optimisation problem as an incremental gradient descent (,) resembling stochastic gradient descent, but without the assumption of finding a stationary optimum. Starting from some initial set of hyperparameters , for each new (mini) batch  of data  in a window of size , iterate
+
+where  is a learning-rate (step-size) parameter, and the gradient of the marginal likelihood is evaluated by the IHGP forward recursion. In a vanilla GP the windowing would introduce boundary effect due to growing marginal variance towards the boundaries, while in IHGP no edge effects are present as the data stream is seen to continue beyond any boundaries ( Fig. ).
+
+
+
+
+
+
+
+[!t]
+  
+
+  yticklabel style=rotate=90, ylabel style=yshift=-15pt,scale only axis,axis on top,clip=false, xlabel near ticks
+  
+    
+
+  
+  
+  tableMean absolute error of IHGP w.r.t. SS, negative log-likelihoods, and running times. Mean over 10 repetitions reported; .  
+  
+* 
+    
+  
+  
+    
+    
+    
+    figureEmpirical running time comparison for GP regression on  data points. Maximum RMSE in IHGP .
+    
+  
+   *-1.2em
+
+
+
+
+[!b]
+
+  
+  yticklabel style=rotate=90, ylabel style=yshift=-15pt,scale only axis,axis on top,clip=false
+  
+  
+
+  [b].48
+    
+    Intensity (EP vs. ADF)
+  
+  
+  [b].48
+    
+    Intensity (state space vs. infinite-horizon)
+    
+
+  A small-scale comparison study on the coal mining accident data (191 accidents in  bins). The data set is sufficiently small that full EP with naive handling of the latent function can be conducted. Full EP is shown to work similarly as ADF (single-sweep EP) by state space modelling. We then compare ADF on state space (exact handling of the latent function) to ADF with the IHGP.
+  
+
+
+
+
+Experiments
+
+We provide extensive evaluation of the IHGP both in terms of simulated benchmarks and four real-world experiments in batch and online modes.
+
+Experimental validation
+In the toy examples, the data were simulated from ,  (see Fig.  for a visualization). The same function with thresholding was used in the classification examples in the Appendix. Table  shows comparisons for different log-concave likelihoods over a simulated data set with . Example functions can be seen in Fig.  and Appendix . The results are shown for a Matern () with a full GP (naive handling of latent, full EP as in), state space (SS, exact state space model, ADF as in), and IHGP. With  only 2, IHGP is not faster than SS, but approximation errors remain small.
+Fig.  shows experimental results for the computational benefits in a regression study, with state dimensionality . Experiments run in Mathworks Matlab (R2017b) on an Apple MacBook Pro (2.3 GHz Intel Core i5, 16 Gb RAM). Both methods have linear time complexity in the number of data points, so the number of data points is fixed to . The GP prior is set up as an increasing-length sum of Matern () kernels with different characteristic length-scales. The state space scheme follows  and IHGP is .
+
+
+
+Log-Gaussian Cox processes
+A log Gaussian Cox process is an inhomogeneous Poisson process model for count data. The unknown intensity function  is modelled with a log-Gaussian process such that . The likelihood of the unknown function  is
+.
+The likelihood requires non-trivial integration over the exponentiated GP, and thus instead the standard approach is to consider locally constant intensity in subregions by discretising the interval into bins. This approximation corresponds to having a Poisson model for each bin. The likelihood becomes
+,
+where  is the bin coordinate and  the number of data points in it. This model reaches posterior consistency in the limit of bin width going to zero. Thus it is expected that the accuracy improves with tighter binning.
+
+Coal mining disasters dataset: The data (available, , in) contain the dates of 191 coal mine explosions that killed ten or more people in Britain between years 1851-1962, which we discretize into  bins. We use a GP prior with a Matern () covariance function that has an exact state space representation (state dimensionality ) and thus no approximations regarding handling the latent are required. We optimise the characteristic length-scale and magnitude hyperparameters w.r.t. marginal likelihood in each model. Fig.  shows that full EP and state space ADF produce almost equivalent results, and IHGP ADF and state space ADF produce similar results. In IHGP the edge effects are clear around 1850-1860. 
+
+
+
+[!t]
+  
+  yticklabel style=rotate=90, ylabel style=yshift=-15pt,scale only axis,axis on top,clip=true,xlabel near ticks,ylabel near ticks
+
+  
+  
+
+  [b]
+    
+    
+
+    
+  
+
+  
+  
+  [b].32
+    
+    
+
+  
+  
+  [b].32
+    *-1em
+    
+
+  
+  
+  [b].32
+    
+    
+
+    
+
+  Explanatory analysis of the aircraft accident data set (1210 accidents predicted in  daily bins) between years 1919-2018 by a log-Gaussian Cox process (Poisson likelihood).
+  
+
+
+
+
+
+Airline accident dataset: As a more challenging regression problem we  explain the time-dependent intensity of accidents and incidents of commercial aircraft. The data consists of dates of 1210 incidents over the time-span of years 1919-2017. We use a bin width of one day and start from year 1900 ensure no edge effects (), and a prior covariance function (similar to)
+
+capturing a trend, time-of-year variation (with decay), and day-of-week variation (with decay). This model has a state space representation of dimension . All hyperparameters (except time periods) were optimised w.r.t. marginal likelihood. Fig.  shows that we reproduce the time-of-year results from and additionally recover a high-frequency time-of-week effect. 
+
+
+
+
+
+
+
+Electricity consumption
+
+We do explorative analysis of electricity consumption for one household recorded every minute (in log kW) over 1,442 days (, with 25,979 missing observations). We assign the model a GP prior with a covariance function accounting for slow variation and daily periodicity (with decay). We fit a GP to the entire data with 2M data points by optimising the hyperparameters w.r.t. marginal likelihood (results shown in Appendix ) using BFGS. Total running time 624 s.
+
+The data is, however, inherently non-stationary due to the long time-horizon, where use of electricity has varied. We therefore also run IHGP online in a rolling-window of 10 days (, , window step size of 1 hr) and learn the hyperparameters online during the 34,348 incremental gradient steps (evaluation time per step  s). This leads to a non-stationary adaptive GP model which, , learns to dampen the periodic component when the house is left vacant for days. Results shown in Appendix  in the supplement.
+
+
+Real-time GPs for adaptive model fitting
+
+In the final experiment we implement the IHGP in C++ with wrappers in Objective-C for running as an app on an Apple iPhone 6s (iOS 11.3). We use the phone accelerometer  channel (sampled at 100 Hz) as an input and fit a GP to a window of 2 s with Gaussian likelihood and a Matern () prior covariance function. We fix the measurement noise to  and use separate learning rates  in online estimation of the magnitude scale and length-scale hyperparemeters. The GP is re-estimated every 0.1 s. Fig.  shows examples of various modes of data and how the GP has adapted to it. A video of the app in action is included in the web material together with the codes.
+
+
+
+
+
+[!t]
+  
+  
+  
+
+  [b].24
+    [baseline][anchor=base,draw=black!50,inner sep=1pt,rounded corners=1pt];
+    Holding in hand
+  
+  
+  [b].24
+    [baseline][anchor=base,draw=black!50,inner sep=1pt,rounded corners=1pt];
+    Shake
+  
+  
+  [b].24
+    [baseline][anchor=base,draw=black!50,inner sep=1pt,rounded corners=1pt];
+    Swinging
+  
+  
+  [b].24
+    [baseline][anchor=base,draw=black!50,inner sep=1pt,rounded corners=1pt];
+    On table
+  
+
+  Screenshots of online adaptive IHGP running in real-time on an iPhone. The lower plot shows current hyperparameters (measurement noise is fixed to  for easier visualization) of the prior covariance function, with a trail of previous hyperparameters. The top part shows the last 2 seconds of accelerometer data  (red), the GP mean, and 95 quantiles. The refresh rate for updating the hyperparameters and re-prediction is 10 Hz. Video examples are in the supplementary material.
+  
+
+
+
+
+
+
+
+Discussion and conclusion
+We have presented Infinite-Horizon GPs, a novel approximation scheme for state space Gaussian processes, which reduces the time-complexity to . There is a clear intuition to the approximation: As widely known, in GP regression the posterior marginal variance only depends on the distance between observations, and the likelihood variance. If both these are fixed, and  is larger than the largest length-scale in the prior, the posterior marginal variance reaches a stationary state. The intuition behind IHGP is that for every time instance, we adapt to the current likelihood variance, discard the Markov-trail, and start over by adapting to the current steady-state marginal posterior distribution.
+
+This approximation scheme is important especially in long (number of data in the thousands-millions) or streaming ( growing without limit) data, and/or the GP prior has several components ( large). We showed examples of regression, count data, and classification tasks, and showed how IHGP can be used in interpreting non-stationary data streams both off-line (Sec. ) and on-line (Sec. ).
+
+
+
+
+
+
+Acknowledgments
+
+
+We thank the anonymous reviewers as well as Mark Rowland and Will Tebbutt for their comments on the manuscript. AS acknowledges funding from the Academy of Finland (grant number 308640).
+
+
+
+
+
+abbrvnat
+
+
+
+
+
+
+Supplementary Material for Infinite-horizon Gaussian processes
+
+
+
+Nomenclature
+
+In order of appearance. Vectors bold-face small letters, matrices bold-face capital letters.
+
+
+
+
+
+Example of a Matern () covariance function 
+
+Consider the Matern covariance function with smoothness , for which the processes are continuous and once differentiable:
+
+It has the SDE representation
+
+where . The spectral density of the Gaussian white noise process   is . For higher-order half-integer Matern covariance functions, the state dimensionality follows the smoothness parameter, .
+
+
+Forward derivatives for efficient log likelihood gradient evaluation
+
+
+The recursion for evaluating the derivatives of the log marginal likelihood can be derived by differentiating the steady-state recursions. As the equation for the stationary predictive covariance is given by the DARE:
+
+
+In order to evaluate the derivatives with respect to hyperparameters, the stationary covariance  must be differentiated. In practice the model matrices  and  are functions of the hyperparameter values  as is the measurement noise variance . 
+
+Differentiating gives:
+
+where  and .
+
+Equation eq:partial-dare is also a DARE, which means that a DARE needs to be solved for each hyperparameter. However, after this initial cost evaluating the recursion for calculating the gradient of the negative log marginal likelihood is simply a matter of the following operations:
+
+where the recursion only has to propagate  over steps for evaluating . The gradient can be evaluated very efficiently just as a matter of two additional  matrix-vector multiplications per time step. This is different from the complete state space evaluations, where calculating the derivatives becomes costly as the entire Kalman filter needs to be differentiated.
+
+
+Stabilisation of the forward and backward gains
+We have included a figure (Fig. ) showing the quick stabilisation of the gains in running the toy experiment in Fig. . Even though the data is too small to be practical for IHGP, the edge-effects are not severe. For larger data sets, the likelihood curves in Fig.  keep approaching each others. 
+
+
+
+[!t]
+  
+  yticklabel style=rotate=90, ylabel style=yshift=-15pt,clip=true,scale only axis
+  
+  
+
+  [b].48
+    
+    Forward gain
+  
+  
+  [b].48
+    
+    Backward gain
+    
+
+  Example of how the gain terms stabilize over the time span of 100 samples. The solid lines are the true gains and dashed lines the stabilizing infinite-horizon gains. These are the gains for the results in Fig. .
+  
+
+
+
+
+
+
+Classification examples
+
+We include two additional figures showing results for classification examples using simulated data. Fig.  shows the results.
+
+
+[!b]
+  
+  yticklabel style=rotate=90, ylabel style=yshift=-15pt,clip=true,scale only axis,axis on top,clip marker paths
+  
+  
+
+
+
+  [b].48
+    
+    Classification (logit)
+  
+  
+  [b].48
+    
+    Classification (probit)
+    
+
+  Two examples of IHGP classification on toy data (thresholded sinc function) with a Matern () GP  prior. The figure shows results (the mean and 95 quantiles squashed through the link function) for a full GP (naive handling of latent, full EP inference), state space (exact state space inference of latent, ADF inference), and IHGP. The hyperparameters of the covariance function were optimised (w.r.t. marginal likelihood) independently using each model.
+  
+
+
+
+
+
+
+Electricity example
+
+In the electricity consumption example we aim to explain the underlying process (occupancy and living rhythm) that generates the electricity consumption in the household.
+
+We first perform GP batch regression with a GP prior with the covariance function
+
+where the first component captures the short or long-scale trend variation, and the second component is a periodic model that aims to capture the time of day variation (with decay, a long length-scale Matern). In order not to over-fit, we fix the measurement noise variance and the length-scale of the multiplicative Matern component. We optimised the remaining four hyperparameters with respect to marginal likelihood. The values are visualized in Fig.  with dashed lines. Total running time 624 s on the MacBook Pro used in all experiments.
+
+As the stationary model is clearly a over-simplification of the modelling problem, we also apply IHGP in an online setting in finding the hyperparameters. Fig.  shows the adapted hyperparameter time-series over the entire time-range.
+
+We have selected three 10-day windows (with 14,400 observations each) to highlight that the model manages to capture the changes in the data. Subfigure (a) shows the (noisy) daily variation with a clear periodic structure. In (b) the electricity consumption has been small for several days and the magnitude of both components has dropped. Furthermore, the periodic model has increased its length-scale to effectively turn itself off. In (c) the predictive capability of the model shows and captures the daily variation even though there has been a fault in the data collection.
+
+
+
+[!b]
+  
+  yticklabel style=rotate=90, ylabel style=yshift=-15pt,clip=true,scale only axis,axis on top,clip marker paths,legend style=row sep=0pt,legend columns=-1,xlabel near ticks
+  
+  
+
+  [b].32
+    
+    Typical daily rhythm
+  
+  
+  [b].32
+    
+    House vacant
+  
+  
+  [b].32
+    
+    Missing data
+  
+  
+
+
+  
+  
+
+  
+  [b]
+    
+    Learned hyperparameter over the time-range
+    
+  
+  Results for explorative analysis of electricity consumption data over 1,442 days with one-minute resolution ( > 2M). (d) The batch optimized hyperparameters values shown by dashed lines, the results for IHGP with adaptation (solid) adapt to changing circumstances. (a)-(c) show three 10-day windows where the model has adapted to different modes of electricity consumption. Data shown by dots, predictive mean and 95 quantiles shown by the solid line and shaded regions.
+  
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,849 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+PropertyProperty
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+1161 
+-.5ex126
+
+
+
+empty
+Bilinear Random Projections for Locality-Sensitive Binary Codes
+
+Saehoon Kim and Seungjin Choi
+
+Department of Computer Science and Engineering 
+
+Pohang University of Science and Technology, Korea
+
+kshkawa,seungjin@postech.ac.kr
+
+
+
+
+
+
+
+
+
+
+
+
+Locality-sensitive hashing (LSH) is a popular data-independent indexing method for approximate
+similarity search, where random projections followed by quantization hash the points from the database
+so as to ensure that the probability of collision is much higher for objects that are close to each other than for those that are far apart.
+Most of high-dimensional visual descriptors for images exhibit a natural matrix structure.
+When visual descriptors are represented by high-dimensional feature vectors and long binary codes are assigned, a random projection matrix requires expensive complexities in both space and time.
+In this paper we analyze a bilinear random projection method where feature matrices are transformed to
+binary codes by two smaller random projection matrices.
+We base our theoretical analysis on extending Raginsky and Lazebnik's result where random Fourier features are composed with random binary quantizers to form locality sensitive binary codes.
+To this end, we answer the following two questions: (1) whether a bilinear random projection also yields similarity-preserving binary codes; (2) whether a bilinear random projection yields performance gain or loss, compared to a large linear projection.
+Regarding the first question, we present upper and lower bounds on the expected Hamming distance between binary codes produced by bilinear random projections.
+In regards to the second question, we analyze the upper and lower bounds on covariance between two bits of binary codes, showing that the correlation between two bits is small.
+Numerical experiments on MNIST and Flickr45K datasets confirm the validity of our method.
+
+
+
+
+
+Introduction
+
+Nearest neighbor search, the goal of which is to find most relevant items to a query given a pre-defined distance metric,
+is a core problem in various applications such as classification, object matching,
+retrieval, and so on.
+A naive solution to nearest neighbor search is linear scan where all items in database are sorted
+according to their similarity to the query, in order to find relevant items, requiring linear complexity.
+In practical applications, however, linear scan is not scalable due to the size of examples in database.
+Approximate nearest neighbor search, which trades accuracy for scalability, becomes more important than ever.
+Earlier work is a tree-based approach that
+exploits spatial partitions of data space via various tree structures to speed up search.
+While tree-based methods are successful for low-dimensional data, their performance is not
+satisfactory for high-dimensional data and does not guarantee faster search compared to linear scan.
+
+
+
+Two exemplary visual descriptors, which have a natural matrix structure,
+are often converted to long vectors.
+The above illustration describes LLC ,
+where spatial information of initial descriptors is summarized into
+a final concatenated feature with spatial pyramid structure.
+The bottom shows VLAD,
+where the residual between initial descriptors and
+their nearest visual vocabulary (marked as a triangle) is encoded in a matrix form.
+
+For high-dimensional data, a promising approach is approximate similarity search via hashing.
+Locality-sensitive hashing (LSH) is a notable data-independent
+hashing method, where randomly generates binary codes
+such that two similar items in database are hashed to have high probability of collision.
+Different similarity metric leads to various LSH, including angle preservation,  norm (),
+and shift-invariant kernels.
+Since LSH is a pure data-independent approach, it needs multiple hash tables or long code, requiring high memory footprint.
+To remedy high memory consumption, data-dependent hashinghas been introduced to learn similarity-preserving binary codes from data such that embedding into a binary space preserves similarity between data points in the original space.
+In general, data-dependent hashing generates compact binary codes, compared to LSH.
+However, LSH still works well, compared to data-dependent hashing methods for a very large code size.
+
+Most of existing hashing algorithms does not take into account
+a natural matrix structure frequently observed in image descriptors
+, as shown in Fig. .
+When a matrix descriptor is re-organized as a high-dimensional vector,
+most of hashing methods suffer from high storage and time complexity due to a single large projection matrix.
+Given a -dimensional vector, the space and time complexities
+to generate a code of size  are both .
+In the case of -dimensional data, 40GB(If we use single precision to represent a floating-point,
+the projection matrix needs  bytes
+GB.) is required to store a projection matrix
+to generate a binary code of length ,
+which is not desirable in constructing a large-scale vision system.
+
+Bilinear projection, which consists of left and right projections, is a promising approach to
+handling data with a matrix structure. It has been successfully applied to two-dimensional
+principal component analysis (2D-PCA) and
+2D canonical correlation analysis (2D-CCA), demonstrating that the time and space
+complexities are reduced while retaining performance, compared to a single large projection method.
+Recently, bilinear projections are adopted to the angle-preserving LSH,
+where the space and time complexities are  and , to generate binary codes of size 
+for a  by  matrix data.
+Note that when such matrix data is re-organized as -dimensional vector, the space and time complexities
+for LSH are both .
+While promising results for hashing with bilinear projection are reported in,
+its theoretical analysis is not available yet.
+
+In this paper we present a bilinear extension of LSH from shift-invariant kernels (LSH-SIK)and attempt to the following two questions on whether:
+
+randomized bilinear projections also yield similarity-preserving binary codes;
+there is performance gain or loss when randomized bilinear projections are adopted
+instead of a large single linear projection.
+Our analysis shows that LSH-SIK with bilinear projections generates similarity-preserving
+binary codes and that the performance is not much degraded compared to LSH-SIK with a large single linear projection.
+
+
+
+
+Related Work
+
+In this section we briefly review LSH algorithms for preserving angleor shift-invariant kernels. We also review an existing bilinear hashing method.
+
+
+
+
+LSH: Angle Preservation
+
+Given a vector  in , a hash function  returns a
+value  or , i.e., .
+We assume that data vectors are centered, i.e., , where  is the number of samples.
+The random hyperplane-based hash function involves a random projection
+followed by a binary quantization, taking the form:
+h_a() 12  1+sgn (^) ,
+where  is a random vector sampled on a unit -sphere and
+ is the sign function which returns 1 whenever the input is nonnegative and 0 otherwise.
+It was shown in that the random hyperplane method naturally gives
+a family of hash functions for vectors in  such that
+    P [ h_a() = h_a() ] & = & 1 - _, ,
+where  denotes the angle between two vectors  and .
+This technique, referred to as LSH-angle, works well for preserving an angle, but it does not
+preserve other types of similarities defined by a kernel between two vectors.
+
+
+
+
+LSH: Shift-Invariant Kernels
+
+Locality-sensitive hashing from shift-invariant kernels, referred to as LSH-SIK,
+is a random projection-based encoding scheme, such that the expected Hamming distance between the binary codes of
+two vectors is related to the value of shift-invariant kernel between two vectors.
+Random Fourier feature (RFF) is defined by
+_w() 2 (^+ b),
+where  is drawn from a distribution corresponding to an underlying shift-invariant kernel,
+i.e., ,  is drawn from a uniform distribution over ,
+i.e., .
+If the kernel  is properly scaled, Bochner's theorem guarantees
+,
+where  is the statistical expectation and  represents a shift-invariant kernel.
+
+LSH-SIK builds a hash function, ,
+composing RFFs with a random binary quantization
+    h() 12  1+sgn ( 12_w() + t ) ,
+where .
+The most appealing property of LSH-SIK provides upper- and lower-bounds on the expected Hamming distance
+between any two embedded points, which is summarized in Theorem .
+
+
+
+
+
+
+Define the functions
+    g_1() & & 4^2(1-) 
+
+    g_2() & &  121-,
+    4^2 (1-23 ) ,
+where , and , .
+Mercer kernel  is shift-invariant, normalized, and satisfies 
+for any .
+Then the expected Hamming distance between any two embedded points satisfies
+    g_1 (([ [h() h() ] ] g_2 ((where  is the indicator function which equals 1 if its argument is true and 0 otherwise.
+
+The bounds in Theorem  indicate that binary codes determined by
+LSH-SIK well preserve the similarity defined by the underlying shift-invariant kernel.
+
+
+Hashing with Bilinear Projections
+
+Most of high-dimensional descriptors for image, including HOG, Fisher Vector (FV), and VLAD,
+exhibit a natural matrix structure.
+Suppose that  is a descriptor matrix.
+The matrix is reorganized into a vector  where , and then
+a binary code of size  is determined by  independent use of the hash function ().
+This scheme requires  in space and time.
+
+A bilinear projection-based method constructs a hash function
+ that is of the form
+    H_a() 12 1+sgn (vec (^) ) ,
+where  and , to produce a binary code of size .
+This scheme reduces space and time complexity to  and , respectively,
+while a single large linear projection requires  in space and time.(
+Recently, proposes a circulant embedding, which is implemented by discrete Fourier transform,
+to reduce the space and time complexities to  and 
+when  and the code length is . Even though the circulant embedding is faster than bilinear projections,
+we believe that it is worth analyzing hashing with bilinear projections, because the implementation is simpler than.)
+Empirical results in indicate that a random bilinear projection produces
+comparable performance compared to a single large projection.
+However, its theoretical behavior is not fully investigated.
+In the next section, we consider a bilinear extension of LSH-SIK () and present
+our theoretical analysis.
+
+
+
+
+Analysis of Bilinear Random Projections
+
+In this section we present the main contribution that is an theoretical analysis of a bilinear extension of LSH-SIK.
+To this end, we consider a hash function  that is of the form
+    h() 12 1+sgn ((^+ b ) + t ) ,
+where , , and .
+With the abuse of notation, we use  for the case of randomized bilinear hashing, however,
+it can be distinguished from (), depending on its input argument  or .
+To produce binary code of size , the hash function 
+takes the form:
+    H() 12 1+sgn ((vec(^) + ) + ) ,
+where each column of  or of  is independently drawn from spherical Gaussian with zero mean
+and unit variance, each entry of  or of  is drawn uniformly from  and , respectively.
+
+
+We attempt to answer two questions on whether:
+(1) bilinear random projections also yield similarity-preserving binary codes like the original LSH-SIK;
+(2) there is performance gain or degradation when bilinear random projections are adopted
+instead of a large linear projection.
+
+To answer the first question, we compute the upper and lower bound on the expected Hamming distance
+ between any two embedded points computed by bilinear LSH-SIK
+with Gaussian kernel.
+Compared to the the original upper and lower bounds for LSH-SIKwith a single linear projection (Theorem ), our upper bound is the same
+and lower bound is slightly worse when the underlying kernel is Gaussian.
+
+Regarding the second question, note that some of bits of binary codes computed by
+the hash function () share either left or right projection (column vector of  or ),
+leading to correlations between two bits.
+We show that the covariance between two bits is not high by analyzing
+the upper and lower bounds on covariance between the two bits.
+
+
+Random Fourier Features
+
+We begin with investigating the properties of random Fourier features in the case of bilinear projections,
+since BLSH-SIK (an abbreviation of bilinear LSH-SIK) bases its theoretical analysis on these properties.
+To this end, we consider bilinear RFF:
+_w,v() 2 (^+ b),
+where  and .
+
+In the case of randomized linear map where ,
+, where  is Gaussian kernel.
+Unfortunately, for the randomized bilinear map, ,
+where Gaussian kernel defined as
+_g (vec()   & & 
+exp  -12  vec(_2^2  
+
+  & = & 
+exp  -12tr [ (] ,
+where  and the scaling parameter of Gaussian kernel is set as 1.
+However, we show that  is between 
+and , which is summarized in the following lemma.
+
+
+
+
+
+Define .
+Denote by  leading eigenvalues of .
+The inner product between RFFs is given by
+_w,v,b [_w, v()_w, v() ] & = & _j (1+_j)^-12 
+
+& & _b(Then,  is upper and lower bounded in terms of Gaussian kernel :
+    _g (vec() _b ()     _g (vec()^0.79,
+provided that the following assumptions are satisfied:
+
+, which can be easily satisfied by re-scaling the data.
+, which can be easily satisfied for large .
+
+
+ _w, v, b [_w, v()_w, v() ]  
+
+    & = & (^()p()p()  dd
+
+    & = & _g (() p()  d
+
+    & = & (2)^-d_w2      -^(+ ) 2   d
+
+    & = &  + ^-12,
+where  denotes the determinant of a matrix.
+The eigen-decomposition of  is given by ,
+where  and  are eigenvector and eigenvalue matrices, respectively.
+Then we have
+ + ^-12 & = &  (+)^^-12 
+
+    & = & _j(1+_j)^-12.
+Now we prove the following inequalities:
+    _g(vec(_b(_g(vec(0.79.
+Lower bound:
+First, we can easily show the lower bound on 
+with the following inequality: 
+,
+because .
+
+Upper bound:
+Second, assuming that , we can derive the upper bound on . Now, we can bound  with the following logic.
+    & & tr[(]
+     (2*0.8)^2  = 2.56 
+
+    && _k _k 2.56 
+
+    & & _1 0.56 (_k 0,
+    _1 0.28_i=2^d_w _i).
+For ,
+we know that ,
+leading to the upper bound on , i.e., .
+
+
+
+
+*[ht]
+
+[4-by-4 matrix]
+[8-by-8 matrix]
+[15-by-15 matrix]
+[25-by-25 matrix]
+Estimates of bilinear RFF  and its lower/upper bounds ( and ) with respect to Gaussian kernel values. Red marks represent the inner products of two data points induced by bilinear RFF, and blue (black) marks represent its lower (upper) bounds.
+
+Lemma  indicates that random Fourier features with bilinear
+projections are related to the one with single projection in case of Gaussian kernel.
+Due to this relation, we can conclude that random Fourier features with bilinear projections can generate similarity-preserving binary codes in the following section.
+Finally, we summarize some important properties of , showing that
+ shares the similar properties with :
+
+
+Property 1: 
+Property 2: 
+where  is a positive integer.
+
+Fig.  demonstrates that
+the inner product of two data points
+induced by bilinear RFF is upper and lower bounded with respect to Gaussian kernel
+as shown in Lemma .
+For the high , the upper bound is satisfied in Fig.  (c-d),
+which is consistent with our intuition.
+
+For Fig. , we generate the data from an uniform distribution
+with different dimensions, and re-scale the data to be .
+To compute the estimates of bilinear RFF, we independently generate 10,000 triples 
+and calculate the following sample average:
+, where .
+For the estimates of RFF, we calculate the sample average with 10,000
+independently generated pairs .
+
+
+Bounds on Expected Hamming Distance
+
+In this section, we derive the upper and lower bounds on the expected Hamming
+distance between binary codes computed by BLSH-SIK to show that BLSH-SIK can generate similarity-preserving
+binary codes in the sense of Gaussian kernel.
+Lemma  is a slight modification
+of the expected Hamming distance by LSH-SIK with a single projection,
+indicating that the expected Hamming distance is analytically represented.
+
+
+
+Upper and lower bounds on the expected Hamming distance between binary codes computed by
+BLSH-SIK and LSH-SIK.
+
+
+
+
+
+
+  _, , b, t [ [ h() h() ] ]  
+
+& = &  8^2 _m=1^1 - _b (m)4m^2-1.
+
+
+This is a slight modification of the result (for a randomized linear map) in.
+Since the proof is straightforward, it is placed in the supplementary material.
+
+Though the expected Hamming distance is analytically
+represented with respect to ,
+its relationship with  is not fully exploited.
+In order to figure out the similarity-preserving property of BLSH-SIK
+in a more clear way, Theorem  is described
+to show the upper and lower bounds on
+the expected Hamming distance for BLSH-SIK in terms of .
+
+
+
+
+
+
+Define the functions
+    g_1() & & 4^2 (1-^0.79 ), 
+
+    g_2() & &  121-,
+    4^2 (1-23 ) ,
+where  and  , .
+Gaussian kernel  is shift-invariant, normalized, and satisfies 
+for any .
+Then the expected Hamming distance between any two embedded points computed by bilinear LSH-SIK satisfies
+    g_1 (_g ( )  ) [ [ h() h() ] ]
+    g_2 (_g () ),
+where .
+
+
+We prove the upper and lower bound one at a time, following the technique used in.
+Note that the lower bound  is slightly different from the one in Theorem ,
+however the upper bound  is the same as the one in Theorem .
+
+Lower bound: It follows from Property 2 and Lemma  that
+we can easily find the lower bound as
+    [ [ h() h() ] ]& &
+    4^2 (1-_b (vec() )
+
+    && 4^2 (1-_g(vec(0.79 )
+
+    & & g_1 (_g (vec() ).
+Upper bound: By the proof of Lemma 2.3,
+we can easily find the upper bound as
+ [ [ h() h() ] ]  
+
+ & &  121-_b ( ),
+  4^2 (1-23_b ( ) ) .
+Moreover, the inequality 
+in Lemma  yields
+ [ [ h() h() ] ]  
+
+& &  121-_g ( ),
+4^2 (1-23_g ( ) ) , 
+
+& & g_2 (_g ( ) ).
+
+
+Theorem  shows that bilinear projections can generate similarity-preserving binary codes,
+where the expected Hamming distance is upper and lower bounded in terms of .
+Compared with the original upper and lower bounds in case of a single projection shown in the Lemma 2.3,
+we derive the same upper bound and slightly worse lower bound as depicted in Fig. .
+
+
+
+
+Bounds on Covariance
+
+
+
+
+
+Upper bound on covariance between the two bits induced by BLSH-SIK.
+Horizontal axis suggests a Gaussian kernel value of two data points.
+Vertical axis shows an upper bound on covariance.
+
+
+In this section, we analyze the covariance between two bits induced
+by BLSH-SIK to address how much the performance would be
+dropped compared with a single large projection matrix.
+
+A hash function for multiple bits using bilinear projections ()
+implies that there exists the bits which share one of the projection vectors.
+For example, assume that  is given as
+    h_i() = sgn ((_1^_i+b_i)+t_i ).
+We can easily find the following  hash functions
+which shares  with .
+    h_j() = sgn ((_1^_j+b_j)+t_j ),
+where .
+
+If the two bits does not share any one of projection vectors, the bits should be independent
+which indicates a zero correlation. This phenomenon raises a natural question to ask that
+how much the two bits, which share one of projection vectors, are correlated.
+Intuitively, we expect that the highly correlated bits are not favorable,
+because such bits does contain redundant information to approximate .
+Theorem  shows that the upper bound on covariance between two bits
+induced by bilinear projections is small, establishing the reason why
+BLSH-SIK performs well enough in case of a large number of bits.
+
+
+Given the hash functions as Eq. (12-13), the upper bound on the covariance between
+the two bits is derived as
+    cov () & & 64^4  ( _m=1^
+    _g (vec()^0.79m^24m^2-1 )^2  . 
+
+     & & . - (_m=1^ _g (vec()^m^24m^2-1
+     )^2 ,
+where  is the Gaussian kernel and
+ is the covariance between two bits defined as
+    cov() & =& [ [ h_i() h_i() ]  [ h_j() h_j() ] ] 
+
+    & - & [ [ h_i() h_i() ] ] [ [ h_j() h_j() ] ].
+
+
+Since the proof is lengthy and tedious, the detailed proof and
+lower bound on the covariance can be found in the supplementary material.
+
+Fig.  depicts the upper bound on covariance between the two bits
+induced by BLSH-SIK with respect to Gaussian kernel value.
+We can easily see that the covariance between the two bits for the highly similar ()
+is nearly zero, indicating that there is no correlation between the two bits.
+Unfortunately, there exists unfavorable correlation for the data points which is not highly (dis)similar. To remedy such unfavorable correlation, a simple heuristic is proposed,
+in which  bits are first generated and randomly select the  bits when
+ is the desired number of bits and  is a free parameter for reducing the unfavorable correlation
+trading-off storage and computational costs.
+This simple heuristic reduces the correlation between
+the two bits without incurring too much computational and storage costs.
+Algorithm  summarizes the BLSH-SIK with
+the proposed heuristic.
+
+
+
+[ht]
+LSH for Shift-invariant Kernels with Bilinear Projections (BLSH-SIK)
+[1]
+A data point is ,  is the desired number of bits,
+ is the hyper-parameter to reduce the correlation, and  is a subset with  elements of .
+A binary code of  with  bits.
+ and  are element-wise drawn from the zero-mean Gaussian, .
+ and  are element-wise drawn from uniform distributions,  and , respectively.
+Generate a binary code whose the number of bit is :
+.
+Select the -bits from the binary code using the pre-defined subset .
+
+
+
+
+Experiments
+
+*[htp]
+
+[400bits]
+[900bits]
+[1,600bits]
+[2,500bits]
+Precision-recall curves for LSH-SIK with a single projection (referred to as LSH-SIK-Single)
+and BLSH-SIK (referred to as LSH-SIK-Bilinear) on MNIST with respect to the different number of bits.
+In case of BLSH-SIK, the precision-recall curves are plotted for the different ,
+which is introduced to reduce the correlation in Algorithm 1.
+
+In this section, we represent the numerical experimental results
+to support the analysis presented in the previous sections,
+validating the practical usefulness of BLSH-SIK.
+For the numerical experiments, the two widely-used datasets,
+MNIST (http://yann.lecun.com/exdb/mnist/) and Flickr45K (http://lear.inrialpes.fr/people/jegou/data.php), are used to investigate the behaviors
+of BLSH-SIK from small- to high-dimensional data.
+MNIST consists of 70,000 handwritten digit images represented by a 28-by-28 matrix,
+where the raw images are used for the experiments.
+Flickr45K is constructed by randomly selecting 45,000 images from 1 million Flickr images
+used in.
+VLAD is used to represent an image with 500 cluster centers, resulting in a
+ dimensional vector normalized to the unit length with  norm.
+For BLSH-SIK, we reshape an image into a 250-by-256 matrix.
+
+The ground-truth neighbors should be carefully constructed for
+comparing the hashing algorithm in a fair manner.
+We adopt the same procedure to construct the ground-truth neighbors presented in. First of all, we decide an appropriate threshold to judge which neighbors should be ground-truth neighbors, where the averaged Euclidean distance between the query and the 50th nearest neighbor is set to the appropriate threshold. Then, the ground-truth neighbor is decided if the distance between the query and the point is less than the threshold. Finally, we re-scale the dataset such that the threshold is one, leading that the scaling parameter for Gauassian kernel can be set to one. For both datasets, we randomly select 300 data points for queries, and the queries which has more than 5,000 ground-truth neighbors are excluded.
+To avoid any biased results,
+all precision-recall curves in this section are plotted by error bars with mean
+and one standard deviation over 5 times repetition.
+
+
+
+
+[4,900bits]
+[6,400bits]
+Precision-recall curves for LSH-SIK with a single projection (referred to as LSH-SIK-Single)
+and BLSH-SIK (referred to as LSH-SIK-Bilinear)
+on Flickr45K with respect to the different number of bits,
+where the precision-recall curves for BLSH-SIK
+are plotted for the different hyper-parameter .
+
+
+
+
+[Computational time]
+[Memory consumption]
+Comparison between LSH-SIK with a single large projection (referred to as Single)
+and BLSH-SIK (referred to as Bilinear) in terms of the computational time
+and memory consumption on the Flickr45K dataset. 
+
+*[htp]
+
+[16,900 bits]
+[25,600 bits]
+[40,000 bits]
+[62,500 bits]
+
+[16,900 bits]
+[25,600 bits]
+[40,000 bits]
+[62,500 bits]
+Precision-recall curves for LSH-SIK with a single projection (referred to as Single)
+and BLSH-SIK (referred to as Bilinear) on Flickr45K when
+the same computational time for generating a binary code is required to LSH-SIK with a single projection and BLSH-SIK. The first (second) row shows the results when  of BLSH-SIK is one (five).
+
+
+
+Fig.  and  represent
+precision-recall curves for LSH-SIK with a single projection
+and BLSH-SIK on MNIST and Flickr45K with respect to the different number of bits.
+In case of BLSH-SIK, the precision-recall curves are plotted for the different ,
+which is introduced to reduce the correlation in Algorithm 1.
+From the both figures, we observe that the larger  helps to reduce the correlation of the bits
+induced by BLSH-SIK. Even though BLSH-SIK cannot generate the same performance of LSH-SIK with a single projection, we argue that the performance is comparable.
+Moreover, the computational time and memory consumption for
+generating binary codes are significantly reduced as explained in the next paragraph.
+
+Fig.  represents the comparison between
+LSH-SIK with a single large projection and BLSH-SIK
+in terms of the computational time (To measure the computational time, a single thread is used with a Intel i7 3.60GHz machine
+(64GB main memory). Fig.  (a) does not include the computational time of LSH-SIK with a single projection for 62,500bits due to the high memory consumption.) and memory consumption on the Flickr45K dataset.
+In case of BLSH-SIK, the time cost and memory consumption are reported with respect
+to the different , which evidently shows that
+the computational time and memory consumption of BLSH-SIK are much smaller than
+LSH-SIK with a single projection. From Fig. , and , we can conclude that  is a good choice for BLSH-SIK,
+because  performs well compared to  but it is much faster than .
+
+Fig.  represents the
+precision-recall curves for LSH-SIK with a single projection and BLSH-SIK on Flickr45K
+with the same computational time limitation for generating a binary code.
+Therefore, fewer bits are used for LSH-SIK with a single projection compared to BLSH-SIK.
+For both  and , BLSH-SIK is superior to LSH-SIK with a single projection with the
+same computational time.
+
+
+
+
+Conclusions
+
+In this paper we have presented a bilinear extension of LSH-SIK, referred to as BLSH-SIK,
+where we proved that the expected Hamming distance between the binary codes of two vectors is related to the value
+of Gaussian kernel when column vectors of projection matrices are independently drawn from spherical Gaussian distribution.
+Our theoretical analysis have confirmed that: (1) randomized bilinear projection yields similarity-preserving binary codes;
+(2) the performance of BLSH-SIK is comparable to LSH-SIK, showing that the correlation between two bits of binary codes
+computed by BLSH-SIK is small.
+Numerical experiments on MNIST and Flickr45K datasets confirmed the validity of our method.
+
+
+
+
+
+
+
+Acknowledgements:
+This work was supported by National Research Foundation (NRF) of Korea (NRF-2013R1A2A2A01067464)
+and  the IT RD Program of MSIP/IITP (B0101-15-0307, Machine Learning Center).
+
+
+
+
+
+ieee
+
+
+
+
+
+
+
+Bounds on the Expected Hamming Distance
+
+
+For any , .
+
+(Lemma 2 in the paper)
+    _, , b, t[_h()h()] = 
+    8^2 _m=1^1 - _bi(m4m^2-1,
+where ,
+, , and .
+Proof. Using Lemma , we can show that . By using a trigonometry identity,
+    & & 12_b,,  cos(^+ b) -
+    cos(^+b) 
+     =  2_,
+     sin(^(2 ) .
+By, we use Fourier series of :
+    g() = 4 _m=1^ 1-cos(2m)4m^2-1.
+This formula leads to the following equation:
+    _, , b, t[_h()h()]
+     = 8^2  _m=1^ 1-_, [cos(m^(]4m^2-1
+According to the proof of Lemma 1 described in the paper,
+we know that ,
+which completes the proof.
+Q.E.D.
+Bounds on the Covariance by Bilinear Projections
+
+
+Given a datum as  and bilinear projections, ,
+are drawn from the ,
+
+.
+Proof.
+    & & _, _1, _2[cos(m^_1)cos(n^_2) ] 
+
+    & = & [ cos(m^_1)p(_1)d_1]
+            [ cos(m^_2)p(_2)d_2] p()d
+
+    & = & _g(m^)_g(n^) p()d(by Lemma 1 in the paper) 
+
+    & = & 12 exp(-12(^[+ m^2^+ n^2^]))d
+
+    & = & + (m^2+n^2)^^-12 _bi((m^2+n^2)).
+
+
+(Theorem 3 in the paper)
+Given the hash functions  and , the upper bound on the covariance between
+the two bits is derived as
+
+    cov() (64^4) [ ( _m=1^ _g(vec(0.79m^24m^2-1 )^2
+      - (_m=1^ _g(vec(m^24m^2-1
+     )^2 ],
+where  is the Gaussian kernel and
+ is the covariance between two bits defined as
+
+    cov() & = & _, _1, _2, b_1, b_2, t_1, t_2 [_h_1()h_1()    _h_2()h_2() ] 
+
+     & - & _, _1, b_1, t_1[_h_1()h_1()]
+       _, _2, b_2, t_2[_h_2()h_2()], 
+
+    h_1() & = & sgn ((^_1+b_1)+t_1 ),
+
+    h_2() & = & sgn ((^_2+b_2)+t_2 ).
+Proof. First, we want to derive the first term in the covariance in terms of .
+    & & _, _1, _2, b_1, b_2, t_1, t_2[_h_1()h_1()
+    _h_2()h_2() ] 
+
+    & = & 14_, _1, _2, b_1, b_2[cos(^_1 + b_1) - cos(^_1+b_1)
+    cos(^_2 + b_2) - cos(^_2+b_2) ] ( Lemma )
+
+    & = & 4^2 _, _1, _2 [ sin(^(2) sin(^(2)  ] 
+
+    & = & (64^4) _m,n=1^
+    _, _1, _2 [ ( 1-cos(m^(4m^2-1 )     ( 1-cos(n^(4n^2-1 ) ]
+Using the Lemma 2, the first term in the covariance can be represented in terms of :
+
+    & & _, _1, b_1, b_2, t_1, t_2[_h_1()h_1()
+    _h_2()h_2() ] 
+
+    & = & (64^4) _m,n=1^ 14m^2-114n^2-1
+    (1 - _bi(m- _bi(n+ _bi((m^2+n^2)()
+The second term in the covariance is also represented in terms of :
+
+    & & _, _1, b_1, t_1[_h_1()h_1()]
+       _, _2, b_2, t_2[_h_2()h_2()] 
+
+    & = & (64^4) _m,n=1^ 14m^2-114n^2-1
+    (1 - _bi(m(- _bi(n(    + _bi(m(bi(n()
+Therefore, the covariance between two bits is computed as
+    cov()
+    & = & (64^4) _m,n=1^ 14m^2-114n^2-1
+    [ _bi((m^2+n^2)(- _bi(m(bi(n(    ] 
+
+    & & (64^4) _m,n=1^ 14m^2-114n^2-1
+    [ _g(vec((m^2+n^2)(0.79
+    - _g(vec(mg(vec(n    ] 
+
+    & = & (64^4) _m,n=1^ 14m^2-114n^2-1
+    [ _g(vec(0.79(m^2+n^2)
+    - _g(vec(m^2_g(vec(n^2
+    ] 
+
+    & = & (64^4) [ ( _m=1^ _g(vec(0.79m^24m^2-1 )^2
+     - (_m=1^ _g(vec(m^24m^2-1
+     )^2 ],
+where the second inequality is given by Lemma 1 in the paper () and
+the third equality is given by .
+The lower bound can be derived in a similar way.
+
+
+Given the hash functions  and , the lower bound on the covariance between
+the two bits is derived as
+
+    cov() (64^4) [ ( _m=1^ _g(vec(m^24m^2-1 )^2
+      - (_m=1^ _g(vec(0.79m^24m^2-1
+     )^2 ],
+where  is the Gaussian kernel and
+ is the covariance between two bits defined as
+
+    cov() & = & _, _1, _2, b_1, b_2, t_1, t_2 [_h_1()h_1()    _h_2()h_2() ] 
+
+     & - & _, _1, b_1, t_1[_h_1()h_1()]
+       _, _2, b_2, t_2[_h_2()h_2()], 
+
+    h_1() & = & sgn ((^_1+b_1)+t_1 ),
+
+    h_2() & = & sgn ((^_2+b_2)+t_2 ).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

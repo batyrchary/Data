@@ -1,0 +1,1255 @@
+abstract
+We study graph drawing in a 
+cloud-computing context where data is stored externally
+and processed using a small local working storage.
+We show that a number of classic graph drawing algorithms can be 
+efficiently implemented in such a framework where 
+the client can maintain privacy while constructing a drawing of her graph.
+abstract
+
+
+
+
+
+Drawing Trees with Bounding Rectangles
+Drawing Trees with Bounding Rectangles
+sec:bound_rect
+In this section, we present an algorithm that draws a binary tree 
+using a bounding rectangle approach from cdtt-dgdts-95, adapted
+to the compress-scanning model. 
+This algorithm is
+slightly different from the approaches we took in previous sections
+and involves a more complex way of converting it to fit
+data-oblivious mode. The original algorithm recursively assigns bounding
+rectangles to nodes of the tree. A leaf node is assigned a rectangle of size 21,
+while an internal node is assigned a rectangle that fits the bounding rectangles
+of its children. Each rectangle is represented by its , 
+and  coordinate of the left top corner, which we refer to as reference point .
+For leaves, the  is , and  of internal nodes
+is the sum of the  of its children.
+The  of the rectangle is defined as .
+The bounding rectangle of the
+root node is assigned to  of .
+The  of th child of node  is assigned
+to .
+Each leaf node  is then assigned to a coordinate
+.
+An internal node is placed between its children, hence,
+a node  with children   is assigned to a coordinate
+.
+
+Data-oblivious algorithm:
+Data-oblivious algorithm:
+Here, an Euler tour over  is only sufficient to compute ,
+ and  values. Computing  coordinate of internal nodes
+involves knowing the left and the right coordinate of its children which can only be computed
+when subgraphs of both children are processed. If we use Euler tour
+traversal we need to store the coordinates computed in the left subtree while processing
+the right subtree. Given that we only allow for small private workspace, we cannot store them
+internally, since we may need to store coordinates for several levels of the tree
+which in the worst case can be linear in the number of nodes in the tree.
+Indeed, in our previously described methods, we only store a constant number
+of values when traversing a tour.
+Therefore, in this section we propose a different technique
+that is based on a dashed-solid representation. This representation allows us
+to store only  coordinates in the worst case, which
+fits our compressed-scanning model.
+This algorithm is an example that one can carry out more involved computations
+on graphs with sublinear private space.
+
+The dashed-solid representation of the tree splits edges into dashed and solid.
+An edge - is solid if .
+Otherwise, an edge is dashed.
+If  of the children is the same, the right edge is solid and the left one is dashed.
+The invariant of this representation is that a parent node has a solid
+edge to only one of its children and the corresponding subtree is equal or larger than
+the subtree of the sibling (if one exists). The main property of the dashed-solid assignment is that
+the length of the longest dashed path is .
+Note that given that we can compute  easily
+(Section sec:euler_ssize),
+
+assigning edges to dashed or solid is trivial using another Euler tour traversal.
+
+Given a dashed-solid representation, we compute  coordinates
+by creating a tour around the tree where edges are accessed in a specific order.
+The traversal first goes down only via solid edges,
+when a leaf is reached we traverse up until a node with a dashed edge is reached.
+We then follow this subtree also traversing its solid edges first.
+To construct this traversal one needs to store with every node which of its children is
+solid.
+The coordinates  are computed as follows.
+
+We follow a solid edge path until a leaf  is reached and then the leaf node
+is assigned to coordinate
+. We remember this coordinate as 
+in the private memory.
+When going up, if the parent node  does not have any other children,
+then we assign it
+to  and continue traversing up the tree.
+If the node  indeed has a dashed edge, then we traverse the subtree of the dashed edge.
+Once this traversal is finished,  is assigned to  where
+ is the coordinate of the child from the dashed edge. We now discard
+old value of  and  and assign  to just computed coordinate of 
+and keep going up. The same process is applied when we go down the subtree
+from the dashed edge, except we need to remember  coordinate
+for every subtree rooted at a solid edge we encounter going down.
+Since the longest path starting from a  dashed edge is
+bounded by  we can easily fit a stack of corresponding  coordinates
+into our small workspace .
+
+See Figure fig:bound_rect in the Appendix for an example of the drawing.
+(See Figure fig:bound_rect for an example of the drawing.)
+figure[ht]
+	         bound_rect
+        	[]Example of the algorithm in Section sec:bound_rect. Tree annotated with the
+	width, height and  coordinate of the top left corner of the bounding rectangle (). Figure on the right
+	is the resulting drawing.
+	fig:bound_rect
+figure
+
+We note that this
+algorithm can be extended to n-ary trees if we store dashed edges of a single
+node in a balanced binary tree (see cdtt-dgdts-95 for details).
+
+more than one  coordinate.
+edge
+ 
+We repeat this process for the rest of the traversal: when going down always pick
+the solid edge to traverse down, when going up remember the first follow solid path,
+assign the leaf to its coordinate, 
+it is traversed we
+bring back the 
+
+We remember this value and go up, assigning the nodes on the solid path to this coordinate
+(recall that the parent node
+
+ which are centered over Now when going up the solid path the nodes we assign the nodes 
+leaf is reached the 
+
+
+The tree is traversed from the root down to the leaf following only solid edges.
+We then go up, similar to Euler cycle the edges are duplicated indicating the direction,
+until we access the first node that has a dashed edge to its child.
+
+When going down the solid edge is always accessed first,
+
+
+
+
+
+
+
+
+
+
+Run the algorithm for finding subgraph size and reference points
+in the compressed-scanning model. One can also easily run Euler tour to
+determine whether an edge is solid or dashed.
+Each node now contains an additional field, , which is set to true
+is the edge between the parent and the node is dashed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Traversal 
+Duplicate every vertex as left and right for Euler traversal.
+enumerate
+Going down:
+enumerate
+if the node is not a leaf pick the child with the solid and edge and follow it.
+if the node is a leaf assign  coordinate as  and
+pick the backward edge to start going up.
+if the edge is dashed, remember in private memory the  coordinate
+of the solid edge of the sibling.
+
+enumerate
+Going up:
+enumerate
+If going up the dashed edge, set this node's  coordinate to the middle
+of the  coordinate from where it just came back and other's child's coordinate
+from private memory. Remove the last value from private memory.
+If there is a dashed edge from the top node, follow it.
+enumerate
+enumerate
+
+Drawing Trees with Bounding Rectangles
+
+enumerate
+Euler tour to find reference and width values for every node
+Mark edges as dash or solid
+Create an ordering of the edges
+Walk along this ordering, setting up the  coordinate
+enumerate
+
+Traversal Give order in which we will traverse the edges, so that we
+first traverse solid edges and then dashed. Bottom up traversal: beginning
+from last solid edge on the longest solid path and going up. Recursion
+only on paths starting with a dashed edge.
+
+Creating an order
+Start at the root node, :
+algorithmic
+not 
+  reached the leaf
+
+  if edge to the child is solid
+  mark it with 
+  
+  if edge to child is dashed
+  mark it 
+algorithmic
+
+
+
+
+
+
+Conclusions and Open Problems
+sec:conclusions
+
+We introduce the compressed-scanning technique for designing
+data-oblivious algorithms in a cloud-computing
+environment.  
+In a nutshell, this technique involves specifying an
+algorithm as a series of scans where data is processed using a small
+working storage.  Using this technique, we show how to implement
+classic drawing algorithms for trees, series-parallel graphs, and
+planar -digraphs (and variations of these algorithms) so that the
+client needs only a small amount of working storage (constant or
+logarithmic in the size of the data set) and can fully protect the
+privacy of the graph and of its layout, beyond what can be
+accomplished by encryption alone.
+We show how to use this technique to develop
+data-oblivious variations of several classic graph drawing algorithms.
+Open problems include finding other applications of this technique
+and developing alternative data-oblivious approaches for graph drawing. For
+example, it is not known how to compute in a data-oblivious way
+ orientations and -numberings, used for visibility representations
+of planar graphs tt-uavrp-86, 
+or canonical orderingsfpp-hdpgg-90, used for planar straight-line drawings.
+
+
+
+
+
+
+
+We adopt the -drawing algorithm from bcdtt-hdspd-94.
+This algorithm recursively produces a drawing of 
+inside a bounding triangle  which is isosceles and right-angled.
+In the drawing of a series composition, the two bounding triangles,
+ and ,
+are placed one on top of another and, hence, produce a bounding triangle big enough to
+fit them both. For a parallel composition,  is placed on the right
+of   and a larger triangle is drawn to fit this parallel composition.
+The algorithm works by traversing the SPQ tree and identifying the size of the bounding
+triangles of each node. The length of the hypotenuse, , is enough to store
+this information. Each  node is assigned a triangle with , while for
+series and parallel nodes  is the sum of  values at the children nodes.
+When traversing the tree we also compute value , which makes sure that in a
+drawing of a parallel graph  the edge that goes from the source of  to ,
+the left subgraph of the composition,
+does not intersect the drawing of .
+This value  for a  node is simply ,
+for  node it is  and for  node it is . Note that
+for a parallel node it is the sum of  values of both graphs since we want to make sure
+that if subgraph  is later a part of a parallel composition no node will intersect either
+ or . If  is a transitive edge then .
+(See Figure fig:spq2.)
+
+Once  and  are computed for every node, i.e., every bounding triangle,
+the algorithm computes the  value of the bottom node of each triangle.
+The outer most triangle is positioned at .
+Given coordinates  of a triangle corresponding to the  node
+with hypotenuse of size  and children with hypotenuses
+ and , we place the first triangle
+at  and second at .
+Given coordinates  of a triangle corresponding to a parallel node,
+we place the first triangle
+at  and second at .
+
+Given that we know the coordinates of each triangle, we can now assign coordinates
+for individual nodes. The source of  is placed at (0,0) and sink is placed at .
+We then look at each  in  and place it at 
+where  is a subgraph and  is its sink.  (See Figure fig:spq3 for an example.)
+
+
+
+
+
+
+
+Introduction
+sec:intro
+Technologies developed under the
+paradigm of cloud computing
+enable users to access their data seamlessly across devices of vastly
+different computational power.  Moreover, these technologies support
+computations on a large data set using a small device whose storage
+capacity is insufficient to simultaneously hold all the data, since
+the data is held in its entirety on an external server. 
+In this
+paper, we present techniques that allow a client to efficiently
+execute various classic graph drawing algorithms, and variations of
+them, in a cloud computing environment, where the storage of the
+graph is outsourced to an online storage service.
+
+We are particularly interested in allowing a client to access her data
+and perform computations on them in a privacy-preserving
+way. For example, an administrator for a fast-growing company may be
+revising (and visualizing) the organizational chart for the leadership
+of her company, and leaking this chart to the press or a rival could
+negatively impact the company.  Thus, we view the storage server as an
+honest-but-curious adversary, who correctly performs the storage
+and retrieval operations requested by the client, but is nevertheless
+interested in learning as much from her data as possible (indeed, some
+cloud computing companies are basing their business model on this
+goal).
+
+Of course, in a cloud computing scenario, the client would encrypt the
+data she outsources, decrypting it when she retrieves, it and
+re-encrypting it when she stores it back (using a probabilistic cipher
+that is unlikely to repeat the same cipher text for a re-encryption of
+the same plaintext).  But she may also be leaking information to the
+server from the pattern of her data accesses to the storage server. 
+For example, accessing the memory associated with a certain department while 
+preparing a new organizational chart leaks the fact that that department 
+is being reorganized.
+So the client should additionally aim at completely hiding her access
+patterns in order to achieve privacy protection for her data.
+
+Oblivious  Algorithms and Storage
+Oblivious  Algorithms and Storage
+The general techniques of oblivious RAM
+  simulation and oblivious storage allow a client to simulate
+an arbitrary algorithm in such a cloud-computing environment so as to
+hide both the content and access patterns for her computation 
+(e.g., see a-orwca-10,bmp-rosmor-11,dmn-psor-10,go-spsor-96,
+  gm-paodor-11,gmot-orsew-11,gmot-pos-12,gmot-ppgdasors-12).  
+(e.g., see gm-paodor-11,gmot-orsew-11,gmot-pos-12,gmot-ppgdasors-12).  
+But
+these solutions involve fairly complicated simulation techniques for
+generic algorithms that increase the running time of the client's
+algorithm by a polylogarithmic factor when the client has a small
+amount of working storage.
+
+Privacy-preserving algorithms in the cloud computing scenario with no
+asymptotic time overhead have been developed for sorting
+g-rsaso-10 and for fundamental computational geometry problems
+on planar point sets, including convex hull, well-separated pair decomposition,
+compressed quadtree construction, closest pairs, and all nearest
+neighbors egt-ppdo-10. These algorithms also hide the access pattern from the server and are referred to as data-oblivious.
+
+In this paper, we develop simple privacy-preserving algorithms for
+some classic graph drawing problems that fully obfuscate the access
+pattern from the data server. Our algorithms are provably data-oblivious and
+utilize small working storage.
+
+Related  Work
+Related  Work
+There are existing
+web-based systems that can perform graph drawing services for clients,
+such as the Brown Graph Server bgt-gdtsw-99 and
+Grappa bmw-grappa-97.
+These differ from the framework we are describing in this paper in two ways.
+First, our model involves the client storing her
+data in an outsourced data
+server and accessing that data remotely, whereas the web-based graph drawing
+services involve a client storing her data locally
+and temporarily shipping it to the server.
+Second, in the framework we are describing here, the client
+performs the graph drawing algorithm herself, not the server 
+(because of
+privacy concerns), whereas the web-based drawing services employ their own graph
+drawing algorithms to produce layouts for the client.
+
+Abello and Korn ak-mgv-02 describe a system of 
+clustering and hierarchical 
+representations for visualizing large graphs that do not fit in main memory.
+In addition, Abello et al. Abello:1999 discuss at a high
+level, in a SIGGRAPH column, some of the challenges
+of dealing with the visualization of large graphs with small working storage.
+Likewise, there is a large body of work on external-memory graph algorithms, 
+where one solves a problem that is too big to fit in main memory
+by dividing it into blocks and accessing data in way that takes advantages of
+localities of reference (e.g., see Chiang:1995,Vitter:2001).
+The present paper can be viewed as an approach for dealing with 
+the challenge of drawing large graphs with small local memory, but
+in a different way than using clustering or external memory approaches.
+In particular, our approach involves accessing items individually, not in
+blocks, and it involves computing exact drawings, not approximate, clustered,
+or hierarchical drawings.
+Our approach is probably most similar to prior work on computations on data
+streams (e.g., 
+see Babcock:2002,raghavan1999computing,muthukrishnan2005data).
+In this model, data is presented in single stream, which arrives in an
+arbitrary order and is processed in an online, read-only fashion
+using a workspace of small size.
+Each time an item is considered, all the 
+processing involving that item has to be
+completed before considering the next item.
+Henzinger et al. raghavan1999computing 
+introduce a version of this
+model that allows for a small number of passes over the data
+using a small workspace, but 
+their approach still assumes that data is presented in 
+a read-only fashion in an
+arbitrary order (although they do leave as an open problem whether allowing for
+alternative orderings can reduce workspace memory size in some cases).
+In addition, Feldman et al. fmsss-odssc-10 define the MUD model for 
+describing MapReduce algorithms, which also involves scans and small local memory, 
+but in their model scans are only over small local
+memories rather than a large set of data.
+
+In the context of graph drawing,
+Binucci et al. bbddgppsz-10 describe a framework for drawing trees
+in the streaming model, where one draws trees using a single scan of the edges,
+using a framework that is similar to our approach but nonetheless has some
+important differences.
+Specifically,
+as in the traditional data streaming model,
+their approach only allows for
+a single scan of the edges of a tree in an order that is not 
+under the control of the algorithm.
+In our case, the client can make multiple scans of her data and
+specify the ordering of the scan each time.
+In addition, in their model, once a node is placed it cannot be moved, 
+whereas we
+allow for the client to make tentative assignments of coordinates in one
+scan that can be refined or changed in a future scan,
+since this more naturally fits the approach of cloud computing.
+
+Our Results
+Our Results
+To enable data-oblivious algorithms for graph drawing problems, we
+introduce compressed scanning, an algorithmic design framework based on a series of scans.  Our method
+is related to the massive,
+unordered, distributed (MUD) modelfmsss-odssc-10 for efficient
+computation in the map-reduce framework. 
+We assume that the server holds a set of  data items and the client has a small private working storage of size . The data items at the server are encrypted with a semantically secure (probabilistic) cipher so that it is hard for the server to determine whether two items are equal.
+
+An algorithm for the compressed-scanning model consists of a
+sequence of rounds, where in each round the entire data set is scanned in some order specified by the client. During the scan, each item
+is processed exactly once by the client: first the client downloads
+the item from the server into working storage; 
+next, the client performs some internal-memory computation on the item and the content of the working storage; finally the item is written out to
+an output stream at the server.
+When a round is completed, the output stream is
+either confirmed as the algorithm's output or it is used as the input
+data set for the next round.  The efficiency of such an algorithm is
+measured, therefore, by the number of rounds needed and the size of
+the local working storage that is required.  Ideally, the number of
+rounds should be  and the working storage should be logarithmic
+or polylogarithmic in size.
+As shown in Section
+sec:shuffle,
+sec:model
+an algorithm
+designed in the compressed scanning framework can be implemented in a
+data-oblivious way by randomly shuffling the items in between scans.
+
+Using the compressed-scanning approach, we provide efficient
+data-oblivious algorithms for a number of classic graph drawing
+methodsdett-gd-99, including symmetric straight-line drawings and
+treemapjs-tmsat-91 drawings of trees, dominance drawings of
+planar acyclic digraphs dtt-arsdp-92, and -drawings of
+series-parallel graphs bcdtt-hdspd-94.  Our methods result in
+privacy-preserving graph drawing algorithms whose running times are
+asymptotically optimal and better than could be achieved by applying
+general-purpose privacy-preserving techniques (e.g.,
+see a-orwca-10,bmp-rosmor-11,dmn-psor-10,go-spsor-96,
+  gm-paodor-11,gmot-orsew-11,gmot-pos-12,gmot-ppgdasors-12).  (e.g.,
+see gm-paodor-11,gmot-orsew-11,gmot-pos-12,gmot-ppgdasors-12).
+
+
+
+
+Compressed-Scanning
+sec:model
+In this section, we formally define
+the compressed-scanning model
+for designing client-server algorithms that can be efficiently implemented using a small working storage, , at the client.
+We assume that the server holds an array, , of  data elements.
+
+Model
+Model
+An algorithm for our model consists of a sequence of  rounds.
+A round involves accessing each of the elements of  
+exactly once in a read-compute-write operation.
+This operation consists of reading an element from the server
+into private working storage, using the element
+in some computation, and writing a new element
+to an output stream, , at the server.
+When a round completes, either the output stream  and/or a set of values in  are confirmed as the 
+output of the algorithm, or we assign  and start the next round.
+
+This size of the working storage, , is a parameter of our model, and is intended to be small (e.g., constant or ).
+The name of our model is derived from the fact that each round scans the set
+ and computations are performed using a small, or "compressed", amount
+of working storage.
+
+Simple examples of algorithms that fit our model include the trivial
+methods for summing  integers in an array or traversing a linked
+list from beginning to end, which can be done with a constant-size
+working storage, or any algorithm in the standard data streaming
+model, which would have  being equal to the working storage for
+that algorithm.
+
+
+Note that our compressed-scanning model generalizes the standard data
+streaming model.  Privacy Protection
+sec:shuffle
+Privacy Protection
+Suppose we are given a compressed-scanning algorithm, , which runs 
+in  rounds
+using a working storage, , and a data set, , of size .
+We can implement  in a privacy-preserving way as follows.
+
+The first essential step in ensuring privacy is the encryption of the elements in .
+From now on we assume that the input stream, , is stored encrypted at the server and whenever we write
+elements to the output stream, , we also encrypt them.
+We use semantically secure encryption goldre04b, which takes as input the plaintext
+and a random value. Thus, if the same
+element is encrypted twice, the resulting ciphertexts are different.
+This is useful when we read an element, decrypt it, possibly modify it,
+re-encrypt and write it back.
+With semantically secure encryption the server
+will not be able to distinguish whether two data elements are equal or whether
+ the output element
+of a read-compute-write operation is equal to the input element.
+
+The next step in ensuring privacy is hiding the access pattern from
+the server.  For each round, , of , we use a new pseudo-random
+permutation Gold01, , to assign a random integer,  between 
+and , to each element, , in .  Value  is stored
+encrypted next to item .
+
+
+
+We then perform a random shuffle (e.g.,
+using an oblivious sort g-rsaso-10) to move each element  to location
+ so that the server cannot figure out where each element was
+moved to. (Recall that the elements are reencrypted each time they are
+accessed.) This step takes  time.
+We now put the elements in a lookup table using the  values 
+as keys, since the adversary will have no way of correlating these values to the original
+locations of the elements. 
+
+Finally, we simulate round , where we use  to do the lookup for 
+element .
+Since each element in  is 
+accessed exactly once in the round, each lookup is independent
+and random;
+hence, it cannot be correlated with previous or subsequent lookups.
+For each lookup, we
+do any necessary
+local computation, and then write an element to our output stream.
+Even if we have nothing to output, we can always write a dummy
+element, for the sake of being oblivious.
+
+In conclusion, we simulate each round of algorithm  in 
+ time while fully hiding the pattern of access to the items in .
+Thus, the simulation of  takes time 
+ and uses working space of size proportional to that of .
+
+
+definition
+  A probabilistic algorithm  is data-oblivious if given two
+  inputs of the same size,  and , the accesses that 
+  makes to the memory for  and  have the same probability
+  distribution.
+def:obl
+definition
+
+In other words, one cannot distinguish between  and  by just
+looking at their access patterns.  For example, consider an algorithm
+that scans the elements of a sorted array and writes to
+the output stream, , only distinct elements.  This algorithm is not
+data-oblivious since, given inputs  and ,
+the write accesses to  happen after a different number of read
+accesses are made to the input stream.  A data-oblivious algorithm
+would write a value to  for every element it reads from the input:
+a dummy element if the same element as the previous one is read, and a
+real one, otherwise. One can then make a simple sorting pass over 
+to bring real items to the front of the list.  A workspace of constant size
+is used to store the last read element.
+
+theorem thm:compressed-oblivious 
+  Let  be an algorithm in the compressed-scanning model for an input
+  of size  that uses a working space of size . Algorithm  can
+  be simulated by a data-oblivious algorithm if the number of rounds
+  and the number of elements written to the output stream at each
+  round depend only on . Also, the simulation uses a working space
+  of size  and runs in time , where  is
+  the running time of .
+theorem
+
+proof (Sketch)
+  Each round is simulated by reading elements from , writing elements
+  to , and reshuffling the next input set.  Accesses to locations
+  in  are made only once in a random order.  This ensures that
+  accesses to  in a single round are data-oblivious.  Write
+  accesses to  are also data-oblivious, since they happen on every
+  access to .  After every round, the input sequence is reshuffled
+  (data-obliviously); hence, one cannot correlate accesses between
+  rounds as well.  Thus, accesses to  and  depend only on size
+  of  while the number of rounds is fixed by the algorithm
+  regardless of . proof
+
+In the next section we describe graph drawing algorithms that fit the
+compressed-scanning model and, hence, can be implemented in a
+data-oblivious manner.
+
+These algorithms guarantee that their access patterns do not reveal
+the combinatorial structure of the graphs that are given as inputs
+(e.g., number of outgoing or incoming edges for a particular node) and
+run in a constant number of rounds using  of logarithmic size.  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+0pt
+by -by -9in
+0pt
+0.5in
+6.5in
+
+
+
+
+
+
+
+
+[#1 #2:]
+      [#1 #2 #3:]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Data-Oblivious Graph Drawing Model and Algorithms
+Graph Drawing in the Cloud: 
+
+   Privately Visualizing Relational Data 
+
+   using Small Working Storage
+
+
+Michael T. Goodrich1
+Olga Ohrimenko2
+
+Roberto Tamassia2
+
+
+Dept. Computer Science, Univ. of California, Irvine.
+        goodrich@acm.org
+       Dept. Computer Science, Brown University. olya,rt@cs.brown.edu
+        
+
+
+
+
+
+
+
+
+
+Acknowledgments
+  
+
+abbrv
+
+
+
+
+Series-Parallel Graphs
+Series-Parallel Graphs
+A series-parallel (SP) graph is a directed acyclic graph that can be decomposed recursively
+into a combination of series-parallel digraphs.
+The base case of such a graph is a simple directed edge. A series composition consists of two
+series-parallel graphs  and  where
+the sink of  is identified with the source of . A parallel composition of two
+series-parallel graphs  and  is the digraph where source of  is identified
+with the source of  and similar for their sink nodes.
+For example, consider the series-parallel digraph shown in Figure .
+The subgraph  induced by its edges
+- and - is a series composition of graphs - and -.
+While  and edge - is a parallel composition.
+An SP graph  can be represented with a binary tree (SPQ tree) with
+three types of nodes, ,  and .
+ nodes are leaves of the tree
+and correspond to individual edges of . An internal node
+is of type  if it is a parallel composition of the children digraphs.
+If a node corresponds to a series composition it is called  node.
+Here, we use a right-pushed embedding of  such that a transitive edge
+in parallel composition is always embedded on the right. (Figure shows the SPQ tree of the graph of Figure .) 
+
+Original  -drawing algorithm:
+
+We are now ready to explain the algorithm in compressed-scanning model.
+Input:
+Input:
+SPQ tree from a right-pushed embedding of SP digraph  and
+nodes that are annotated as ,  or . 
+We convert this tree into an Euler tour
+with addition of parent and child node type:
+ and  which are either ,  or .
+
+Data-oblivious algorithm:
+Data-oblivious algorithm:
+We adopt the -drawing algorithm from .
+
+We refer the reader to a brief description of this algorithm
+in Section . The algorithm
+makes several computations over the tree to annotate the nodes of 
+the SPQ tree
+with values ,  and .
+Here  is the length of the hypotenuse of the
+bounding triangle of a node and  stores a distance
+between parallel drawings to make sure they do not intersect.
+The above algorithm
+makes several computations over the tree to annotate the nodes of 
+the SPQ tree
+with values ,  and .
+
+Value  can easily be computed in the same manner as we computed
+the subgraph size
+in Section .
+earlier in this section.
+Value  of the left child is added
+only for parents of  nodes. When an Euler tour is going up the tree we can always check
+the value of  to know if  of the left subgraph should be carried to the right one.
+Coordinates  for each node are computed from a small modification
+of the Euler tour: the left child needs know value  and
+right child needs to know . It is easy to do this by always reading the next edge and remembering
+the last edge.
+
+
+
+
+
+
+
+Given that we know the coordinates of each triangle, we can now assign coordinates
+for individual nodes. Recall that every leaf node of SPQ tree is associated with an edge
+while an internal node is either a DAG or a path of edges in the subtree rooted at this node.
+Hence, we can associate each internal node of SPQ tree, and edges in the corresponding
+Euler tour, with two nodes of the series-parallel graph
+that correspond to the source and the sink of the underlying subgraphs.
+Given a  node of SPQ tree and
+source and sink nodes of its children,  and , if  and  are equal
+then node  is placed at . Otherwise, we output a dummy.
+
+
+
+
+
+
+[b]0.15
+      
+                 
+
+[b]0.41
+      
+  
+[b]0.4
+     
+  
+
+  
+
+[](a) A series-parallel graph. (b) SPQ tree representation annotated with values  and 
+(dashed rectangles).
+(c) The final drawing.
+  
+
+
+
+Given that we can only traverse a tree using
+an Euler cycle we note that
+Our algorithm in compressed-scanning model The main idea of the above algorithm when going up the tree is to "undo" the rectangle
+assignments that were done when going down. This helps us to keep track of the  and  coordinates
+of the parent. Note that at each pass of the while loop we read an edge and output two values.
+
+The algorithm to find a drawing for tree map in the area  and  is:
+
+
+
+Tree representation
+Each edge is given as structure with following fields:
+
+Parent node, 
+Child node, 
+Child num, 
+Parent's number of children 
+Child's number of children 
+Parent's size, 
+Child's size, 
+
+where  and  are used to reference an edge.
+
+To create an Euler tour of the tree we create two copies of each edge with
+an additional field  which is equal to either  or .
+If edge  has an  direction then we treat it as the rightmost child
+coming from this node and hence .
+
+The Euler tour then is defined as
+
+
+
+   
+      
+         
+               
+                  
+   
+
+
+
+
+
+
+Drawing of Planar Acyclic Digraphs
+Drawing of Planar Acyclic Digraphs
+We adopt an algorithm for dominance
+drawings of planar acyclic digraphs from ,
+which is simple and elegant but is not data-oblivious.
+To find the -coordinate of each node, one builds
+a spanning tree based on leftmost incoming edges of the nodes
+and then traverses
+this tree from left to right, numbering each node in this order.
+The resulting numbering of each node is its -coordinate.
+The algorithm to determine the -coordinates uses
+the rightmost spanning tree.
+
+
+Input: We assume that the graph, , is given
+as a set of edges, , where  is an edge directed from
+node  to  storing , the number of incoming edges to ,
+and , the order of  among all incoming edges to ;
+the leftmost edge has order 0.
+
+Data-oblivious algorithm: Following the original algorithm,
+we show how one can construct a spanning tree and number the nodes
+to get the final drawing.
+Our first task is to augment each edge with
+information about a spanning tree of . We augment  with additional 
+fields,  and , which are set to  or  depending
+on which spanning tree  belongs to. In the compressed-scanning model,
+one simply accesses , sets  to  if  equals 
+or  to  if  is 1, and writes  back. 
+
+Given annotated edges, we construct an Euler tour over each spanning tree.
+Note that given that the number of nodes in  is revealed, we do not need
+to hide the number of edges in either of the spanning trees.
+For ease of explanation, we say that we traverse an edge  when
+we follow an edge of the spanning tree in its direction in . The left
+spanning tree is traversed starting with the leftmost outgoing edge of the root,
+and rightmost outgoing edge for the right tree.
+We are now ready to make a tour traversal and assign coordinates to the nodes.
+We adopt a compressed version of the algorithm that minimizes the area
+of the drawing and start with traversal of the left tree.
+In private memory, a  for -coordinates is maintained, 
+set to .
+Initially, we output .
+For every edge  that has , and
+ or  is the first traversed edge of , we output .
+If  has  direction but is not the first edge 
+of  traversed (in Euler
+tour this corresponds to remembering the latest visited edge)
+or is the only incoming edge to , then we increment the  by 1
+and output . If   is set to
+, then we output . The algorithm for computing 
+-coordinates is similar and outputs values with .
+Note that access pattern of reads and writes is always the same: read
+an edge of the Euler tour and output a tuple of three values.
+
+The output of the above procedure contains tuples of real and dummy values.
+We can remove dummy values and bring ,  coordinates of each node
+together by obliviously sorting tuples by the first field (node name)
+such that string  is always greater than any real node name.
+The resulting list contains all dummy tuples at the end. Also, each node
+has its - and -coordinates adjacent. 
+See Figure  for an example.
+
+
+
+
+
+      
+  
+    [b]0.3
+                    
+    
+    
+    [b]0.33
+                    
+    
+    
+    [b]0.33
+                    
+    
+    
+  	
+      
+  
+  [](a) A planar acyclic digraph with its left and right spanning trees.
+    (b) The order of the visit to each edge of Euler tour of the left spanning tree and the
+    counter of  coordinate for child nodes, e.g.,  edge - is visited third and  is
+    assigned  coordinate of 1. (c) The final drawing.
+         
+  
+
+
+
+
+Treemap Drawings
+Treemap Drawings
+Treemaps are a representation designed for human visualization of
+complex tree structures, where arbitrary trees are shown with a 2-d space-filling area.
+Here, we present how one can draw a treemap using an algorithm from adapted to
+the compressed-scanning model. The original algorithm takes a rectangle area
+and splits it vertically into two sections.
+The area of the first section is enough to fit the first child, , of the root and
+the rest is enough to fit the rest of its children. The next step is to divide the first
+section among children of  but this time splitting the area horizontally.
+The algorithm continues in the same manner for all decedents of .
+Once finished, it proceeds to splitting the second section between second child of the root,
+, and the rest of root's children.
+
+Input:
+Input:
+A tree, , where each node also contains a 
+value  and the
+size of a rectangle area, , where  should be drawn.
+We build an Euler tour, , from  and add two fields  and   to each edge in .
+
+Output:
+Output:
+Each node is labeled with  coordinates of the top-left corner, ,
+and bottom-right  corner, , of the rectangle area where the node should be placed in.
+
+Data-oblivious algorithm:
+Data-oblivious algorithm:
+The original algorithm labels the nodes with values  and 
+via pre-order traversal of . The algorithm we propose here first goes down the leftmost
+subtree computing values ,  and labeling the nodes on the way.
+In private memory, it maintains only one copy of the last two assigned
+values of  and ,  and .
+It then goes up the tree "undoing" all the computations made to  and .
+We do it in such a way that when going up
+and reaching some node, we recover its  and  values as they
+were before we visited any of its children or other nodes in its subgraph.
+This algorithm fits the traversal of Euler tour  of the tree .
+When going down the tree, we read each item  of tour  and output 
+values corresponding to . However, when going up we cannot retrieve earlier
+written  values, since this will not be data-oblivious and we reveal that we are going up,
+which consequently reveals the depth of the tree. This is where "undoing" computations
+when going up on  and  helps. This is possible since the information
+used to compute  and  is stored twice in : once for edge with 
+set to  and once for .
+The pseudocode of the algorithm appears in the Appendix.
+
+The pseudocode of the algorithm appears in Algorithm .
+[h]
+
+, , 
+write 
+
+read  into 
+Get an edge corresponding to the leftmost edge from the root of 
+, 
+, , ,  are maintained in private memory, 
+, 
+
+ and 
+   
+     
+     
+     
+     , , 
+     
+     
+       and 
+         
+         
+         Move the top left corner for the next child
+         
+      
+         Go further down the branch
+         
+         
+         
+                Going up again. Undo previous ,  changes.
+                
+          
+          
+          
+          
+          
+      
+          
+            , , 
+      
+      
+      
+        write 
+   read  into 
+Sort all output values by  field such that  values are in the end.
+Data-oblivious algorithm to compute a treemap drawing of an arbitrary tree.    
+
+
+
+Figure  shows an execution of the algorithm on a small tree.
+
+
+
+
+[b]0.5
+      
+   
+   [b]0.5
+                            
+       
+       
+        [b]0.5
+                            
+              
+    
+[b]0.5
+        
+  
+  
+
+
+[]Treemap graph drawing. (a) The original graph. (b) The final drawing.
+(c) Execution of algorithm in Section  on the graph in (a) on a 104 rectangle area.
+(c) Execution of an oblivious treemap drawing algorithm on the graph in (a) on a 104 rectangle area.
+The values in dashed rectangles are written for every edge and are never accessed. Variables ,
+,  and  are kept in memory(see the pseudocode in the Appendix).
+
+
+
+
+
+
+Graph Drawing Algorithms
+Most existing graph drawing algorithms are
+designed without privacy concerns in mind; hence, if they are run
+in a cloud-computing environment,
+they can reveal potentially sensitive information from their access patterns.
+For example, a recursive binary-tree drawing
+algorithm implemented in the standard way can reveal the 
+depth of the tree from the access patterns used for the recursion stack,
+even if all the nodes in the tree are encrypted.
+In this section, we present several graph drawing algorithms modified to
+fit the compressed-scanning model. 
+
+In order to build a graph drawing algorithm that fits this model, we
+
+
+We
+
+modify the representation of the graph so that we never access
+the same location more than once in the same round. For example, consider a tree represented with a set of nodes and pointers 
+from each node to its children and a parent.
+Traversing the tree in this case involves accessing an internal node several times depending on its degree, which
+reveals information about the tree.
+
+Euler Tours in the Compressed-Scanning Model
+Euler Tours in the Compressed-Scanning Model
+
+
+
+Traversing a tree in the compressed-scanning model requires that
+we access each memory location exactly once; hence, we need to 
+reorganize how we normally perform data accesses, since, for example, we cannot 
+access a parent again 
+when coming from its left child after we have already visited it and its 
+right child.
+Given our small private workspace, ,
+we cannot store previously accessed nodes.
+Thus, we need a representation of a tree that allows for a 
+traversal where elements are accessed only once.
+For this purpose, 
+we construct an Euler tour over a tree that is 
+based on duplicating edges and defines a left to right traversal of a tree.
+Each copy of an edge contains a pointer to a copy of the next edge in the tour so we can go to the next edge without using recursion and visiting each edge of the tour only once.
+
+For an ordered tree, , we store an Euler tour as a set 
+of items, , where .
+Each item represents an edge of the tour and stores information related
+to the tree, e.g., ,  node names, 
+and the order of the child among all its siblings.
+Additionally, it stores information related to the 
+actual cycle of the Euler
+tour:
+(a) : a unique tag associated with this item, . This is used to locate and permute
+items.
+(b) :  or . This indicates 
+which direction in the tree we are following.
+(c) :  of the next edge in the cycle.
+
+We assume that  for the leftmost edge of the root
+of .  Suppose we shuffle the items in  using a permutation, ,
+over the  field.  Then a traversal of  starts with an access
+to location , following access to . The
+items in  are accessed only once and the tree layout is hidden
+behind the permutation .  Thus, the traversal is data-oblivious
+and reveals only the number of edges and nodes in the tree.
+
+Computation over Euler Tour Representations
+Computation over Euler Tour Representations
+Many graph drawing algorithms collect information from a tree representation
+of the graph to determine the layout. 
+
+Such information could be the height, width, or subtree size
+of each node of the tree.  
+We now show how one can use an Euler tour representation of a rooted
+tree to compute for each node of the tree, the size (number of nodes)
+of it subtree in a data-oblivious manner.
+
+For this computation, 
+we add a new field  for every edge in the Euler tour .
+The algorithm maintains in local memory, , a variable, , initially
+set to 0. Edges in  are traversed as described in the previous section.
+However, every time we now read an edge, , we update  with 
+the value stored at  and write it back.
+When we are going up, i.e., , 
+ is incremented by 1.
+Once the traversal finishes, we observe that for every two items,  and ,
+that represent a traversal of the same edge, i.e., ,
+,  and  ,
+the value  is the size of the subtree rooted at 
+and the final value of  is  of the root.
+However, we need to associate nodes of the tree  with these values
+in the compressed-scanning model as well.
+For this purpose, we obliviously sort the values in  using 
+the fields,  and ,
+to bring items that correspond to the same edge next to each other.
+We then simply scan the resulting sorted list and after reading a pair of
+items,  and , output a pair .
+
+(See Figure .)
+
+	                 	[]Computing the size of the subgraph via Euler tour.
+	During the tour a locally maintained variable  is incremented
+	when the tour goes up the tree (red numbers in the figure)
+	and is assigned to currently visited edge.
+	The size of the node's
+	subgraph is the counter at the edge going up from this node minus the counter of the
+	duplicate of this edge. For example, the size for g is (4-1) = 3.
+	(See Figure  in the Appendix.)
+The above computation consists of two rounds: the first round reads
+one item of  at a time, modifies it and writes it back. The second
+round starts after the sorting is complete, where items are read one at a time and
+a new item is written to the output after every two reads.
+We can compute the depth of each node using a similar technique.
+
+
+
+
+
+
+
+
+
+
+
+
+Summary 
+Summary 
+The following theorem summarizes the results of this section.
+
+  The drawing algorithms described in this section are data-oblivious
+  according to Definition  and run in time .
+  Also, the private working space has size  for the
+  bounding-rectangle tree-drawing algorithm (where  is the size of
+  the tree) and has size  for the other algorithms.
+ 
+Since we have given algorithms in the compressed-scanning model, the
+theorem follows from Theorem . All of
+the algorithms perform a constant number of Euler tours. In the beginning of
+Section  we showed that an Euler tour can be
+implemented with a single-round compressed scan, where, from the
+server's perspective, the items associated with the edges of the tour
+are accessed in random order and only once.
+
+Our algorithms hide the combinatorial structure and layout of the
+graphs, while the number of edges and vertices is revealed. One can
+achieve even stronger privacy if dummy edges and nodes
+are added. From the point of view of the model, the input  is a
+larger set of elements and the running time of algorithm  increases
+as well.
+
+
+
+
+
+
+

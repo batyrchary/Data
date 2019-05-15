@@ -1,0 +1,862 @@
+ 
+
+
+****  
+
+Part-Aligned Bilinear Representations 
+for Person Re-identification
+
+Yumin Suh Jingdong Wang Siyu Tang Tao Mei Kyoung Mu Lee
+
+
+ASRI, Seoul National University Microsoft Research
+
+Max Planck Institute for Intelligent SystemsUniversity of TubingenJD.COM
+
+
+We propose a novel network that learns a part-aligned representation for person re-identification. It handles the body part misalignment problem, that is, body parts are misaligned across human detections due to pose/viewpoint change and unreliable detection. Our model consists of a two-stream network (one stream for appearance map extraction and the other one for body part map extraction) and a bilinear-pooling layer that generates and spatially pools a part-aligned map. Each local feature of the part-aligned map is obtained by a bilinear mapping of the corresponding local appearance and body part descriptors. Our new representation leads to a robust image matching similarity, which is equivalent to an aggregation of the local similarities of the corresponding body parts combined with the weighted appearance similarity. This part-aligned representation reduces the part misalignment problem significantly. Our approach is also advantageous over other pose-guided representations (e.g., extracting representations over the bounding box of each body part) by learning part descriptors optimal for person re-identification. For training the network, our approach does not require any part annotation on the person re-identification dataset. Instead, we simply initialize the part sub-stream using a pre-trained sub-network of an existing pose estimation network, and train the whole network to minimize the re-identification loss. We validate the effectiveness of our approach by demonstrating its superiority over the state-of-the-art methods on the standard benchmark datasets, including Market-, CUHK, CUHK and DukeMTMC, and standard video dataset MARS.
+Person re-identification
+
+Introduction
+The goal of person re-identification is to identify the same person across videos captured from different cameras, which is a fundamental visual recognition problem in video surveillance with various applications, including multi-people tracking . This process is challenging because the camera views are usually disjoint, the temporal transition time between cameras varies considerably, and the lighting conditions/person poses differ across cameras in real-world scenarios.
+
+
+                            
+                        
+                            
+              (a)
+              (b)
+              (c)
+        
+
+(a, b) As a person appears in different poses/viewpoints in different cameras, and (c) human detections are imperfect, the corresponding body parts are usually not spatially aligned across the human detections, causing person re-identification to be challenging.
+
+Body part misalignment (i.e., the problem that body parts are spatially misaligned across person images) is one of the key challenges in person re-identification. Figure  shows some examples. This problem causes conventional global representations  or strip/grid-based representations  to be unreliable as they implicitly assume that every person appears in a similar pose within a tightly surrounded bounding box. Thus, a body part-aligned representation, which can ease the representation comparison and avoid the need of complex comparison techniques, should be designed.
+
+To resolve this problem, recent approaches have attempted to localize body parts explicitly and combine the representations over them . For example, the body parts are represented by the pre-defined (or refined ) bounding boxes estimated from the state-of-the-art pose estimators . This scheme requires highly-accurate pose estimation. Unfortunately, state-of-the-art pose estimation solutions still probably fail in person re-identification datasets.
+In addition, these schemes are bounding box-based and lack fine-grained part localization within the boxes.
+Recently, Zhao et al.  represented body parts through confidence maps, which are estimated using attention techniques. The method has a lack of guidance on body part locations during the training, thereby failing to consistently attend to certain body regions.
+
+In this paper, we propose a novel body part-aligned representation to address the misalignment problem. Our approach learns to represent the human poses as part maps and combine them directly with the appearance maps to compute part-aligned representations, and circumvents the aforementioned problems. More precisely, our model consists of a two-stream network and an aggregation module. 1) Each stream separately generates appearance and body part maps. 2) The aggregation module first generates the part-aligned feature maps by computing the bilinear mapping of the appearance and part descriptors at each location, and then spatially averages the local part-aligned descriptors. For the training of the network, we do not use any body part annotations on the person re-identification dataset. Instead, we simply initialize the part map generation stream using the pre-trained weights, which are trained from a standard pose estimation dataset. Surprisingly, although our approach only optimizes the re-identification loss function, the resulting two-stream network successfully separates appearance and part information into each stream, thereby generating the appearance and part maps from each of them, respectively. The part maps adapt to differentiate/blur informative/unreliable body parts and further support person re-identification. We show how the similarity between two images computed over our part-aligned representation is different from and superior to that computed over previous body-part box-based representations. Through extensive experiments, we verify that our approach consistently improves the accuracy of the baseline and achieves competitive/superior performance over standard image datasets, Market-, CUHK,  CUHK and DukeMTMC, and one standard video dataset, MARS.
+
+Related Work
+The early solutions of person re-identification mainly relied on hand-crafted features , metric learning techniques , and probabilistic patch matching algorithms  to handle resolution/light/view/pose changes. Recently, attributes , transfer learning , re-ranking ,
+partial person matching , and human-in-the-loop learning ,
+have also been studied. More can be found from the survey .
+In the following,
+we review recent spatial-partition-based and part-aligned representations, matching techniques, 
+and some works using bilinear pooling.
+
+
+Regular spatial-partition based representations.
+The approaches in this stream of research represent an image as a combination of local descriptors, where each local descriptor represents a spatial partition such as grid cell  and horizontal stripe . They work well under a strict assumption that the location of a certain body part is consistent across images. This assumption is often violated under realistic conditions, thereby causing the methods to fail. 
+An extreme case is that no spatial partition is used and a global representation is computed over the whole image .
+
+
+Body part-aligned representations.
+Body part and pose detection results were ever exploited for person re-identification to handle the body part misalignment problem . Recently, these ideas have been re-studied using deep learning techniques. Most approaches  represent an image 
+as a combination of body part descriptors, where a dozen of pre-defined body parts are detected using the off-the-shelf pose estimator (possibly an additional RoI refinement step). They usually crop bounding boxes around the detected body parts and compute the representations over the cropped boxes. The difference from our approach is that we use part maps, where the part is not predefined
+and learned from the person re-identification problem in the form of a spatial map instead of cropped boxes.
+
+Tang et al  also introduced part maps for person re-identification to solve the multi-people tracking problem. They used part maps to augment appearances as another feature, rather than to generate part-aligned representations, which is different from our method. Some works  proposed the use of attention maps, which are expected to attend to informative body parts. They often fail to produce reliable attentions as the attention maps are estimated from the appearance maps; guidance from body part locations is lacking, resulting in a limited performance.
+
+
+Matching.
+The simple similarity functions , e.g., cosine similarity or Euclidean distance,
+are adapted, for part-aligned representations, such as our approach, or under an assumption that the representations are body part/pose aligned. Various schemes  are designed to eliminate the influence
+from body part misalignment for spatial partition-based representations. For instance, a matching sub-network is proposed to conduct convolution and max-pooling operations, over the differences  or the concatenation  of grid-based representation of a pair of person images. Varior et al.  proposed the use of matching maps in the intermediate features to guide feature extraction in the later layers through a gated CNN. 
+
+
+Bilinear pooling.
+Bilinear pooling is a scheme to aggregate two different types of feature maps by using the outer product at each location and spatial pooling them to obtain a global descriptor. This strategy has been widely adopted in fine-grained recognition  and shows promising performance. For person re-identification, Ustinova et al.  adopted a bilinear pooling to aggregate two different appearance maps; this method does not generate part-aligned representations and leads to poor performance. 
+Our approach uses a bilinear pooling to aggregate appearance and part maps to compute part-aligned representations.
+
+*[t]
+          	
+Overview of the proposed model. The model mainly consists of a two-stream network and an aggregator (bilinear pooling). For a given image , the appearance and part map extractors,  and , generate the appearance and part maps,  and , respectively. The aggregator performs bilinear pooling over  and  and generates a feature vector . Finally, the feature vector is -normalized, resulting in a final part-aligned representation . Conv and BN denote the convolution and batch normalization layers, respectively.
+
+Our Approach
+The proposed model consists of a two-stream network and an aggregation module. It receives an image  as an input and outputs a part-aligned feature representation  as illustrated in Figure . The two-stream network contains two separate sub-networks, the appearance map extractor  and the part map extractor , which extracts the appearance map  and part map P, respectively. The two types of maps are aggregated through bilinear pooling to generate the part-aligned feature  and subsequently normalized to generate the final feature vector .
+
+Two-Stream Network
+Appearance map extractor.
+We feed an input image  into the
+appearance map extractor , thereby
+outputting the appearance map
+:
+
+A = A(I).
+ is a feature map of size , where each location is described by -dimensional local appearance descriptor. We use the sub-network of GoogLeNet  to form and initialize .
+
+Part map extractor.
+The part map extractor  receives an input image  and outputs the part map :
+
+P=P(I).
+ is a feature map of size , where each location is described by a -dimensional local part descriptor. 
+Considering the rapid progress in pose estimation, we use the sub-network of the pose estimation network, OpenPose , to form and initialize . We denote the sub-network of the OpenPose as .
+
+Bilinear Pooling
+Let  be the appearance descriptor at the position  from the appearance map , and  be the part descriptor at the position  from the part map .
+We perform bilinear pooling over  and  to compute the part-aligned representation .
+There are two steps,
+bilinear transformation
+and spatial global pooling,
+which are mathematically given as follows:
+
+f = 
+pooling_xyf_xy
+= 1S _xyf_xy,
+f_xy = vec (a_xyp_xy),
+where  is the spatial size. The pooling operation we use here is average-pooling. 
+ transforms a matrix to a vector,
+and
+ represents the outer product of two vectors,
+with the output being a matrix. 
+The part-aligned feature  is then normalized to generate the final feature vector  as follows:
+
+f = ff _2.
+Considering the normalization, we denote the normalized part-aligned representation as
+
+, where  and  . Therefore, .
+
+
+Part-aligned interpretation.
+We can decompose (We drop the subscript 
+for presentation clarification)
+into  components:
+
+vec(a p)
+=
+[(p_1a)^ 
+(p_2a)^  
+(p_c_Pa)^]^,
+where each sub-vector  corresponds to a -th part channel. For example, if  on knee and  otherwise, then  becomes  only on the knee and  otherwise. Thus, we call  as part-aligned representation. In general, each channel  does not necessarily correspond to a certain body part. However, the part-aligned representation remains valid as  encodes the body part information. Section  describes this interpretation in detail.
+
+
+
+Loss
+To train the network, we utilize the widely-used triplet loss function.
+Let ,  and  denote the query, positive and negative images, respectively. Then,  is a pair of images of the same person, and  is that of different persons.
+Let , , and  indicate their representations. The triplet loss function is formulated as
+
+where  denotes a margin and
+. 
+The margin is empirically set as
+.
+The overall loss function is written as follows.
+
+L = 1T_(I_q, I_p, I_n) T_triplet(f_q,f_p,f_n),
+where  is the set
+of all triplets, .
+
+
+Analysis
+
+Part-aware image similarity.
+We show that under the proposed part-aligned representation in Eqs.() and (), the similarity between two images is equivalent to the aggregation of local appearance similarities between the corresponding body parts. 
+The similarity between two images can be represented as the sum of local similarities between every pair of locations as follows.
+
+sim_I(I, I')
+=<f, f'> =&1S^2<_xyf_xy, _x'y'f'_x'y'> 
+
+=&1S^2_xy _x'y' <f_xy , f'_x'y' > 
+
+= & 1S^2_xy _x'y'  sim( f_xy, f'_x'y'),
+where  measures the similarity between images.
+Here, the local similarity is computed by an inner product:
+
+sim(f_xy, f_x'y'')
+&= <vec(a_xy p_xy),
+vec(a'_x'y'  p'_x'y') > 
+
+&=<a_xy, a'_x'y'>
+ <p_xy,p'_x'y'> 
+
+ &= sim(a_xy, a'_x'y')
+ sim(p_xy, p'_x'y').
+This local similarity can be interpreted as the appearance similarity weighted by the body part similarity or vice versa.
+Thus, from Eqs() and (), the similarity between two images is computed as the average of local appearance similarities weighted by the body part similarities at the corresponding positions:
+
+
+Relationship to the baseline models. Consider a baseline approach that only uses the appearance maps and spatial global pooling for image representation. Then, the image similarity is computed as .
+Unlike our model, this approach cannot reflect part similarity.
+Consider another model based on the box-based representation, which represents an image as a concatenation of  body part descriptors, where -th body part is represented as the average-pooled appearance feature within the corresponding bounding box. This model is equivalent to our model when  is defined as , where  is the region within the -th part bounding box and  is an indicator function, i.e.,  if  is true otherwise .
+Because our model contains these baselines as special cases and is trained to optimize the re-identification loss, it is guaranteed to perform better than them.
+
+*[t]
+
+			
+
+			(a) Appearance features
+				(b) Part features
+	
+The t-SNE visualization of the normalized local appearance and part descriptors on the Market-1501 dataset. It illustrates that our two-stream network decomposes the appearance and part information into two streams successfully. (a) Appearance descriptors are clustered roughly by colors, independently from the body parts where they came from. (b) Part descriptors are clustered by body parts where they came from, regardless of the colors.
+(Best viewed on a monitor when zoomed in)
+ 
+
+
+		                            	                            	                            	                            
+    
+Visualization of the appearance maps  and part maps  obtained from the proposed method. For a given input image (left), appearance (center) and part (right) maps encode the appearance and body parts, respectively. For both appearance and part maps, the same color implies that the descriptors are similar, whereas different colors indicate that the descriptors are different. The appearance maps share similar color patterns among the images from the same person, which means that the patterns of appearance descriptors are similar as well. In the part maps, the color differs depending on the location of the body parts where the descriptors came from. (Best viewed in color)
+
+
+
+                                 
+Comparing the body part descriptors. For a given image (left), the conventional joint-based (center) and the proposed (right) descriptors are visualized. (Best viewed in color)
+
+
+
+The two-stream network yields a decomposed appearance and part maps.
+At the beginning of the training, the two streams of the network mainly represent the appearance and part maps because the appearance map extractor  and the part map extractor  are initialized using GoogleNet  pre-trained on ImageNet  and OpenPose  model pre-trained on COCO , respectively.
+During training, we do not set any constraints on the two streams, i.e., no annotations for the body parts, but only optimize the re-identification loss. Surprisingly, the trained two-stream network maintains to decompose the appearance and part information into two streams: one stream corresponds to the appearance maps and the other corresponds to the body part maps.
+
+We visualize the distribution of the learned local appearance and part descriptors using t-SNE  (https://cs.stanford.edu/people/karpathy/cnnembed) as shown in Figures  (a) and (b). Figure  (a) shows that the appearance descriptors are clustered depending on the appearance while being independent on the parts that they come from. For example, the red/yellow box shows that the red/black-colored patches are closely embedded, respectively. By contrast, Figure  (b) illustrates that the local part embedding maps the similar body parts into close regions regardless of color. For example, the green/blue box shows that the features from the head/lower leg are clustered, respectively. In addition, physically adjacent body parts, such as head-shoulder and shoulder-torso, are also closely embedded.
+
+To understand how the learned appearance/part descriptors are used in person re-identification, we visualize the appearance maps  and the part maps  following the visualization used in SIFTFlow , as shown in Figure . (we project the (or )-dimensional local descriptor vector onto the 3D RGB space, by mapping the top three principal components of the descriptor to the principal components of RGB.) For a given input image (left), the appearance (center) and part (right) maps encode the appearance and body parts, respectively. The figure shows how the appearance maps differentiate different persons while being invariant for each person.
+By contrast, the part maps encode the body parts independently from their appearance. In particular, a certain body part is represented by similar color across images, which confirms our observation in Figure  that the part features from physically adjacent regions are closely embedded.
+
+Our approach learns the optimal part descriptor for person re-identification, rather than relying on the pre-defined body parts. Figure  qualitatively compares the conventional body part descriptor and the one learned by our approach. (We used the visualization method proposed in SIFTFlow ) In the previous works on human pose estimation , human poses are represented as a collection of pre-defined key body joint locations. It corresponds to a part descriptor which one-hot encodes the key body joints depending on the existence of a certain body joint at the location, e.g,  on knee and  otherwise. 
+Compared to the baseline, ours smoothly maps the body parts. In other words, the colors are continuous over the whole body in ours, which implies that the adjacent body parts are mapped closely. By contrast, the baseline not always maps adjacent body parts maps closely.  For example, the upper leg between the hip and knee is more close to the background descriptors than to ankle or knee descriptors. This smooth mapping renders our method to work robustly against the pose estimation error because the descriptors do not change rapidly along the body parts and therefore are insensitive to the error in estimation. In addition, the part descriptors adopt to more finely distinguish the informative parts. For example, the mapped color varies sharply from elbow to shoulder and differentiates the detailed regions. Based on these properties, the learned part descriptors better support the person re-identification task and improve the accuracy.
+
+Implementation Details
+Network architecture.
+We use a sub-network of the first version of GoogLeNet  as the appearance map extractor , 
+from the image input of size  to the output of inception4e, which is followed by a  convolution layer and a batch normalization layer to reduce the dimension to  (Figure ). Moreover, we optionally adopt dilation filters in the layers from the inception4a to the final layer, resulting in  response maps. Figure  illustrates the architecture of the part map extractor . We use a sub-network of the OpenPose network , from the image input to the output of stage2 (i.e., concatstage3) to extract  pose heat maps, which is followed by a  convolution layer and a batch normalization layer, thereby outputting  part maps. 
+We adopt the compact bilinear pooling  to aggregate the two feature maps into a -dimensional vector .
+
+
+Compact bilinear pooling.
+The bilinear transformation
+over the -dimensional appearance vector
+and the -dimensional part vector
+results in an extremely high dimensional vector,
+which consumes large computational cost and memory.
+To resolve this issue, we use the tensor sketch approach to compute a compact representation
+as in .
+The key idea of the tensor sketch approach is that
+the original inner product,
+on which the Euclidean distance is based,
+between two high-dimensional vectors can be approximated
+as an inner product of the dimension-reduced vectors,
+which are random projections of the original vectors.
+Details can be found in.
+
+
+Network training.
+The appearance map extractor  and part map extractor  are fine-tuned from the network pre-trained on ImageNet  and COCO , respectively. The added layers are initialized following .
+We use the stochastic gradient descent algorithm.
+The initial learning rate, weight decay, and the momentum are set to , , and , respectively.
+The learning rate is decreased by a factor of  after every  iterations.
+All the networks are trained for  iterations.
+
+We follow  to sample a mini-batch of samples
+at each iteration
+and use all the possible triplets within each mini-batch.
+The gradients are computed using the acceleration trick
+presented in .
+In each iteration, we sample a mini-batch of  images, e.g., there are on average  identities with each containing 10 images. In total, there are approximately  triplets in each iteration.
+
+
+Pose sub-network .
+Table  compares the accuracy when different pose sub-networks  are used. jointonly, limbonly, internal only, and jointlimbinternal (proposed) denotes a network that generates the joint-based, limb-based, and internal confidence maps with , , , and  channels, respectively, from OpenPose .
+It shows that the proposed method achieves similar accuracy for joints and limbs. As the internal feature map provides complementary information to the joints/limbs, we use their concatenation in the final model.
+
+*[t]
+Accuracy comparison on various pose sub-networks  on Market-
+
+
+Experiments
+Datasets
+
+Market- . This dataset is one of the largest benchmark datasets for person re-identification.
+Six cameras are used: five high-resolution cameras and one low-resolution camera.
+There are  DPM-detected pedestrian image boxes of  identities:
+ identities are utilized for training and
+the remaining  identities are used for testing.
+There are  query images and  gallery images
+with  distractors.
+
+
+CUHK . This dataset consists of
+ images of  people
+captured by six cameras.
+Each identity appears in two disjoint camera views (i.e.,  images in each view on average).
+We divided the train/test set following the previous work .
+For each test identity, two images are randomly sampled as the probe and gallery images and the average accuracy over  trials is reported as the final result.
+
+
+CUHK . This dataset comprises  images of
+ people captured in two disjoint camera views.
+Two images are captured for each person from each of the two cameras (i.e., a total of four images).
+Experiments are performed under two evaluation settings , using  and  test IDs.
+Following the previous works ,
+we fine-tuned the model from the one learned from the CUHK training set for the experiments with  test IDs.
+
+
+
+
+DukeMTMC . This dataset is originally proposed for video-based person tracking and re-identification.
+We use the fixed train/test split and evaluation setting following(https://github.com/layumi/DukeMTMC-reID_evaluation).
+It includes  training images of  identities,
+ query images of  identities and  galley images.
+
+
+MARS . This dataset is proposed for video-based person re-identification.
+It consists of  different pedestrians captured by at least two cameras.
+There are  bounding boxes and  tracklets from  identities for training
+and  bounding boxes and  tracklets from  identities for testing.
+
+Evaluation Metrics
+We use both the cumulative matching characteristics (CMC) and mean average precision
+(mAP) to evaluate the accuracy.
+The CMC score measures the quality of identifying the correct match at each rank.
+For multiple ground truth matches, CMC cannot measure how well all the images are ranked.
+Therefore, we report the mAP scores for Market-, DukeMTMC, and MARS
+where more than one ground truth images are in the gallery.
+
+
+
+          (a)
+              (b)
+              (c)
+    
+
+(a) Comparison of different pooling methods on the appearance maps. (c) Comparing models, with and without part maps, on different datasets. (d) Comparing models, with and without part maps, on different architectures of the appearance map extractor. If not specified, the results are reported on Market-. (b) Comparison of different methods to aggregate the appearance and part maps.
+
+
+
+Comparison with the Baselines
+We compare the proposed method with the baselines in three aspects. In this section, when not specified, all the experiments are performed on the Market-1501 dataset, all the models do not use dilation, and  is trained together with the other parameters.
+
+Effect of part maps.
+We compare our method with a baseline that does not explicitly use body parts.
+As a baseline network, we use the appearance map extractor of Eq.(), which is followed by a global spatial average pooling and a fully connected layer, thereby outputting the -dimensional image descriptor.
+Figures  (a) and (b) compare the proposed method with the baseline, while varying the training strategy: fixing and training . Fixing  initializes  using the pre-trained weights  and fixes the weight through the training. Training  also initializes  in the same way, but fine-tunes the network using the loss of Eq.() during training.
+Figure  (a) illustrates the accuracy comparison on three datasets,  Market-, MARS, and Duke. It shows that using part maps consistently improves the accuracy on all the three datasets from the baseline. In addition, training  largely improves the accuracy than fixing . It implies that the part descriptors are adopted to better serve the person re-identification task. Figure  (b) shows the accuracy comparison while varying the  appearance sub-network architecture. Similarly, the baseline accuracy is improved when part maps are introduced and further improved when  is fine-tuned during training.
+
+Effect of bilinear pooling.
+Figure  (c) compares the proposed method (bilinear) to the baseline with a different aggregator. For the given appearance and part maps, concat+averagepool+linear generates a feature vector by concatenating two feature maps, spatially average pooling, and feeding through a fully connected layer, resulting in a -dimensional vector. The result shows that bilinear pooling consistently achieves higher accuracy than the baseline, for both cases when  is fixed/trained.
+
+Comparison with previous pose-based methods.
+Finally, we compare our method with three previous works , which use human pose estimation, on Market-1501. For a fair comparison, we use the reduced CPM(R-CPM [3M param]) utilized in (https://github.com/yokattame/SpindleNet) as . The complexity of the R-CPM is lower than the standard FCN (6M param) used in and CPM (30M param) used in. As the appearance network, used GoogLeNet and used ResNet50. used 13 inception modules, whereas we use 7. Table  shows the comparison. In comparison with the method adopted by, the proposed method (Inception V1, R-CPM) achieves an increase of  and  for rank@1 accuracy and mAP, respectively. It shows that our method effectively uses the part information compared with the previous approaches.
+
+
+Comparison with State-of-the-Art Methods
+
+Market-.
+Table  shows the comparison over two query schemes, single query and multi-query. Single query takes one image from each person whereas multi-query takes multiple images. For the multi-query setting, one descriptor is obtained from multiple images by averaging the feature from each image. Our approach achieves the best accuracy in terms of both mAP and rank@K for both single and multi-query.
+We also provide the result after re-ranking , which further boosts accuracy.  In addition, we conduct the experiment over an expanded dataset with additional  images . Following the standard evaluation protocol , we report the results over four different gallery sets, 
+,
+,
+,
+and ,
+using two evaluation metrics (i.e., rank- accuracy and mAP). Table  reports the results. The proposed method outperforms all the other methods.
+
+
+CUHK.
+We report the results
+with two person boxes:
+manually labeled
+and detected.
+Table  presents the comparison with existing solutions.
+In the case of detected boxes, the state-of-the-art accuracy is achieved. With manual bounding boxes, our method also achieves the best accuracy.
+
+
+*
+Accuracy comparison on Market-
+
+
+
+
+Accuracy comparison on Market-+k.
+
+
+
+
+
+
+
+*
+Accuracy comparison on CUHK and CUHK
+
+
+
+CUHK.
+We compare the results with two evaluation settings (i.e.,  and  test IDs) in Table . For  test IDs, the proposed method shows the best result. For  test IDs, our method achieves the second best result, following. Note that fine-tuned the model which is learned from the CUHK+Market, whereas we trained the model using  training IDs of the CUHK dataset, following the settings in previous works .
+
+
+DukeMTMC.
+We follow the setting into conduct the experiments.
+Table  reports the results.
+The proposed method achieves the best result for both with and without re-ranking.
+
+
+MARS.
+We also evaluate our method on one video-based person re-identification dataset .
+We use our approach to extract the representation
+for each frame
+and aggregate the representations of all the frames
+using temporal average pooling,
+which shows similar accuracy to other aggregation schemes (RNN and LSTM).
+Table  presents the comparison with the competing methods. Our method shows the highest accuracy over both image-based and video-based approaches.
+
+
+
+Accuracy comparison on DukeMTMC
+
+
+
+
+
+Accuracy comparison on MARS
+
+
+
+Conclusions
+We propose a new method for person re-identification.  The key factors that contribute to the superior performance of our approach
+are as follows. (1) We adopt part maps where parts are not pre-defined but learned specially for person re-identification. They are learned to minimize the re-identification loss with the guidance of the pre-trained pose estimation model. (2) The part map representation provides a fine-grained/robust differentiation of the body part depending on their usefulness for re-identification. (3) We use part-aligned representations to handle the body part misalignment problem. The resulting approach achieves superior/competitive person re-identification performances on the standard image and video benchmark datasets.
+
+Appendix
+
+Details of the Visualization
+Figure 3 
+In Figure 3 (a) of the main manuscript, we visualize the appearance descriptors by mapping the normalized local appearance descriptors  into 2D space using t-SNE . Similarly, the normalized local part descriptors  are visualized in Figure 3 (b).
+Figure 4 and 5 
+In Figures 4 and 5, the normalized feature maps are visualized following SIFTFlow .  First, we collect the normalized local descriptors from all the test set images. Then, we project the (or )-dimensional normalized local descriptor vector (or ) onto the 3D RGB space, by mapping the top three principal components of descriptor to the RGB. 
+
+
+Additional Visualization Examples of Feature Maps
+We show the additional visualization examples of feature maps on the MARS dataset in Figure .
+For a given input image (left), appearance (center) and part (right) maps encode the appearance and body parts, respectively.
+It shows how the appearance maps distinguish different persons while being invariant for each person. By contrast, the part maps encode the body parts independently from their appearance.
+
+
+		                            	                            	                            	                            
+    
+Visualization of the appearance maps  and part maps  obtained from the proposed method on the MARS dataset. For a given input image (left), appearance (center) and part (right) maps encode the appearance and body parts, respectively.
+
+
+Accuracy comparison of the baseline, proposed method, and its variation
+
+
+
+Additional Analysis
+
+Effect of non-negative part descriptors
+We test one variation of the proposed model, i.e., a model with non-negative part descriptors. In this model, we restrict the part descriptors  to be element-wise  non-negative by adding a ReLU layer after the part map extractor . It causes the local part similarity to be always non-negative, and therefore the sign of the local similarity (Eq.9) depends only on the sign of the local appearance similarity. Table  shows the results on the Market-, MARS, and Duke dataset. We use the same baseline used in Figures 6 (a) and (b). Overall, the proposed method and the non-negative variant show similar accuracy in terms of rank@1. The non-negative variant shows slightly improved accuracy in terms of mAP.
+
+Body Joints and Limbs
+Our model adopts the sub-network of the pose estimation network (OpenPose  ) to form the part map extractor , i.e., from the image input to the output of the stage2 (concatstage3). It generates a -dimensional feature map which consists of a -dimensional joint confidence map, -dimensional limb confidence map, and -dimensional internal feature map. Table  lists the body joints and limbs. For a further detailed representation, please refer to.
+
+
+
+
+99
+Joints and limbs used in OpenPose.
+A limb refers to a connection of two joints.
+
+
+ 
+
+10
+
+Tang, S., Andriluka, M., Andres, B., Schiele, B.:
+Multi people tracking with lifted multicut and person
+  re-identification.
+In: CVPR. (2017)
+
+Paisitkriangkrai, S., Shen, C., van den Hengel, A.:
+Learning to rank in person re-identification with metric ensembles.
+In: CVPR. (2015)
+
+Xiao, T., Li, H., Ouyang, W., Wang, X.:
+Learning deep feature representations with domain guided dropout for
+  person re-identification.
+In: CVPR. (2016)
+
+Zheng, L., Bie, Z., Sun, Y., Wang, J., Su, C., Wang, S., Tian, Q.:
+MARS: A video benchmark for large-scale person re-identification.
+In: ECCV. (2016)
+
+Wu, L., Shen, C., van den Hengel, A.:
+Personnet: Person re-identification with deep convolutional neural
+  networks.
+arXiv:1601.07255 (2016)
+
+Chen, S.Z., Guo, C.C., Lai, J.H.:
+Deep ranking for person re-identification via joint representation
+  learning.
+IEEE TIP 25(5) (2016)  2353-2367
+
+Xiao, T., Li, S., Wang, B., Lin, L., Wang, X.:
+End-to-end deep learning for person search.
+arXiv:1604.01850 (2016)
+
+Li, W., Zhao, R., Xiao, T., Wang, X.:
+Deepreid: Deep filter pairing neural network for person
+  re-identification.
+In: CVPR. (2014)
+
+Ahmed, E., Jones, M., Marks, T.K.:
+An improved deep learning architecture for person re-identification.
+In: CVPR. (2015)
+
+Zhang, Y., Li, X., Zhao, L., Zhang, Z.:
+Semantics-aware deep correspondence structure learning for robust
+  person re-identification.
+In: IJCAI. (2016)  3545-3551
+
+Yi, D., Lei, Z., Liao, S., Li, S.Z.:
+Deep metric learning for person re-identification.
+In: ICLR. (2014)
+
+Cheng, D., Gong, Y., Zhou, S., Wang, J., Zheng, N.:
+Person re-identification by multi-channel parts-based cnn with
+  improved triplet loss function.
+In: CVPR. (2016)
+
+Varior, R.R., Shuai, B., Lu, J., Xu, D., Wang, G.:
+A siamese long short-term memory architecture for human
+  re-identification.
+In: ECCV. (2016)
+
+Su, C., Li, J., Zhang, S., Xing, J., Gao, W., Tian, Q.:
+Pose-driven deep convolutional model for person re-identification.
+In: ICCV. (2017)
+
+Zheng, L., Huang, Y., Lu, H., Yang, Y.:
+Pose invariant embedding for deep person re-identification.
+arXiv:1701.07732 (2017)
+
+Zhao, H., Tian, M., Sun, S., Shao, J., Yan, J., Yi, S., Wang, X., Tang, X.:
+Spindle net: Person re-identification with human body region guided
+  feature decomposition and fusion.
+In: CVPR. (2017)
+
+Li, D., Chen, X., Zhang, Z., Huang, K.:
+Learning deep context-aware features over body and latent parts for
+  person re-identification.
+In: CVPR. (2017)
+
+Zhao, L., Li, X., Zhuang, Y., Wang, J.:
+Deeply-learned part-aligned representations for person
+  re-identification.
+In: ICCV. (2017)
+
+Cao, Z., Simon, T., Wei, S.E., Sheikh, Y.:
+Realtime multi-person 2d pose estimation using part affinity fields.
+In: CVPR. (2017)
+
+Ma, B., Su, Y., Jurie, F.:
+Local descriptors encoded by fisher vectors for person
+  re-identification.
+In: ECCV. (2012)
+
+Liao, S., Hu, Y., Zhu, X., Li, S.Z.:
+Person re-identification by local maximal occurrence representation
+  and metric learning.
+In: CVPR. (2015)
+
+Gray, D., Tao, H.:
+Viewpoint invariant pedestrian recognition with an ensemble of
+  localized features.
+In: ECCV. (2008)
+
+Matsukawa, T., Okabe, T., Suzuki, E., Sato, Y.:
+Hierarchical gaussian descriptor for person re-identification.
+In: CVPR. (2016)
+
+Zhang, L., Xiang, T., Gong, S.:
+Learning a discriminative null space for person re-identification.
+In: CVPR. (2016)
+
+Zhang, Y., Li, B., Lu, H., Irie, A., Ruan, X.:
+Sample-specific svm learning for person re-identification.
+In: CVPR. (2016)
+
+Liao, S., Li, S.Z.:
+Efficient psd constrained asymmetric metric learning for person
+  re-identification.
+In: ICCV. (2015)
+
+Kodirov, E., Xiang, T., Fu, Z., Gong, S.:
+Person re-identification by unsupervised  graph learning.
+In: ECCV. (2016)
+
+Li, X., Zheng, W.S., Wang, X., Xiang, T., Gong, S.:
+Multi-scale learning for low-resolution person re-identification.
+In: ICCV. (2015)
+
+Jing, X.Y., Zhu, X., Wu, F., You, X., Liu, Q., Yue, D., Hu, R., Xu, B.:
+Super-resolution person re-identification with semi-coupled low-rank
+  discriminant dictionary learning.
+In: CVPR. (2015)
+
+Chen, D., Yuan, Z., Hua, G., Zheng, N., Wang, J.:
+Similarity learning on an explicit polynomial kernel feature map for
+  person re-identification.
+In: CVPR. (2015)
+
+Chen, D., Yuan, Z., Chen, B., Zheng, N.:
+Similarity learning with spatial constraints for person
+  re-identification.
+In: CVPR. (2016)
+
+Shen, Y., Lin, W., Yan, J., Xu, M., Wu, J., Wang, J.:
+Person re-identification with correspondence structure learning.
+In: ICCV. (2015)
+
+Su, C., Yang, F., Zhang, S., Tian, Q., Davis, L.S., Gao, W.:
+Multi-task learning with low rank attribute embedding for person
+  re-identification.
+In: ICCV. (2015)
+
+Su, C., Zhang, S., Xing, J., Gao, W., Tian, Q.:
+Deep attributes driven multi-camera person re-identification.
+In: ECCV. (2016)
+
+Zhao, R., Ouyang, W., Wang, X.:
+Learning mid-level filters for person re-identification.
+In: CVPR. (2014)
+
+Peng, P., Xiang, T., Wang, Y., Pontil, M., Gong, S., Huang, T., Tian, Y.:
+Unsupervised cross-dataset transfer learning for person
+  re-identification.
+In: CVPR. (2016)
+
+Shi, Z., Hospedales, T.M., Xiang, T.:
+Transferring a semantic representation for person re-identification
+  and search.
+In: CVPR. (2015)
+
+Zheng, L., Wang, S., Tian, L., He, F., Liu, Z., Tian, Q.:
+Query-adaptive late fusion for image search and person
+  re-identification.
+In: CVPR. (2015)
+
+Garcia, J., Martinel, N., Micheloni, C., Gardel, A.:
+Person re-identification ranking optimisation by discriminant context
+  information analysis.
+In: ICCV. (2015)
+
+Zheng, W.S., Li, X., Xiang, T., Liao, S., Lai, J., Gong, S.:
+Partial person re-identification.
+In: ICCV. (2015)
+
+Martinel, N., Das, A., Micheloni, C., Roy-Chowdhury, A.K.:
+Temporal model adaptation for person re-identification.
+In: ECCV. (2016)
+
+Wang, H., Gong, S., Zhu, X., Xiang, T.:
+Human-in-the-loop person re-identification.
+In: ECCV. (2016)
+
+Zheng, L., Yang, Y., Hauptmann, A.G.:
+Person re-identification: Past, present and future.
+arXiv:1610.02984 (2016)
+
+Cheng, D.S., Cristani, M., Stoppa, M., Bazzani, L., Murino, V.:
+Custom pictorial structures for re-identification.
+In: BMVC. (2011)
+
+Xu, Y., Lin, L., Zheng, W., Liu, X.:
+Human re-identification by matching compositional template with
+  cluster sampling.
+In: ICCV. (2013)
+
+Bak, S., Corvee, E., Bremond, F., Thonnat, M.:
+Person re-identification using spatial covariance regions of human
+  body parts.
+In: AVSS. (2010)
+
+Farenzena, M., Bazzani, L., Perina, A., Murino, V., Cristani, M.:
+Person re-identification by symmetry-driven accumulation of local
+  features.
+In: CVPR. (2010)
+
+Weinrich, C., Gross, M.V.H.M.:
+Appearance-based 3d upper-body pose estimation and person
+  re-identification on mobile robots.
+In: ICSMC, IEEE (2013)
+
+Cheng, D.S., Cristani, M.:
+Person re-identification by articulated appearance matching.
+In: Person Re-Identification.
+Springer (2014)
+
+Liu, X., Zhao, H., Tian, M., Sheng, L., Shao, J., Yi, S., Yan, J., Wang, X.:
+Hydraplus-net: Attentive deep features for pedestrian analysis.
+arXiv:1709.09930 (2017)
+
+Wang, F., Zuo, W., Lin, L., Zhang, D., Zhang, L.:
+Joint learning of single-image and cross-image representations for
+  person re-identification.
+In: CVPR. (2016)
+
+Varior, R.R., Haloi, M., Wang, G.:
+Gated siamese convolutional neural network architecture for human
+  re-identification.
+In: ECCV. (2016)  791-808
+
+Lin, T.Y., RoyChowdhury, A., Maji, S.:
+Bilinear cnn models for fine-grained visual recognition.
+In: ICCV. (2015)
+
+Gao, Y., Beijbom, O., Zhang, N., Darrell, T.:
+Compact bilinear pooling.
+In: CVPR. (2016)
+
+Kim, J.H., On, K.W., Kim, J., Ha, J.W., Zhang, B.T.:
+Hadamard product for low-rank bilinear pooling.
+In: ICLR. (2017)
+
+Ustinova, E., Ganin, Y., Lempitsky, V.:
+Multiregion bilinear convolutional neural networks for person
+  re-identification.
+In: AVSS. (2017)
+
+Szegedy, C., Liu, W., Jia, Y., Sermanet, P., Reed, S., Anguelov, D., Erhan, D.,
+  Vanhoucke, V., Rabinovich, A.,  et al.:
+Going deeper with convolutions.
+In: CVPR. (2015)
+
+Szegedy, C., Liu, W., Jia, Y., Sermanet, P., Reed, S., Anguelov, D., Erhan, D.,
+  Vanhoucke, V., Rabinovich, A.:
+Going deeper with convolutions.
+In: CVPR. (2015)
+
+Russakovsky, O., Deng, J., Su, H., Krause, J., Satheesh, S., Ma, S., Huang, Z.,
+  Karpathy, A., Khosla, A., Bernstein, M.,  et al.:
+Imagenet large scale visual recognition challenge.
+IJCV (2015)
+
+Lin, T.Y., Maire, M., Belongie, S., Hays, J., Perona, P., Ramanan, D.,
+  Dollar, P., Zitnick, C.L.:
+Microsoft coco: Common objects in context.
+In: ECCV. (2014)
+
+Maaten, L.v.d., Hinton, G.:
+Visualizing data using t-sne.
+JMLR (2008)
+
+Liu, C., Yuen, J., Torralba, A.:
+Sift flow: Dense correspondence across scenes and its applications.
+PAMI 5(33) (2011)  978-994
+
+Wei, S.E., Ramakrishna, V., Kanade, T., Sheikh, Y.:
+Convolutional pose machines.
+In: CVPR. (2016)
+
+Newell, A., Yang, K., Deng, J.:
+Stacked hourglass networks for human pose estimation.
+In: ECCV. (2016)
+
+Pham, N., Pagh, R.:
+Fast and scalable polynomial kernels via explicit feature maps.
+In: SIGKDD. (2013)
+
+Glorot, X., Bengio, Y.:
+Understanding the difficulty of training deep feedforward neural
+  networks.
+In: AISTATS. (2010)
+
+Zheng, L., Shen, L., Tian, L., Wang, S., Wang, J., Tian, Q.:
+Scalable person re-identification: A benchmark.
+In: ICCV. (2015)
+
+Li, W., Zhao, R., Wang, X.:
+Human reidentification with transferred metric learning.
+In: ACCV. (2012)
+
+Ristani, E., Solera, F., Zou, R., Cucchiara, R., Tomasi, C.:
+Performance measures and a data set for multi-target, multi-camera
+  tracking.
+In: ECCV workshop on Benchmarking Multi-Target Tracking. (2016)
+
+Lin, Y., Zheng, L., Zheng, Z., Wu, Y., Yang, Y.:
+Improving person re-identification by attribute and identity
+  learning.
+arXiv:1703.07220 (2017)
+
+Zhong, Z., Zheng, L., Cao, D., Li, S.:
+Re-ranking person re-identification with k-reciprocal encoding.
+CVPR (2017)
+
+Hermans, A., Beyer, L., Leibe, B.:
+In defense of the triplet loss for person re-identification.
+arXiv:1703.07737 (2017)
+
+Sun, Y., Zheng, L., Deng, W., Wang, S.:
+Svdnet for pedestrian retrieval.
+In: ICCV. (2017)
+
+Geng, M., Wang, Y., Xiang, T., Tian, Y.:
+Deep transfer learning for person re-identification.
+arXiv:1611.05244 (2016)
+
+Bai, S., Bai, X., Tian, Q.:
+Scalable person re-identification on supervised smoothed manifold.
+arXiv:1703.08359 (2017)
+
+Chen, Y.C., Zhu, X., Zheng, W.S., Lai, J.H.:
+Person re-identification by camera correlation aware feature
+  augmentation.
+IEEE TPAMI (2017)
+
+Zhang, Y., Xiang, T., Hospedales, T.M., Lu, H.:
+Dual mutual learning.
+arXiv:1706.00384 (2017)
+
+Zhong, Z., Zheng, L., Kang, G., Shaozi, L., Yi, Y.:
+Random erasing data augmentation.
+arXiv:1708.04896 (2017)
+
+Chen, Y., Zhu, X., Gong, S.:
+Person re-identification by deep learning multi-scale
+  representations.
+In: CVPR Workshop. (2017)
+
+Zheng, Z., Zheng, L., Yang, Y.:
+A discriminatively learned cnn embedding for person
+  re-identification.
+arXiv:1611.05666 (2016)
+
+Zheng, Z., Zheng, L., Yang, Y.:
+Unlabeled samples generated by gan improve the person
+  re-identification baseline in vitro.
+ICCV (2017)
+
+Xiao, T., Li, S., Wang, B., Lin, L., Wang, X.:
+Joint detection and identification feature learning for person
+  search.
+In: CVPR. (2017)
+
+Schumann, A., Stiefelhagen, R.:
+Person re-identification by deep learning attribute-complementary
+  information.
+In: CVPR workshops. (2017)
+
+Xu, S., Cheng, Y., Gu, K., Yang, Y., Chang, S., Zhou, P.:
+Jointly attentive spatial-temporal pooling networks for video-based
+  person re-identification.
+(2017)
+
+McLaughlin, N., Martinez del Rincon, J., Miller, P.:
+Recurrent convolutional network for video-based person
+  re-identification.
+In: CVPR. (2016)
+
+Liu, H., Jie, Z., Jayashree, K., Qi, M., Jiang, J., Yan, S.:
+Video-based person re-identification with accumulative motion
+  context.
+arXiv:1701.00193 (2017)
+
+Zhou, Z., Huang, Y., Wang, W., Wang, L., Tan, T.:
+See the forest for the trees: Joint spatial and temporal recurrent
+  neural networks for video-based person re-identification.
+In: CVPR. (2017)
+
+Liu, Y., Yan, J., Ouyang, W.:
+Quality aware network for set to set recognition.
+In: CVPR. (2017)
+

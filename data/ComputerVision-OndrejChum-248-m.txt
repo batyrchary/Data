@@ -1,0 +1,1429 @@
+This paper proposes an automated method to detect, group and rectify
+arbitrarily-arranged coplanar repeated elements via energy
+minimization.  The proposed energy functional combines several
+features that model how planes with coplanar repeats are projected
+into images and captures global interactions between different
+coplanar repeat groups and scene planes.  An inference framework based
+on a recent variant of -expansion is described and fast
+convergence is demonstrated. We compare the proposed method to two
+widely-used geometric multi-model fitting methods using a new dataset
+of annotated images containing multiple scene planes with coplanar
+repeats in varied arrangements. The evaluation shows a significant
+improvement in the accuracy of rectifications computed from coplanar
+repeats detected with the proposed method versus those detected with
+the baseline methods.
+
+
+algorithm
+  Coplanar repeats by energy minimization
+    alg:energy
+  algorithmic[1]
+    Repeats
+      
+      
+      
+        
+         
+        
+       
+
+      
+      algorithmic
+algorithm
+The annotations provided by the 113 image dataset referenced in the
+paper are discussed in detail (available
+at http://ptak.felk.cvut.cz/personal/prittjam/bmvc16/coplanarrepeats.tar.gzhttp://ptak.felk.cvut.cz/personal/prittjam/bmvc16/coplanarrepeats.tar.gz). The annotations hierarchically segment
+the image into parts that inparaenum[(i)]are scene
+  planes are the union of scene planes that share the same
+  vanishing line contain repeated content are the union of
+  repeated content annotations that are distinctly different from
+  other repeated content in the remainder of the
+  imageinparaenum.  In particular the repeated content
+  annotations are specific to the type of symmetry exhibited by the
+  repeat: namely annotations for translational and rotational
+  symmetries are provided.  In addition lattices are provided for
+  translationally symmetric periodic repeats.
+  
+  Individual salient features (Hessian Affine Keypoints or MSERs) are
+  not grouped or annotated, so the annotations are feature agnostic,
+  which is preferable since settings adjustments would invalidate such
+  annotations. Rather, the annotations are used to assist a
+  RANSAC-based inference algorithm to establish coplanar repeat
+  groups. The annotations constrain the search for correspondences,
+  which gives a much higher inlier percentage among tentative
+  groupings that are inputted to RANSAC. Since the transform type is
+  known from the annotations, the transform with the fewest required
+  constraints can be used, which improves the probability of proposing
+  a transform estimated from all-inliers. The vanishing line is
+  estimated, and, depending on the annotation tag, either a
+  translation or rotation and translation, which maps repeats onto
+  each pointwise.  The annotations are tagged so that the correct
+  transformation can be estimated during annotation-assisted
+  inference.
+ 
+  Even with this relaxed standard of annotation, it is impossible to
+  group repeats at their highest frequency of recurrence. Depending on
+  the features extracted, , corners of facade ornamentation may be
+  detected, where only the windows were marked as repeated. Thus any
+  performance evaluation must not penalize methods that correctly
+  identify repeats that recur at higher frequencies than the
+  annotations. Reflections and rotational symmetries, in particular,
+  exacerbate this problem. Perhaps the most common example in the
+  dataset are window panes, which have axial symmetry, and if square,
+  rotational symmetry. It is not practical to annotate all such
+  occurrences (not just restricted to windows) in a large dataset.
+    The annotations also group oversegmetnations of the image (  superpixels in this context) into contiguous components of planes,
+  sets of parallel planes and background surface. These annotations
+  are not currently used in the evaluation, but would be useful for
+  learning the regularization weights in the energy function.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+figure[H]
+
+tabularc@c@c@c@c@c
+	(a) &
+	0.12img/img1_ann.jpg &
+	0.215img/img2_ann.jpg &
+	0.09img/img3_ann.jpg &
+	0.215img/img4_ann.jpg &
+	0.243img/img5_ann.jpg 
+
+
+    (b) &
+	0.12img/img1_linf.jpg &
+	0.215img/img2_linf.jpg &
+	0.09img/img3_linf.jpg &
+	0.215img/img4_linf.jpg &
+	0.243img/img5_linf.jpg 
+
+
+    (c) &
+	0.12img/img1_plane.jpg &
+	0.215img/img2_plane.jpg &
+	0.09img/img3_plane.jpg &
+	0.215img/img4_plane.jpg &
+	0.243img/img5_plane.jpg 
+
+
+    (d) &
+	0.12img/img1_group.jpg &
+	0.215img/img2_group.jpg &
+	0.09img/img3_group.jpg &
+	0.215img/img4_group.jpg &
+	0.243img/img5_group.jpg 
+
+
+    (e) &
+	0.12img/img1_repeat.jpg &
+	0.215img/img2_repeat.jpg &
+	0.09img/img3_repeat.jpg &
+	0.215img/img4_repeat.jpg &
+	0.243img/img5_repeat.jpg 
+
+
+    (f) &
+	0.12img/img1_npoutlier.jpg &
+	0.215img/img2_npoutlier.jpg &
+	0.09img/img3_npoutlier.jpg &
+	0.215img/img4_npoutlier.jpg &
+	0.243img/img5_npoutlier.jpg 
+
+
+    (g) &
+	0.12img/img1_spixel_linf.jpg &
+	0.215img/img2_spixel_linf.jpg &
+	0.09img/img3_spixel_linf.jpg &
+	0.215img/img4_spixel_linf.jpg &
+	0.243img/img5_spixel_linf.jpg 
+
+
+    (h) &
+	0.12img/img1_spixel_npoutlier.jpg & 
+	0.215img/img2_spixel_npoutlier.jpg & 
+	0.09img/img3_spixel_npoutlier.jpg & 
+	0.215img/img4_spixel_npoutlier.jpg & 
+	0.243img/img5_spixel_npoutlier.jpg
+tabular
+Annotations: (a) constraints coplanar repeat grouping, (b)
+  vanishing line assignment, (c) plane assignment, (d) mutually
+  distinct repeated content, (e) coplanar repeats found by
+  annotation-assisted inference, (f) features on the background
+  surface, (g) vanishing line assignment for regions, (h) regions on
+  the background surface.
+figure
+
+
+
+
+Coplanar Repeats by Energy Minimization
+
+
+
+
+
+James Prittshttp://cmp.felk.cvut.cz/ prittjam1
+Denys Rozumnyirozumden@cmp.felk.cvut.cz1
+M. Pawan Kumarhttp://mpawankumar.info2
+Ondrej Chumhttp://cmp.felk.cvut.cz/ chum1
+
+
+
+
+ The Center for Machine Perception 
+
+ Faculty of Electrical Engineering 
+
+ Czech Technical University 
+
+ Prague, CZ
+
+
+Department of Engineering Science 
+
+University of Oxford 
+
+Oxford, UK
+
+
+Pritts, Rozumnyi, Kumar, ChumCoplanar Repeats by Eng. Minimization
+
+
+
+
+
+
+e.g
+E.g
+et al
+
+
+
+ 
+
+
+Introduction 
+
+
+Related Work 
+
+
+Scene Model
+
+
+
+
+Energy Minimization
+
+
+Dataset
+
+
+Evaluation
+
+
+Acknowledgements: J. Pritts, D. Rozumnyi and O. Chum were supported by the MSMT LL1303 ERC-CZ.
+
+Discussion
+
+
+
+
+The proposed energy minimization formulation demonstrates a distinct
+increase in the quality of rectifications estimated from detected
+coplanar repeat groups on the evaluated dataset with respect to two
+state-of-the-art geometric multi-model fitting methods. The advantage
+can be attributed to the global scene context that is incorporated
+into the energy functional of the proposed method. The evaluation was
+performed on a new annotated dataset of images with coplanar repeats
+in diverse arrangements. The dataset is publicly available.
+
+Despite a significant improvement over the baseline, the proposed
+method failed to solve roughly half of the dataset with less than 5
+pixels of distortion.  Future work will incorporate constraints
+specific to reflected and rotated keypoints and parallel scene lines,
+which would add significant geometric discrimination to the
+model. Learning the feature weight vector [w], which was hand
+tuned, could also give a significant performance boost. However, the
+complete annotation of coplanar repeated keypoints in an image is
+probably infeasible. This means structured output learning must be
+performed with partial annotations, which complicates the learning
+task considerably.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We introduce a dataset(Available
+at http://ptak.felk.cvut.cz/personal/prittjam/bmvc16/coplanarrepeats.tar.gzhttp://ptak.felk.cvut.cz/personal/prittjam/bmvc16/coplanarrepeats.tar.gz
+) of 113 images containing from 1 to 5 scene planes with translated,
+reflected and rotated coplanar repeats occurring periodically or
+arbitrarily. The dataset includes some images from the ZuBuD database
+of Shao and the CVPR 2013 symmetry database assembled by 
+Liu .
+The manual assignment of keypoints to coplanar repeat groups is
+infeasible since a typical image will have thousands of extracted
+keypoints. Direct annotation is also undesirable since setting changes
+of the keypoint detectors would invalidate the assignments. Instead,
+the annotations are designed to constrain the search for coplanar
+repeated keypoints, making annotations agnostic to the keypoint
+type. The annotations hierarchically group parallel scene planes,
+individual scene planes, and areas within a scene plane that cannot
+mutually have the same coplanar repeats, denoting distinct
+patterns. Clutter and non-planar surfaces are also
+segmented. Keypoint-level assignment to coplanar repeat groups is
+achieved using a RANSAC-based estimation framework which leverages the
+annotations to constrain the search for correspondences to choose the
+correct transformation type.
+
+[t!]
+
+The hierarchical annotations included with the 113 image dataset. 
+ (a) translation symmetries are annotated by grids, regions that
+ cannot share coplanar repeats are colored differently,  
+ (b) detected keypoints to vanishing line assignment,
+ (c) groups of coplanar repeated keypoints found by annotation-assisted inference,
+ 
+ (d) image regions (SEEDS superpixels ) to vanishing line assignment, 
+ (e) and background image regions, which coplanar repeats cannot overlap.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+median 
+
+*argmin
+*argmax
+
+
+
+ransac
+
+
+
+
+
+#1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+R
+
+
+
+
+
+
+
+
+
+
+.5pt    #2
++
+
+
+
+
+
+
+
+
+
+
+
+
+
+algorithmtbhloa
+algorithmAlgorithm
+=  
+
+= 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The energy minimization task of  is
+solved by alternating between finding the best labeling  and
+regressing the scene model components  in a block-coordinate
+descent loop until the energy converges. Alternating between
+finding the minimal energy labeling and regressing continuous model
+parameters has notably been used in segmentation and multi-model
+geometry estimation by Rother and Isack .
+
+Labeling and Regression
+The scene model parameters are fixed to the current estimate for the
+labeling problem, 
+. Finding the
+minimal-energy labeling is NP-hard. An extension
+to alpha-expansion by Delong  that
+accommodates label subset costs (defined in
+sec:label_subset_costs) is used to find an approximate
+solution.
+
+The labeling is fixed to the current estimate for the regression
+subtask
+
+Each continuous parametric model must be regressed with respect to its
+dependent unary potentials so that the energy does not increase during
+a descent iteration. In particular, the vanishing lines, surface color
+distributions and the representative appearance for patterns and
+rectified scale for coplanar repeats are updated as detailed in the
+following paragraphs. The updated parameters are aggregated in
+.
+
+Vanishing lines. 
+All keypoints assigned to the same planar surface are used to refine the
+surface's vanishing line orientation. The objective is the same as the
+unary defined in eq.  and encodes the affine scale
+invariant defined in Chum . The vanishing line
+is constrained to the unit sphere and so that all keypoints are on the
+same side of the oriented vanishing line,
+
+    [l]^*_n = _[l] _i:iv=n ( s(H_[l](i))
+  -1_i'[ig=i'g] _i'[ig=i'g] s(H_[l](i'))
+  )^2 
+
+  
+    s.t.  [l]^iw &> 0, w  1 3   
+ 
+    [l]^[l] &= 1, 
+
+  for all scene planes  that have patterns assigned, where 
+is the scale of a keypoint and  is the rectifying
+transform as defined in sec:unary_features_repeats, and
+iw denotes the individual homogeneous coordinates that define
+keypoint i. The constrained nonlinear program is solved with the
+MATLAB intrinsic fmincon.
+
+Coplanar repeats and patterns.
+For features  eq. () and
+ eq. () that are sums of
+squared differences, the parameters are estimated as a mean of the
+respective values. 
+
+Surface color distribution.
+The parameters of the color distribution of a surface are estimated
+from the member pixels of regions assigned to the surface. The
+approximate log-likelihood defined for the unary 
+in eq.  is maximized to estimate the Gaussian
+mixture for each surface that has region assignments,
+
+The objective defined in eq.  is maximized by
+block-coordinate ascent in a manner similar to Lloyd's algorithm: The
+mixture component assignments are fixed to estimate the means and
+covariances and then vice-versa in alternating steps. A fixed number
+of iterations is performed.
+
+Proposals
+The initial minimal labeling energy requires a guess  at
+the continuous parameters . This is provided by a
+proposal stage in which the keypoints are clustered by their
+descriptors and sampled to generate vanishing line
+hypotheses as in Chum . The clustered regions
+are verified against the hypothesized vanishing lines to create a
+putative collection of coplanar repeats that are scale-consistent
+after affine rectification by a compatible sampled vanishing line. The
+proposed coplanar repeat groups do not partition the keypoints, which
+is a constraint enforced by the minimal energy labeling
+. The inital color model for each detected surface
+(equivalently proposed vanishing lines and background) is estimated
+from the image patches of keypoints from the proposed coplanar repeat
+groups.
+We evaluate the proposed method against two state-of-the-art geometric
+multi-model fitting methods: J-Linkage and
+MultiRANSAC.  Both estimators are
+hypothesize-and-verify variants. A model hypothesis consists of a
+vanishing line and tentatively grouped keypoints of similar
+appearance. Coplanar repeat group assignments are verified by a
+threshold test on the similarity measure for repeated keypoint
+detection proposed by Shi . However, the
+rectified scale constraint defined in Eq.  is
+used in lieu of the scale kernel used by.  We
+provide the number of scene planes present in each image to
+MultiRANSAC.
+
+The accuracy of rectifications constructed from vanishing lines
+computed from detected coplanar repeat groups are used to compare the
+methods. Two necessary conditions for accurate rectifications are
+that[(i)]no outliers are included in the
+detected coplanar repeat groups, and detected coplanar repeat
+groups densely cover the extents of the scene plane where there are
+coplanar repeat groups annotated in the dataset. Thus
+the rectification accuracy of coplanar repeats serves as a proxy
+measure for the precision and recall of coplanar repeat detection.
+
+Projective distortion is added by rewarping a set of annotated
+coplanar repeats rectified by the transform computed from detected
+coplanar repeat groups  with the inverse rectification
+ computed from the annotated repeats.  The amount of
+distortion is measured as the square pointwise distance between the
+annotated coplanar repeats and the rewarped coplanar repeats,
+
+where  is the set of keypoint indices of the annotated
+coplanar repeats used to compute ,  resolves the affine
+ambiguity between the original and rewarped annotated coplanar
+repeats, and  gives the euclidean distance between
+points. The set of annotated coplanar repeats that is the largest
+proportion of the detected coplanar repeats is used to match the
+rectification computed from detected coplanar repeats to a
+rectification computed from annotated coplanar repeats.
+
+[t!]
+
+
+
+
+
+
+
+
+(a)
+(b)
+(c)
+Evaluation.CDF of rectification distortions (), proportion of planes rectified with less than 2 pixels of distortion in images with 1 to 5 scene planes, cumulative wall time in seconds for the labeling task of energy minimization.
+
+The cumulative distribution of distortions on the dataset (truncated
+at 10 pixels) is shown in 4a. At 1 pixel of distortion, the
+proposed method solves 163 more scene planes than the next best; at
+2 pixels, 94 more; and at 5 pixels, which can be considered a
+threshold for meaningful rectification, 51 more scene planes. 4b plots the proportion of scene planes rectified with less than 2
+pixels of distortion with respect to the number of scene planes in the
+image. Clearly the proposed method excels when there are multiple
+scene planes present.  4c plots the cumulative runtime of the
+labeling step for images as function of the number of keypoints and
+image regions, denoted sites, and the number of active model
+proposals, denoted labels. Inference ranges from under a second
+to 2 minutes for the largest problems in the dataset.
+The importance of detecting and modeling imaged repeated scene
+elements grows with the increasing usage of scene-understanding
+systems in urban settings, where man-made objects predominate and
+coplanar repeated structures are common. Most state-of-the-art repeat
+detection and modeling methods take a greedy approach that follows
+appearance-based clustering of extracted keypoints with geometric
+verification.  Greedy methods have a common drawback: Sooner or later
+the wrong choice will be made in a sequence of threshold tests
+resulting in an irrevocable error, which makes a pipeline approach too
+fragile for use on large image databases.
+
+We propose a global energy model for grouping coplanar repeats and
+scene plane detection. The energy functional combines features
+encouraging [(i)]the geometric and appearance
+  consistency of coplanar repeated elements, the spatial and
+  color cohesion of detected scene planes, and a parsimonious
+  model description of coplanar repeat groups and scene
+  planes.  The energy is minimzed by block-coordinate
+descent, which alternates between grouping extracted keypoints into
+coplanar repeats by labeling (see 1,2) and regresses the
+continuous parameters that model the geometries and appearances of
+coplanar repeat groups and their underlying scene planes. Inference is
+fast even for larger problems (see ).
+
+Comparison to state-of-the-art coplanar repeat detection methods is
+complicated by the fact that many prior methods were either evaluated
+on small datasets, include only qualitative results, or were
+restricted to images with repeats having a particular symmetry. We
+evaluate the proposed method on a new annotated dataset of 113 images.
+The images have from 1 to 5 scene planes containing translation,
+reflection, or rotation symmetries that repeat periodically or
+arbitrarily. Performance is measured by comparing the quality of
+rectifications computed from detected coplanar repeat groups versus
+rectifications computed from the annotated coplanar repeat groups of
+the dataset.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[t!]   
+Grouping and rectification of coplanar repeats: (a) a subset
+  of the detected coplanar repeats is denoted by colored dots, (b)
+  rectification of the most distant keypoint pairs grouped as coplanar
+  repeatsrepeat group membership is encoded by the colored
+  border, (c,d) rectified and segmented scene planes, (e) Translation
+  and rotation symmetric keypoints labeled as distinct coplanar
+  repeats.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[t!]
+
+
+The most commonly used scene model denotations.
+
+median 
+
+*argmin
+*argmax
+
+
+
+ransac
+
+
+
+
+
+#1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+R
+
+
+
+
+
+
+
+
+
+
+.5pt    #2
++
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Postcondition:
+
+
+[1][(a)] #1 
+
+
+
+
+
+
+
+
+
+
+[2]
+Repeat grouping is a well-studied computer vision task. Many variants
+of hypothesize-and-verify pipelines were proposed in the prior
+literature for grouping repeats. Typical distinctions between methods
+are the variants of used feature types, geometric constraints, and
+scene geometry estimators. Two closely related early methods by
+Schaffalitzky   and
+Tuytelaars   estimate homologies that are
+compatible with detected fixed points and lines induced by
+periodicities, symmetries and reflections of scene
+elements. Liebowitz   use metric
+invariants to identify repeats in an affine-rectified frame estimated
+from imaged parallel scene lines.
+
+More recent approaches eliminate the need for any scene structure
+other than the coplanar repeated scene elements and work for
+arbitrarily arranged repeats (, rigidly transformed on the scene
+plane). Chum   introduce an algebraic
+constraint on the local scale change of a planar feature and use it to
+verify that tentative repeats have equal scale in a rectified frame
+(this constraint is included in the proposed energy function).
+Pritts   introduce constraints specific to
+rotated and reflected repeated elements in an affine rectified frame
+and generatively build a model of the pattern rectified to within a
+similarity of the scene.
+
+Two frequently cited approaches use energy minimization frameworks.
+Park   minimize an energy that measures the
+compatibility of a deformable lattice to imaged uniform grids of
+repetitions. Wu   refine vanishing point
+estimates of an imaged building facade by minimizing the difference
+between detected symmetries across repetition boundaries of the
+facade.
+
+None of the reviewed approaches globally model repeats; rather, there
+is an assumption that a dominant plane is present, or repeat grouping
+proceeds greedily by detecting scene planes sequentially. A
+significant subset of the reviewed literature requires the presence of
+special scene structure like parallel scene lines or lattices, which
+limits their applicability.
+The scene model has three types of outputs: The first output is a
+grouping of detected keypoints (see 2a-2d) into coplanar repeats
+(see 1a,1e).  Random variables  jointly assign keypoints to
+keypoint groups with mutually compatible geometry and appearance and
+to planar scene surfaces. Each random variable of  is from the
+set 
+. Here  is
+the number of clusters of keypoints that were grouped based on their
+similarity in appearance, and  is the estimated number of planar
+surfaces in the scene. A particular labeling of  is
+denoted . The assignment of the -th keypoint to a
+compatible keypoint cluster is indexed as ig, and its
+assignment to a scene plane is indexed as iv. The empty set
+ is assigned if keypoint  does not repeat,
+, and the token  is assigned to a keypoint
+if it does not lie on a planar surface. Background keypoints cannot be
+assigned to a repeat group, so they are assigned the ordered pair
+ The non-planar surfaces are collectively
+called the background.  The sets of keypoints assigned to the same
+keypoint cluster and scene plane are the coplanar repeated patterns.
+
+
+
+The second output is a labeling of image regions as planar surfaces
+and background. The image regions are small and connected areas of
+similar color that are detected as SEEDS
+superpixels (see 2e). Random variables
+ assign image regions to planar surfaces and the background,
+where each random variable of  is from the set 
+. As before,  and  are the estimated
+number of planar surfaces and the background token, respectively.  A
+particular labeling of  is denoted , and the labeling
+partitions the image regions into larger components that correspond to
+contiguous planar surfaces of the scene or background. The assignment
+of the -th region to a scene plane or to background is indexed
+as j.
+
+The third output is a set of continuous random variables modeling the
+geometries and appearances of the sets of coplanar repeats and the
+scene planes. The geometries and appearances of coplanar repeats are
+functions of the keypoint assignments and are given by the dependent
+random variables . The corresponding parameter estimates are
+denoted as . The geometries and appearances of the
+scene planes are functions of  and , and are given by
+dependent random variables . The parameters
+ represent the colors of the scene
+surfaces and the orientations of scene planes. 
+
+The joint labeling and parameter vector for the entire model are
+respectively denoted  and
+.
+
+Energy Function
+The joint feature vector  encodes potentials that measure
+[(i)] 
+coplanar repeats consist of keypoints that have similar appearnace and the same area in the preimage, the scene planes
+and background should consist of image regions with the same color
+distributions, surfaces should be contiguous and that nearby
+repeated content should be on the same surface, and scenes
+should have a parsimonious description.
+A minimal energy labeling and parameter set  are
+sought by solving the energy minimization task
+
+where  are the detected salient image patches and
+over-segmented regions of the image, and  is a weight
+vector. The components of  take on different meanings
+depending on their paired features and are discussed
+in sec:unary_features_repeatssec:label_subset_costs.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+Image measurements. Center of gravity (white cross) and  curvature
+extrema (orange circles) of a detected MSER (orange
+contour).  Patches are normalized
+and oriented to define an affine keypoint as in, and
+their texture is described by
+ Bases
+are reflected for symmetry detection. Affine keypoints
+mapped back into image. Over-segmentation by
+superpixels. The contrast feature
+, where intensity is proportional to edge
+response along superpixel boundaries.
+
+Measurements
+Affine-covariant
+keypoints  are
+extracted from the image as good candidates for representing repeated
+content. (see 2a). The shapes of the detected patches are
+summarized by keypoints, or, equivalently, 3-tuples of points, and are
+given by measurements . One type of keypoint construction is
+illustrated in 2a-d. The image is over-segmented by SEEDS
+superpixels  to provide measurements on
+regions where keypoint detection is unlikely (see 2e). The
+segmented regions are denoted by .  The keypoints and regions
+are concatenated to give the joint measurement
+, which is an argument to the energy
+defined in .
+
+Unary Features for Repeats and Surfaces
+The perspective skew of each scene plane is given by its vanishing
+line, which is an analog to the horizon line for a scene plane at any
+orientation. Vanishing lines are encoded in the parameters of the
+scene planes . Explicitly they are the set
+,
+where  is the number of scene planes and  is the
+real projective plane.
+
+Scale of coplanar repeats.
+A coplanar repeat group  is the set of keypoints from the same pattern
+that co-occur on a scene plane, namely 
+,
+where . The keypoints of  are called coplanar repeats. The
+coplanar repeats of  are of equal scale (equiareal) if their
+perspective skew is removed, which is accomplished by transforming the
+vanishing line of the underlying scene plane  so that it is
+coincident with the principal axis of the camera (see
+Chum ). The scale feature
+ measures the mutual compatibility of coplanar
+repeats with the scale constraint. Let  be a
+transformation that removes perspective skew from plane  by
+orienting  to the principal axis and  be the
+function that computes the scale of a keypoint. Then the scale feature
+for the scene's coplanar repeats is
+
+where  is the geometric mean of the keypoints in
+pattern  rectified by transformation
+, which is part of the estimated parameters of
+the repeated scene content encoded in .
+
+Appearance of patterns.
+The appearance of the image patches containing the keypoints are
+ described by  . The
+ corresponding of a keypoint is given by the function
+ . The appearance affinity of keypoint  to a pattern
+ is given by the normalized Euclidean distance between the  descriptor of the keypoint and mean descriptor of the
+ pattern. The appearance feature for patterns is
+
+where  is the mean of the of keypoints
+in pattern , which is part of the estimated parameters
+of the repeated scene content encoded in . The
+variance  is set empirically.
+
+Color of scene surfaces.
+The color distribution of each scene surface is modeled with a RGB
+Gaussian mixture model (GMM) with  components, 
+, where 
+ and
+ are the mean RGB color, full color
+covariance and mixing weight for component  of surface . The set
+of GMM parameters  is part of the estimated parameters of the
+appearance and geometry for scene planes encoded in .
+The color feature for the scene surfaces is
+
+where jj' is the -th member pixel of region  with
+ number of pixels and the conditional likelihood of a
+pixel jj' given a mixture component  is normally
+distributed,
+. The feature
+ uses the same approximation for the
+log-likelihood as Grabcut to make the
+maximum-likelihood estimation of GMM parameters faster. Connected
+components of regions with the same surface assignment segment the
+image into contiguous planar and background regions.
+
+Planar and background singletons. 
+Singletons are keypoints that don't repeat. A weighted cost for each
+singleton is assessed, which is the maximum unary energy that can be
+considered typical for a coplanar repeat. For a complete geometric
+parsing of the scene, it is necessary to assign each singleton to its
+underlying scene plane or to the background surface.  Singletons
+induce no single-view geometric constraints nor appearance constraints
+because they are not part of a repeat group, so their assignments to
+scene planes are based on their interactions with neighborhood
+keypoints and regions, which are defined
+in  as assignment regularization
+functions. An additional weighted cost for each planar singleton is
+assessed, which is the minimum amount of required evidence obtained
+through interactions with neighboring keypoints and regions to
+consider a singleton planar.
+
+Pairwise
+The pairwise features are a set of bivariate Potts functions that
+serve as regularizers for keypoint and region assignment to scene
+model components.
+
+Keypoint contrast. 
+The keypoint contrast feature penalizes models that over-segment similar
+looking repeats. The keypoint contrast of the scene is
+
+where the variance  is set empirically.
+
+Region contrast.
+Regions have bounded area, so there may be large areas of low texture
+on a scene plane or in the background that are over-segmented. Regions
+that span low-texture areas can be identified by a low cumulative edge
+response along their boundary. The cumulative edge response between
+two regions, denoted , is robustly
+calculated so that short but extreme responses along the boundary do
+not dominate (see 2f). The region contrast of the image is given
+by the feature
+
+A larger constant  increases the amount of smoothing and is
+set as , which puts the crossover
+point of smoothing at the mean contrast of regions.
+
+Keypoint overlap.
+A keypoint that overlaps a region is coplanar or co-occurs on the
+background surface with the overlapped region, which is encoded as a
+pairwise constraint. A penalty for each violation of the coplanarity
+constraint is assessed.
+
+Label subset costs
+Parsimonious scene models are encouraged by assessing a cost for each
+scene model part. Equivalence classes of the label set are defined by
+labels that share a scene model part, , the set of labels that have
+the same vanishing line. A label subset cost is assessed if at least
+one label from an equivalence class is used, which is equivalent to
+accumulating a weighted count of the number of unique scene model
+components in the scene.
+
+
+figuresection
+toctocdepth2
+
+
+
+
+
+
+
+ 
+(Supplementary Material) 
+
+
+
+Annotation-Assisted Repeat Grouping
+
+
+
+
+
+
+
+center
+

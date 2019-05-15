@@ -1,0 +1,2059 @@
+
+
+Zero Knowledge List (ZKL)
+sec:ZKL
+
+We generalize the idea of consistent set membership queries MicaliRK03,ChaseHLMR05 to support membership and order queries in zero knowledge on a list with no repeated elements.
+More specifically, given a totally ordered list of unique
+elements , we want to support in zero knowledge queries of the following form: 
+itemize[nolistsep,noitemsep]
+ Is  or ? 
+ For two elements , what is their relative order, i.e.,  or  in ?
+itemize
+We adopt the same adversarial model as
+in MicaliRK03,Ostrovsky04,ChaseHLMR05. Thus, we require that proofs reveal nothing beyond the query answer,
+not even the size of the list.
+There are two parties: the prover and the verifier.
+The prover initially commits to a list of values and makes the commitment (a short digest) public.
+Informally, the security properties can be stated as follows.
+Completeness mandates that honestly generated proofs always satisfy the verification test.
+Soundness states that the prover should not be able to come up with a query,
+ and corresponding inconsistent (with the initial commitment) answers and convincing proofs.
+Finally, zero-knowledge means that each proof reveals the answer and nothing else. In other words, there
+must exist a simulator, that given only an oracle access to ,
+can
+simulate proofs for membership and order queries that are indistinguishable from real proofs.
+Next, we formally describe the model and the security properties.
+
+Model
+ssec:ZKLModel
+
+A Zero Knowledge List scheme (ZKL) consists of three probabilistic polynomial time algorithms -  and the queries are of the form  where , ,  is a collection of elements,
+ denotes a membership/non-membership query and
+ denotes an order query. In the following sections, we will use  to 
+represent a variable that saves the current state of the algorithm (when it finishes execution). 
+
+description
+
+
+
+
+The  algorithm takes the security parameter as input and produces a public key  for the scheme.
+The prover and the verifier both take as input the string  that can be a random
+string (in which case, the protocol is in the common random string model) or
+have a specific structure (in which case the protocol is in the trusted parameters model).
+
+ 
+
+
+ takes the security parameter, the public key  and the list , and produces a short digest commitment  for the list.
+
+    
+  where  and
+ denotes the type of query.
+ produces the membership information of the queried elements,  and the proof of membership (and non-membership), . Then depending on :
+
+description
+[:]
+ sets  and  to  and returns
+.
+
+[:]
+Let .
+ produces the correct list order among the elements of ,  and the proof of the order, .
+description
+
+
+
+
+ takes the security parameter, the public key , the commitment  and a query  and  and returns a bit , where . 
+
+
+description
+
+Example
+Let us illustrate the above functionality with a small example. Let  and  be the query.
+Then given this query  returns   
+, the corresponding proofs of membership and non-membership in ,
+  and the corresponding proof of order between  and  in . 
+
+
+
+Security Properties
+ssec:ZKLSec
+
+Definition[Completeness]
+def:ZKL-Completeness
+For every list , every sublist  and every ,
+
+
+alignat*2
+ [(1^k); &(,) (1^k, , );
+    
+ & (, _M, , _O) (,,,):
+                     
+    & (1^k,,,,,,_M, , _O) &=&  ACCEPT] = 1         
+ alignat*
+
+Definition
+
+
+Definition[Soundness]
+def:ZKL-Soundness
+For every PPT malicious prover algorithm, ,
+for every sublist  and for every  there exists a negligible function  such that:
+
+alignat*2
+ [&(1^k); 
+
+ &(, ^1, _M^1, ^1, _O^1,  ^2, _M^2, ^2, _O^2) & (1^k,,,,, ^1, _M^1, ^1, _O^1) = ACCEPT  
+
+ &(1^k,,,,, ^2, _M^2, ^2, _O^2) = ACCEPT 
+
+ &((^1 ^2) (^1 ^2)) ] (k)   
+ alignat*
+Definition
+
+
+
+
+Definition[Zero-Knowledge]
+def:ZKL-ZK
+
+There exists a PPT simulator  such that for every PPT malicious verifier , there exists a negligible function  such that: 
+
+alignat*2
+ [(1^k);(, _A)  _1(1^k,); &(, _P) (1^k, , ):
+
+ &_2^(,_P,)(,_A) = 1] - 
+
+ [(,_S) _1(1^k);(, _A)  _1(1^k, ); &(, _S) _2(1^k,_S):
+
+& _2^_3^(1^k,_S)(,_A) = 1]  (k)
+ alignat*
+
+Here  has oracle access to , that is,
+given a query ,  can query the list  to learn only the membership/non-membership
+of elements in 
+and, if , learn the list order of the elements of  in .
+Definition
+
+ 
+
+
+
+
+
+
+
+Zero Knowledge List (ZKL) Construction
+sec:ZKLC
+
+Intuition
+The construction uses zero knowledge set scheme, homomorphic integer commitment scheme, zero-knowledge protocol to prove non-negativity of an integer and 
+a collision resistant hash function , if the elements of the list  are larger that  bits.
+In particular, given an input list  the prover creates a set  where for every element 
+it adds a (key,value) pair  where
+ is a hash of  and  is a homomorphic integer commitment of  (assuming 
+without loss of generality).
+The prover then sets up a zero knowledge set on  using  from zero knowledge set construction in Figure fig:ZKSModel.
+The output of  is a commitment to , , that the prover sends to the verifier.
+
+Membership and non-membership queries of the form  are replied in the same fashion as in zero knowledge set, by invoking 
+on the hash of every element of sublist .
+Recall that as a response to a membership query for a key,  returns the value against that key.
+In our case, the queried key is  and the value returned by ,  is the commitment 
+where  is the rank of element  in the list , if . If , the value returned is .
+Hence, the verifier receives the commitments to ranks for queried member elements. These commitments are never opened but are used
+as part of a proof for order queries.
+
+For a given order query , for every adjacent pair of elements in the returned order, , the prover
+gives a proof of order. Recall that  contains the member elements of , arranged according to their order in the list, .
+To prove the order between two elements , the prover does the following.
+Let ,
+and ,  the corresponding commitments and wlog .
+As noted above,  are already returned by the prover as a part of membership proof.
+Additionally, the prover augments the membership proof with a commitment to 1, , and its
+opening information . 
+
+
+Then the verifier computes  using
+the homomorphic property of the integer commitment scheme.
+The prover and the verifier then engage in  to convince the verifier that
+ is a commitment to value .
+Note that we use the non-interactive zero-knowledge version of the protocol as discussed in Section sssec:ZKP.
+
+It is important to understand why we require  to verify that  and not .
+By the soundness of the protocol , the probability that  a cheating prover  will be able to convince  about the non-negativity of a negative integer is negligibly small.
+However, since  is non-negative, a cheating prover can do the following:
+instead of the rank of an element store the same arbitrary non-negative integer for every element in the list.
+Then,  and  are commitments to  and  can always succeed in proving an arbitrary order.
+To avoid this attack, we require the prove to hold for .
+An honest prover can always prove
+the non-negativity of  as  for any rank  of the list.
+
+Also, we note that the commitments to ranks can be replaced by commitments to a strictly monotonic sequence as long as there is a
+1:1 correspondence with the rank sequence. 
+In this case, the distance between two elements will also be positive and, hence, the above protocol still holds.
+
+
+Construction
+
+Let  be the homomorphic integer commitment scheme defined in Section sssec:IntCom and    be a ZKS scheme
+defined in Section sssec:ZKS.
+We denote the output of the prover during the non-interactive statistical zero knowledge protocol  as .
+
+The construction also uses a hash function, .
+In Figure fig:ZKLScheme we describe in detail our ZKL construction on an input list
+.
+
+figure[ht!]
+Zero Knowledge List (ZKL) Construction
+framed
+
+description[nolistsep,noitemsep]
+ [:]
+ 
+The  algorithm takes the security parameter as input and runs  and outputs .
+
+
+[:]
+
+Wlog, let  and  denote an integer commitment to  under public key , i.e., .
+Then,  proceeds as follows:
+
+itemize[noitemsep,nolistsep]
+ For every , compute  and .
+ Set .
+ Run  and output .
+itemize
+
+[ where :]
+Let . For all  do the following:
+ itemize[nolistsep,noitemsep]
+  Run .
+  Set .
+ itemize
+Set  and .
+ 
+If  return .
+
+If  do the following:
+
+Let  and  where .
+itemize[nolistsep,noitemsep]
+ For all , compute .
+ Compute .
+itemize
+Set  and  and return .
+
+[  where :]
+
+The  algorithm does the following:
+itemize[noitemsep,nolistsep]
+ Compute . 
+ Parse  as .
+ For all , run .
+itemize
+
+If  and  for all  , output .
+
+If , perform the following additional verification steps:
+
+itemize[nolistsep,noitemsep]
+ Let .
+ Parse  as  .
+ Verify that  is 1.
+ 
+ Compute 
+ Verify that  using  using
+  where .
+itemize
+
+  If all the verifications pass, only then return .
+
+description
+
+framed
+fig:ZKLScheme
+figure
+
+
+
+
+
+
+Security Proofs
+
+
+
+Proof of Completeness
+
+Completeness of the ZKL construction in Section sec:ZKLC directly follows from the Completeness of Zero Knowledge Set and Completeness of the protocol  . 
+Proof of Soundness:
+
+
+To simplify the notation, first let us denote using  and  the following two events:
+
+align*
+ &_1 = [(1^k); 
+
+ &(, ^1, _M^1, ^1, _O^1,  ^2, _M^2, ^2, _O^2)  &(1^k,,,,, ^1, _M^1, ^1, _O^1) = ACCEPT 
+
+ &(1^k,,,,, ^2, _M^2, ^2, _O^2) = ACCEPT 
+
+ &(^1 ^2)]
+align*
+
+align*
+& _2 = [(1^k); 
+
+& (, ^1, _M^1, ^1, _O^1,  ^2, _M^2, ^2, _O^2) & (1^k,,,,, ^1, _M^1, ^1, _O^1) = ACCEPT 
+
+& (1^k,,,,, ^2, _M^2, ^2, _O^2) = ACCEPT 
+
+& (^1 ^2)]
+align*
+
+Then, Definition def:ZKL-Soundness can be rewritten as
+align*
+& [(1^k); 
+
+& (, ^1, _M^1, ^1, _O^1,  ^2, _M^2, ^2, _O^2) & (1^k,,,,, ^1, _M^1, ^1, _O^1) = ACCEPT 
+
+& (1^k,,,,, ^2, _M^2, ^2, _O^2) = ACCEPT 
+
+& ((^1 ^2) (^1 ^2)) ] = [_1 _2] [_1] + [_2]
+align*
+
+Now, by the Soundness property of the ZKS in Section sssec:ZKS,  is negligible in . Let .
+
+Let us consider the event . If the malicious prover is successful in outputting two contradictory orders for a 
+collection of elements, then there must exist at least one inversion pair, i.e., a pair of elements
+ such that  in  and  in .
+Let  and  be the commitments used  as values to prove
+the membership of  and , correspondingly.
+Then by the binding property of the integer commitment scheme of Section sssec:IntCom,  cannot equivocate
+ or  (which is computed by  in the protocol).
+(Note that by the soundness property of ZKS, the probability that 
+can return two commitments  and , , where 
+and  are returned 
+to prove membership of  in  and , respectively, is negligible
+w.r.t. the same
+commitment, .)
+Then according to the protocol, it must be the case that  could convince  that both  and  are commitments to positive integers where  are two integers.
+However, due to the soundness of the protocol , the probability is negligible in . Let .
+
+Therefore we have, , for some negligible function 
+Hence the soundness error of the ZKL construction must be negligible in . 
+
+Proof of Zero-Knowledge:
+
+Let    be the simulator of  defined in Figure fig:homintcom.
+Let    be the simulator for the ZKS in Figure fig:ZKSModel.
+
+Now let us define , a simulator for ZKL (Definition def:ZKL-ZK),
+that has access to the system parameter . 
+itemize[noitemsep]
+  runs  and .
+  outputs .
+  runs  to generate commitment .
+ In response to membership queries ,  does the following: 
+itemize[nolistsep,noitemsep]
+  maintains a table of queried elements as tuples  where  is the queried element
+ and  is the value that  has sent when  was queried. We explain how  is computed next. 
+ For a queried element ,  checks the table.
+  If  is not in the table and, hence, has not been queried before,
+  makes an oracle access to  on .
+ If ,  computes a fresh commitment to 0, ,
+  and stores . If , then  stores .  
+  responds to membership queries by invoking  on  and returning the same output.
+itemize
+ 
+ For order queries (),  additionally does the following.
+ Let  be the queried sublist.  makes an oracle access to  to get the correct list order of the elements of 
+ that are present in . Let
+  be the returned order.
+  computes .
+ Let  be the entries of 's table that correspond to elements in .
+ Then for every pair ,  equivocates  using  to a commitment to any arbitrary positive integer .
+ In other words,  equivocates the commitment  to a commitment to an arbitrary positive integer .
+Finally,  computes  to prove the order between .
+
+itemize
+
+ achieves the following.
+For every newly queried element that is in the list,  generates and stores a fresh commitment to , and sends it to the verifier.
+Hence,  sets  to all queried elements.
+By the hiding property of the integer commitment scheme, the commitments are identically distributed to the commitments computed by the real prover, .
+Now, with the help of ,  can equivocate a commitment to any value it wants.
+Hence, whenever he needs to prove order , 
+ equivocates the commitment to  to any arbitrary positive integer  and invokes
+the protocol   to compute . 
+
+Since the protocol  is Zero Knowledge (Statistical),
+ simulates our ZKL scheme. We note that the constructions with which we instantiate ZKL have the simulators assumed above.
+In particular, for  we use the simulator of the ZKS construction of ChaseHLMR05.
+For  we use the construction of DamgardF02 and for completeness define
+a simulator in Figure fig:SimIC.
+
+Efficiency
+sssec:ZKLEfficiency
+
+The efficiency of our ZKL construction depends on the efficiency of the underlying constructions that we use.
+We consider the the ZKS construction used in ChaseHLMR05  based on Mercurial Commitments,
+the homomorphic integer commitment of DamgardF02 and a protocol for non-negative proof of a commitment
+from Lipmaa03. Each of these constructions is described in more detail in Appendix.
+Mercurial commitment was later generalized byCatalano:2008,Libert2010 but the basic ZKS construction remains the same.
+
+Recall that  is the security parameter of the scheme,  is the size of the output of the hash function ,
+ is the number of elements in the list  and  is the number of elements in query . Similarly to ChaseHLMR05 
+we assume that .
+For every element in ,  hashes the element and computes a commitment to its rank,
+taking time . It then computes  height- paths to compute
+the commitment  to a list, , takes time , where . For further details please see Appendix sec:ZKSCons.
+
+Membership (non-membership) proof of a single element consists of  mercurial decommitments.
+UsingLibert2010, we can have each mercurial decommitment constant size, i.e, .
+The order proof between two elements requires membership proofs for both
+elements and  where  is the absolute difference between the rank of the corresponding elements.
+ is computed using
+ which takes  time.
+Hence, computing a membership proof for a single element or an order
+proof for two elements  takes time .
+More generally, the prover's time for a query on sublist  is
+, where .
+
+The verifier needs to verify  mercurial decommitments for every element in the query 
+and verify order between every adjacent pair of elements in  using .
+Therefore, the asymptotic run time of the verification is . 
+
+We summarize the properties and efficiency of our ZKL construction in Theorem thm:ZKL.
+
+Theorem
+thm:ZKL
+
+The zero-knowledge list (ZKL) construction of
+Figure fig:ZKLScheme satisfies the security
+properties of completeness (Definition def:ZKL-Completeness),
+soundness (Definition def:ZKL-Soundness) and zero-knowledge
+(Definition def:ZKL-ZK). 
+The construction has the following performance, where   is the list size,  is the
+query size, each element of the list is a -bit(If not, we can use a hash function to reduce every element to a -bit string,
+as shown in the construction) string and  is the number
+of all possible -bit strings.
+itemize 0pt
+The prover executes the setup phase in  time and space.
+In the query phase, the prover computes the proof of the answer
+  to a query in  time.
+The verifier verifies the proof in   time and space.
+itemize
+
+ 
+Theorem
+
+
+
+
+
+
+abstract
+
+We introduce a formal model for order queries on lists in zero knowledge in the traditional authenticated data structure model.
+We call this model Privacy-Preserving Authenticated List (PPAL).
+In this model, the queries are performed on the list stored in the (untrusted) cloud where data integrity and privacy have to
+be maintained. To realize an efficient authenticated data structure, we first adapt consistent data query model.
+To this end we introduce a formal model called Zero-Knowledge List (ZKL) scheme which generalizes consistent membership queries in zero-knowledge 
+to consistent membership and order queries on a totally ordered set in zero knowledge. We present a construction of ZKL based on zero-knowledge set
+and homomorphic integer commitment scheme. Then we discuss why this construction is not as efficient as desired in cloud applications and
+present an efficient construction of PPAL based on bilinear accumulators and bilinear maps which is provably secure and zero-knowledge.
+
+abstract
+Acknowledgment
+sec:ack
+This research was supported in part by
+  
+the National Science Foundation under grant CNS-1228485.
+  
+Olga Ohrimenko worked on this project in part while at Brown
+University.
+
+We are grateful to Melissa Chase, Anna Lysyanskaya, Markulf
+Kohlweiss, and Claire Mathieu for useful discussions and for their
+feedback on early drafts of this work.
+
+We would also like to thank Ashish Kundu for introducing us to his
+work on structural signatures and Jia Xu for sharing a paper through
+personal communication.
+app
+
+Appendix
+
+
+
+Homomorphic Integer Commitment Scheme DamgardF02 and its Simulator
+sec:IC
+
+We write the commitment scheme of DamgardF02, in the trusted parameter model, i.e., the public key is generated by a trusted third party.
+However, in the original paper DamgardF02, the prover and the verifier interactively set up the public parameters. 
+
+figure[H]
+ Homomorphic Integer Commitment SchemeDamgardF02.
+framed
+description[noitemsep,nolistsep]
+  
+description[nolistsep,noitemsep]
+ [:] The  algorithm, takes the security parameter as input
+ and generates the description of a finite Abelian group , , and a large integer  such that 
+it is feasible to factor numbers that are smaller than . A number having only prime factors at most  are called -smooth and a number having prime factors larger then  are called -rough.
+ The algorithm then chooses a random element  (by group assumption,  is -rough with overwhelming probability) and a random secret key 
+ and sets .  outputs  as the public key of the commitment scheme, .
+ 
+ [:] To commit to an integer , the algorithm  chooses a random , , and computes 
+  (where  is a reasonably close upper bound on the order of the group , i.e., , and given ,  can be computed efficiently).
+  outputs .
+ 
+ [:] To open a commitment , the committer must send the opening information  to the verifier 
+ such that  and . An honest committer can always set .
+description
+description
+framed
+fig:IC
+figure
+
+The above commitment scheme is homomorphic as
+
+
+
+In Figure fig:SimIC we present a simulator for .
+We note that the distribution of outputs from the simulator algorithms is identical to the distribution of outputs from a true prover (committer): 
+in both cases  and commitments are generated identically.
+
+Efficiency
+Assuming group exponentiation take constant time, both  and  run in asymptotic time .
+
+
+figure[H]
+Simulator for .
+framed
+
+description[nolistsep,noitemsep]
+  
+
+description[nolistsep,noitemsep]
+ [:]  works exactly as the  except that it saves  and the order of the group , .
+  sets  and outputs .
+ 
+ [:]  behaves exactly as  and outputs 
+ where ,   and  is as defined in Figure fig:IC.
+
+ 
+ [:] To open  a commitment , originally committed to some integer ,
+ to any arbitrary integer , send  to the verifier.
+description
+description
+
+
+framed
+fig:SimIC
+figure
+
+
+
+
+
+
+
+Proving an Integer is Non-negative Lipmaa03
+
+We present the  protocol presented in Lipmaa03 in Figure fig:Lipmaa. This protocol is honest-verifier zero knowledge with 3 rounds of interaction
+and can be converted to non-interactive general zero knowledge in the Random Oracle model using Fiat-Shamir heuristicFiatS86.
+
+
+The protocol is essentially based on two facts: a negative number cannot be a sum
+of squares and every non-negative integer is a sum of four squared integers. The representation
+of a non-negative integer as the sum of four squares is called the Lagrange representation of a non-negative integer.
+Lipmaa03 presents an efficient probabilistic time algorithm to compute the Lagrange representation of a non-negative integer.
+
+TheoremLipmaa03
+An integer  can be represented as , with integer , , iff .
+Moreover, if , then the corresponding representation  can be computed efficiently.
+Theorem
+
+
+Efficiency
+The algorithm to compute Lagrange's representation of a non-negative integer is probabilistic polynomial timeLipmaa03.
+Assuming group exponentiation is done in constant time, both the Prover and the Verifier in the protocol in Figure fig:Lipmaa
+run in asymptotic constant time, i.e., .
+
+
+figure[H]
+Proving non-negativity of an integerLipmaa03: 
+framed
+
+description[nolistsep,noitemsep]
+ [Step 1:] The Prover commits to an integer  as  where  and sends it to the Verifier.
+ Now the Prover computes the following:
+ itemize[nolistsep,noitemsep]
+  represent  as 
+  for : pick  such that 
+  for : pick  and 
+  for : pick 
+  for : compute 
+  compute 
+  compute 
+ itemize
+ The Prover sends  to the Verifier.
+ 
+ [Step 2:] The Verifier generates  and sends it to the Prover.
+ 
+ [Step 3:] The Prover computes the following:
+ itemize[nolistsep,noitemsep]
+  for : compute 
+  for : compute 
+  compute 
+ itemize
+ The Prover sends  to the Verifier.
+ 
+ [Step 4:] The Verifier checks the following:
+ itemize[nolistsep,noitemsep]
+  for : check 
+  
+ itemize
+ 
+description
+
+framed
+fig:Lipmaa
+figure
+
+
+
+
+
+Zero Knowledge Set (ZKS) Construction ChaseHLMR05
+sec:ZKSCons
+Here we give the construction of ZKS based on mercurial commitments and collision-resistant hash
+functions. For the details, please refer to Section 3 ofChaseHLMR05.
+
+For a finite database , the prover views each key  as an integer numbering of a leaf of a height- binary tree and places a commitment to the information  into leaf number .
+To generate the commitment  to the database , the prover  generates an incomplete binary tree of commitments, resembling a Merkle tree as follows.
+Let      be a Mercurial Commitment scheme and  be the public key of the mercurial commitment scheme, i.e., .
+Let  denotes the randomness used to produce the commitment (hard or soft) of .
+
+Before getting into the details of the ZKS construction using mercurial commitments in Figure fig:ZKS,
+let us give an informal description of mercurial commitments.
+Mercurial commitments slightly relax the binding property of commitments. 
+Partial opening, which is called teasing, is not truly binding: it is possible for the
+committer to come up with a commitment that can be teased to any value of its
+choice. True opening, on the other hand, is binding in the traditional
+sense: it is infeasible for the committer to come up with a commitment that it can open to
+two different values. If the committer can open a commitment at all,
+then it can be teased to only one value. Thus, the committer must choose, at the time of
+commitment, whether to soft-commit, so as to be able to tease to multiple values but
+not open at all, or to hard-commit, so as to be able to tease and to open to only one
+particular value. It is important to note that hard-commitments and soft-commitments are computationally indistinguishable.
+
+
+Efficiency
+
+Let us assume that the elements are hashed to  bit strings, so that . Let us also assume (as inChaseHLMR05) that 
+the collision resistant hash is built into the mercurial commitment scheme, allowing
+to form -bit commitments to pairs of -bit strings.
+Therefore, computing the commitment  takes time , where .
+
+The proofs of membership and non-membership consists of  mercurial decommitments each
+and the verifier needs to verify  mercurial decommitments to accept the proof's validity.
+
+A constant time speed-up can be achieved using the -Trapdoor Mercurial Commitment (-TMC) scheme and collision resistant hash function as building blocks.
+-TMC was introduced byCatalano:2008 and later improved byLibert2010.
+The construction is similar to  ChaseHLMR05, except a -ary tree of height  is used ( >2) instead of a binary tree and each leaf is expressed in -ary encoding.
+Using -TMC as a building block achieves significant improvement in ZKS implementationCatalano:2008,Libert2010 though the improvement is not asymptotic.
+
+
+
+figure[H]
+Zero Knowledge Set (ZKS) construction from Mercurial CommitmentsChaseHLMR05.
+framed
+description[nolistsep,noitemsep]
+  
+
+
+description[noitemsep,nolistsep]
+ [:] Run  and output .
+ 
+ [:]  runs as follows:
+ itemize[nolistsep,noitemsep]
+ For each  such that , produce . 
+ For each  such that  but , where  denotes  with the last bit flipped, produce .
+ Define  for all other  and build the tree in bottom up fashion. For each level  from  upto 0, and for each string  of length , define the commitment  as follows: 
+ enumerate[nolistsep,noitemsep]
+  For all  such that , let .
+  For all  such that  have been defined in Step 1 (where  denotes  with the last bit flipped) but  has not, define .
+  For all other , define .
+ enumerate
+ If the value of the root, , redefine . This happens only when . 
+ Finally define .
+
+ 
+ itemize
+ 
+ 
+ [:] For a query ,  runs as follows:
+ 
+ description[nolistsep,noitemsep]
+  [, i.e., :]
+  Let  denote the first  bits of the string  and  be  with the last bit flipped.
+  Let  and  for 
+  all , where  is a commitment to its two children  and .
+  
+  Return .  
+  
+  [, i.e., :]
+  If , let  be the largest value such that , let  and build a path from  to  as follows:
+  define  for all .
+  Let  and
+   for all .
+  
+   Return 
+ description
+
+ 
+ [:] 
+ 
+ description[nolistsep,noitemsep]
+  [:] The verifier  performs the following:
+  itemize [nolistsep,noitemsep]
+    for all 
+    and .
+  itemize
+  
+  [:] The verifier  performs the following:
+  itemize [nolistsep,noitemsep]
+    for all 
+    and 
+  itemize
+
+ description
+ 
+ description
+ description
+ 
+
+framed
+fig:ZKS
+figure
+
+
+
+
+ Construction
+sec:construction
+
+We present an implementation of a privacy preserving authenticated list in Figure fig:protocol.
+We provide the intuition of our method followed
+by a more detailed description.
+
+Intuition
+Every element of the list is associated with a member
+witness where a member witness is a randomized bilinear accumulator.
+This allows us to encode the rank of the element (i.e., accumulate it) inside of the member witness
+and then "blind" this rank information with randomness.
+Every pair of (element, member witness) is signed by the owner
+and the signatures are aggregated using bilinear aggregate signature scheme presented in Figure fig:BLGS, to compute the list digest signature.
+Signatures and digest are sent to the server, who can use them to prove authenticity when answering client queries.
+The advantage of using an aggregate signature is for the the server to be
+able to compute a valid digest signature for any sublist of the source list
+by exploiting the homomorphic nature
+of aggregate signatures, that is
+without owner's involvement.
+Moreover, the client can verify the individual signatures in a single shot using aggregate signature verification.
+
+The owner also sends linear (in the list size) number of random elements used in the encoding of member witnesses.
+These random elements
+allow the server to compute the order witnesses on queried elements, without the owner's involvement.
+The order witness encodes the distance between two elements, i.e., the difference between element ranks,
+without revealing anything about it.
+Together with randomized accumulators as member witnesses, the client
+can later use bilinear map to verify the order of the elements.
+
+Construction
+Our construction for  is presented in Figure fig:protocol.
+It is based on bilinear accumulators and bilinear aggregate signature introduced inboneh2003aggregate
+and described here in Section sec:agg-sign.
+We denote member witness
+for  as x_i.
+For two elements  , such that  in ,  is an order witness for the order between  and .
+
+
+
+The construction works as follows.
+In the  phase, the owner generates secret key  and public key , where  is used for signatures. 
+The owner picks a distinct random element  from the group  for each element  in the list , .
+The element  is used to compute the member
+witness .
+Later in the protocol, together with ,
+it is also used by the server
+to compute the order witness  for  and  where  in .
+The owner also computes individual signatures, 's,
+for each element and aggregates them into a digest signature  for the list. 
+It returns the signatures and
+member witnesses for every element of  in 
+and the set of random numbers picked for each index
+to be used in order witnesses in .
+The owner sends  to the client
+and  and  to the server. 
+
+Given a query , the server returns a response list  that contains
+elements of  in the order they appear in .
+The server uses information in  to
+build  from member witnesses
+of elements in , and compute the digest signature 
+for  and its membership verification unit 
+where . The server uses information in  to compute .
+The client first checks that all the returned elements are indeed signed by the owner using  and then verifies the order of the returned elements using .
+
+
+
+Preprocessing at the Server
+For a query  on the list 
+of length  and , respectively, the  algorithm
+in Figure fig:protocol
+takes  time to compute  and
+ to compute .
+The server can precompute and store some products to reduce the overall running
+time of this algorithm to  when .
+The precomputation proceeds as follows.
+
+Let  for every element in .
+Then the precomputation proceeds by computing a balanced binary tree 
+over  leaves, where th leave corresponds to  and stores .
+Each internal node of the tree stores the product of its children.
+Therefore the root stores the complete product  
+. (See Figure fig:RT for an illustration of the tree.)
+Computing each internal node takes time  since at each internal node product of at most two children is computed.
+Since the tree has  nodes,
+the precomputation takes time  and requires  storage.
+
+
+figure[H]
+    center
+        RangeTree.pdf
+    Range tree showing the precomputed products where .
+    Precomputed products allow to speed up the computation time of  algorithm in Figure fig:protocol when .
+    fig:RT
+    default
+    center
+figure
+
+Now, computing  will require computing the product of  partial products, i.e.,
+the intervals between elements in the query. Since each partial product can be computed using at most  of the precomputed products (as the height of the tree is ), 
+the total time required to compute the product of  partial products is .
+Hence, the precomputation is useful whenever .
+Otherwise, when , the server can run the  as mentioned in the scheme in Figure fig:protocol
+in time .
+
+
+Efficiency
+
+We measure the time and space complexity
+of our scheme in terms of , the length of the list ,
+and , the length of the queried sublist .
+We use  notation to denote the length of a list .
+Recall that ()   (). 
+We discuss and summarize the time and space complexity for each party as follows:
+
+description
+ [Owner]The  algorithm computes member and order witnesses for each element,
+ along with signatures for each element.
+ Hence, the algorithm runs in time  and requires  space.
+ 
+
+ [Server] Computing  that takes time , as it touches  elements
+ and computing  takes time .
+ Hence, the overall runtime of computing  and  is .
+ The server can precompute and store some products of the signatures, as mentioned above,
+ to reduce the overall running time to .
+ In addition the server calculates 
+ order witnesses each taking constant time, hence,
+  in total. So
+ the overall run time for the server is .
+ The server needs to store the list itself,  and the precomputed products.
+ Since each of these objects is of size , the space requirement
+ at the server is .
+ 
+ [Client]  computes a hash for each element in the
+ query ,
+ and then checks the first two equalities using bilinear map. 
+ This requires  computation. 
+ In the last step  checks  bilinear map equalities which takes time .
+ Hence the overall verification time of the client is .
+ During the query phase, the client requires
+  space to store its query and its response with the proof for
+ verification. The client also needs to store  which requires  space.
+description
+
+Efficiency of PPAL via ZKL
+
+We noted in the introduction that we can adapt zero knowledge lists
+to implement a PPAL scheme.
+Recall that we can do this by making the owner run , the server run  and the client run  of
+ZKL (see Section ssec:ZKLModel for the description of ZKL algorithms).
+Here we estimate the efficiency of a PPAL construction based on the construction
+of ZKL presented in Figure fig:ZKLScheme and compare it with the  construction presented in this section.
+
+From the discussion of efficiency of the ZKL construction in Section sssec:ZKLEfficiency, the time and space complexity of each party
+in  adaptation of ZKL readily follows below.
+
+description[nolistsep,noitemsep]
+ [Owner] The owner runs in time  and  space, where  is the security parameter.
+
+ [Server] To answer a query of size , the server runs in time . The space requirement
+ at the server is  since he has to store the  commitments produced by the owner.
+ [Client] The verification time of the client is .
+ During the query phase, the client requires
+  space to store its query and its response with the proof for
+ verification.
+description
+
+Hence, the  construction presented in Figure fig:protocol is a factor of 
+more efficient in space and computation requirements as compared to
+an adaptation of the ZKL construction from Figure fig:ZKLScheme in  model.
+
+ Batch ordering query
+ The client can learn the total order among  different elements of the list using a basic ordering query on two elements. This requires  individual order queries, where each verification
+ takes one multiplication in group  and six bilinear map computations.
+  Since our construction supports a query of multiple elements,
+  the client can optimize the process and ask a singe batch ordering query for  elements.
+  In this case, the verification will require only  multiplications in the group  and
+   bilinear map computations.
+
+
+
+
+
+
+Introduction
+sec:intro
+
+
+Authentically releasing partial information while maintaining privacy is a well known requirement in many practical scenarios where the data being dealt with is sensitive. 
+
+Consider, for example, 
+the following medical case study presented inMedHR.
+Each patient has a personal health record (PHR) that contains the medication and vaccination history of the patient. Entries are made against the dates when medicines are taken and
+vaccinations are performed.
+Thus, the PHR is a chronologically sorted document signed by the medical provider and given
+to the patient.
+Now the patient might need to authorize the release of a subset of the PHR with only the relevant information to be sent to third parties on an as needed basis, without the medical provider's involvement.
+For example, let us say the patient wants to join a summer camp that requires the vaccination record of the patient and the order in which the vaccinations were taken.
+the patient wants to release the relevant information in a way such that the camp can verify that the data came from a legitimate medical provider, but 
+the camp cannot learn anything beyond the authorized subset of relevant information, i.e., the vaccinations and their chronological order, but not the exact date when they were taken.
+
+Consider another example where there are multiple regional sales divisions of a company distributed across three neighboring states.
+A monthly sales report contains the number of products sold by each of the divisions, arranged in non-decreasing order. Each monthly sales report is signed by the authority and stored on a cloud server.
+By the company's access control policy, each sales division is allowed to learn how it did in comparison to the other units, but not anything else. That is, a division cannot learn the sales numbers of other divisions or their relative performance beyond what it can infer by the comparisons with itself. 
+Thus, the cloud would need to release the relevant information in such a way that the querying division can verify the data came from the legitimate source but not learn anything beyond the query result. 
+
+The above examples motivate the following model: a trusted owner generates an ordered set of elements. Let us call this ordered set a list.
+The owner outsources the list to a (possibly untrusted) party, let us call it server. There is another party involved who issues order queries on the list, let us call this party client.
+The client only interacts with the server. So the server has to release information in a way such that the client can verify the authenticity of the data it receives, i.e., that it is truly generated by
+the trusted owner. But the client should not be able to learn anything beyond the answers to its queries. 
+
+This above model specifies an authenticated data structure with an additional  privacy requirement.
+An authenticated data structureTamassia03 is a structured collection of data (e.g., a list, tree, graph, or map) along with a set of query operations defined on it.
+Three parties are involved in an authenticated data structure (ADS) scheme, namely, the data owner, the server and the client/user. ADS framework
+allows the data owner to outsource data processing tasks to an untrusted
+server without loss of data integrity for clients. This is achieved as follows.
+The (trusted) data owner produces authentication information about the dataset (ordered list in our case) and a short digest signature and sends a copy of the dataset along with the authentication information to
+the (untrusted) server and the digest signature to the client. The server responds to the (legitimate) client queries about the dataset by returning
+the query answer and a compact proof of the answer. The client uses
+the digest signature (obtained from the owner), the query answer and the proof obtained from the server to verify the integrity of the answer.
+
+Classic hash-based authenticated data structures were designed without taking into account privacy goals and provide proofs that leak information about the dataset beyond the query answer. 
+For example, in a hash treeMerkle80,Merkle89 for a set of  elements, the proof of the membership of an element in the set has size , thus leaking information about the size
+of the set. Also, if the elements are stored at the leaves in sorted order, 
+the proof of membership of an element reveals its rank. Similar information leaks occur in other hash-based authenticated data structures for 
+dictionaries and maps, such as authenticated skips lists Goodrich01.
+As another example, consider an approach for supporting non-membership proofs
+using an authenticated data structure that supports membership proofs.
+This method involves storing intervals of consecutive elements 
+and returning as a proof of non-membership of a query 
+element  the interval  such that .
+Hence, the proof trivially reveals two elements of the set. 
+
+We define a privacy-preserving authenticated data structure as
+an ADS with an additional privacy property that  ensures that the proof returned by the server to the client does not reveal any information about 
+the dataset beyond what can be learned from the current and previous answers to queries to the dataset.
+In this paper we study one such data structure, a privacy-preserving authenticated list (PPAL),
+for which we consider order queries.
+
+A privacy-preserving authenticated list (PPAL) allows an owner to outsource to the server data with different access control policies
+imposed on it. Hence, when the owner outsources it to the server, clients can access only parts of it from the server and verify that it is indeed owner's
+authentic data but should not be allowed to learn about the data they do not have permission to access.
+Hence, privacy policy should be also imposed on the proofs of authenticity of the data that the clients learn
+(the property not supported by classical ADS). PPAL has several interesting applications as we have already seen in the motivating examples.
+We also envision a PPAL list to be an important building block for designing efficient hierarchical privacy-preserving data structures
+e.g., ordered trees that store XML data.
+
+In this paper, we present an efficient solution for privacy-preserving authenticated lists that supports
+queries on the relative order of two (or more) elements of the list.
+This framework guarantees integrity of the order queries through a compact proof returned to the client.
+The proof does not reveal the actual ranks of the elements nor
+any order information between elements other that what can be inferred from the current and previous answers by the rule of transitivity.
+
+We first present a generic approach to this problem in the traditional consistent query modelMicaliRK03,ChaseHLMR05,Ostrovsky04,Catalano:2008,Libert2010 where there are two parties involved: the prover,  
+and the verifier, .  takes an ordered list as input and produces a short commitment which is made public. Then  generates membership and order 
+queries on the list and  responds with the answers and the proofs. Once  commits to a list, it cannot give answers inconsistent with the commitment that will pass the
+verification test by . We formalize this framework as Zero Knowledge List (ZKL) and give a construction in Section sec:ZKL.
+
+It is easy to see this model can be interpreted in the PPAL framework as follows. We can make the owner run , the server run  and the client run
+. In fact in the ZKL model we get stronger security guarantee as once the owner commits to a list, even a malicious one, 
+it cannot give inconsistent answers later. Moreover the ZKL framework supports both membership and order queries in Zero Knowledge.
+However, as we discuss in Section sssec:ZKLEfficiency, the construction is not very practical for cloud computing scenario where the client can be a mobile device.
+
+
+The ZKL model indeed gives stronger security guarantees, but in the privacy-preserving authenticated list (PPAL) model, the owner is in fact a trusted party.
+We discuss the PPAL framework in Section sec:scheme and design an efficient PPAL scheme, exploiting the fact that the owner is an honest party. In our scheme, for a source list of size  and a query of size ,
+neither the server nor the owner runs in time more than  or requires storage more that . The running time for the server can be brought down to  with 
+preprocessing time and the client requires time and space proportional to . We give the construction and discuss its efficiency in Section sec:construction.
+
+
+
+An authenticated data structureTamassia03 involves a structured dataset  (e.g., a list, tree, graph, or map) and three parties: the owner, the server and the client/user.  
+The owner is the trusted source of dataset  that produces authentication information about . The server maintains a copy of  along with the authentication information produced by the owner.  
+The server responds to queries about  issued by the client by returning the query result together with a proof of the answer (also called answer authentication information).  
+But the client trusts the owner and not the server. The client then verifies the authenticity of the answer obtained from the server using the proof produced by the server and the public key of the owner.
+
+
+A repertory of query operations is defined over . The size of the collection  is the number of data objects present in the collection. We will denote the size of  by . 
+
+
+Classic hash-based authenticated data structures were designed without taking into account privacy goals and provide proofs that leak information about the dataset beyond the query answer. 
+For example, in a hash treeMerkle80,Merkle89 for a set of  elements, the proof of the membership of an element in the set has size , thus leaking information about the size of the set.  
+Also, if the elements are stored at the leaves in sorted order, the proof of an element reveals its rank. Similar information leaks occur in other hash-based authenticated data structures for dictionaries and maps, such as authenticated skips lists Goodrich01. 
+
+
+Other types of information leaks may occur when an authenticated data structure supporting membership proofs is adapted to support nonmembership proofs. 
+Indeed the simplest approach consists of storing in the data structure intervals of consecutive elements  according to some order and returning as a proof of nonmembership of query 
+element  the interval  such that . In this approach, a nonmembership proof leaks two elements of the set.
+
+
+In this paper, we study the design of privacy-preserving authenticated data structures, which have the additional property that the proof returned by the server to the client does not reveal any information about 
+the dataset beyond what can be inferred from the current and previous answers to queries. 
+Specifically, we present a privacy-preserving authenticated data structure for lists that supports queries returning the relative order of two (or more) given elements of the list. 
+The proof does not reveal the actual ranks of the elements. Also, it does not reveal any order information between elements other that what can be inferred form the current and previous answers by the rule of transitivity.
+
+
+Applications
+
+A general application of a privacy-preserving authenticated list is for data that has different access control policies imposed on it by the owner.
+Hence, when the owner outsources it to the server, different clients can access parts of it from the server and verify that it is indeed owner's
+authentic data but should not be allowed to learn about the data they do not have permission to access.
+Hence, privacy policy should be also imposed on the proofs of authenticity of the data that the clients learn.
+To give a concrete example, consider the following scenario fromMedHR:
+Medical providers give copies of signed personal health record (PHR) to a patient.
+The patient would authorize construction of subset of the PHR with only the relevant information to be sent to third parties on an as needed basis, without the medical provider's involvement.
+For example, vaccination information that is needed for school or summer camp enrollment can be provided without 
+releasing an entire medical record, while still allowing the school/camp to verify that the data came from a legitimate medical provider.
+But the third party, the school/camp in this example, should not be able to learn anything beyond the authorized subset of relevant information.
+A few more concrete examples include SQL queries that contain
+"order by" clause on the data that is sensitive and
+the client is allowed to learn only partial result of such query
+and not how her data is positioned w.r.t. the rest of the data;
+best seller lists that do not reveal relative ranking for items in different lists.
+
+We also envision a privacy-preserving authenticated list to be an important building block for designing efficient hierarchical privacy-preserving data structures
+e.g., ordered trees that store XML data.
+
+
+
+
+
+Problem Statement
+sec:problem-statement
+In this section we define order queries, introduce our adversarial model and security properties, and discuss our efficiency goals.
+
+Query 
+ss:querystructure
+
+ 
+Let  be a linearly ordered list of non-repeated elements.
+An order query on a list  of distinct elements is defined as follows: 
+given a pair of query elements  of , the server returns the pair with its elements 
+rearranged according to their order in  together with proofs of membership of  and 
+and a proof of the returned order. For example, if  precedes  in , then the pair  is returned as an answer.
+
+
+For generality, the data structure also supports batch order query:
+Given a list of query elements , the server returns a permutation of  according to the ordering of the elements in , 
+together with a proof of the membership of the elements and of their ordering in .
+
+The above model captures the query model of a privacy-preserving authenticated list.
+In comparison, zero knowledge list structure supports the same queries as well as
+non-membership queries. Hence, as a response to a (non-)membership
+element query the prover returns a boolean value indicating if the element is in the list and a corresponding proof of (non-)membership.
+              
+Adversarial model and security properties 
+In this section we present adversarial models and security properties of PPAL and ZKL.
+
+Following the authenticated data structure model, list  plus authentication information about it is created by a data owner and given to a server, who answers queries on  issued by a client, who verifies the answers and proofs returned by the server using the public key of the data owner.
+
+We assume the data owner is trusted by the client, who has the public key of the data owner. However, both the client and server can act as adversaries, as follows:
+
+itemize[noitemsep,nolistsep]
+The server is malicious and may try to forge proofs for incorrect answers to (ordering) queries. 
+For example, the server may try to prove an incorrect ordering of a pair of elements of . 
+ 
+The client tries to learn from the proofs additional information about list  beyond what it has inferred from the answers. 
+For example, if the client has performed two ordering queries with answers  and , it may want to find out whether  or .
+
+ itemize
+Note that in typical cloud database applications, the client is allowed to have only a restricted view of the data structure and 
+the server enforces an access control policy that prevents the client from 
+getting answers to unauthorized queries.  This motivates the curious behavior by the client.
+The client may behave maliciously and try to ask ill-formed queries or queries violating the access control policy. But the server may just refuse to answer when the client asks illegal queries. 
+So the client's legitimate behavior can be enforced by the server.
+
+We wish to construct a privacy-preserving authenticated data structure for list , i.e., a data structure with the following security properties:
+
+description [noitemsep,nolistsep]
+ [Completeness] ensures that honestly generated proofs are always accepted by the client.
+ [Soundness] mandates that proofs forged by the server for incorrect answers to queries do not pass the verification performed by the client.
+ [Zero Knowledge] means that each proof received by the client to a query reveals and verifies the answer and nothing else.
+
+
+In other words, for any element , the simulator, given oracle access to , should be able to simulate proofs for order queries that are indistinguishable from real proofs.
+description
+To understand the strength of the zero-knowledge property, let us illustrate to what extent the proofs are non-revealing.
+One of the guarantees of this property is that receiving a response to a query 
+does not reveal where in  queried elements of  are.
+
+In other words, no information about , other than
+what is queried for in  is revealed. It is worth noting that in the context of leakage-free redactable signature schemes, this property has been
+referred to as transparency Brzuska10,Samelin12 and privacy Chang09,Kundu12.
+Moreover, zero knowledge also provides security for the size of the list  from the client.
+
+Since we let the client ask multiple queries on a static list adaptively,
+in principle, it is possible that even though the individual query responses and proofs
+do not leak any extraneous information about the source list, when the responses and proofs are collected together, the client is able to infer some structural information about the source
+list, which it had not explicitly queried for.
+Hence, we need to ensure that the scheme is immune against any potential leakage
+of any structural information
+that has not been explicitly asked for by the client.
+
+More concretely,
+in a linearly ordered list ,
+the client should not be able to infer any relative order that is not inferable by the rule of transitivity from the queried orders.
+This security guarantee also follows from the zero-knowledge property.
+
+The adversarial model in ZKL is different from that of PPAL.
+The ZKL model considers only two parties: the prover and the verifier.
+The prover initially computes a commitment to a list  and makes this commitment public (i.e., the verifier also receives it).
+Later the verifier asks membership and order queries on the list and the prover responds accordingly. In ZKL both the prover and the verifier can be malicious
+as follows:
+itemize[noitemsep,nolistsep]
+ The prover may try to give answers which are inconsistent with the initial commitment.
+ The adversarial behavior of the verifier is the same as that of the client in the PPAL model.
+itemize
+
+The security properties of ZKL (Completeness, Soundness, Zero-Knowledge) guarantee security against malicious prover and verifier.
+They are close to the ones of PPAL except for Soundness which captures that the prover can try to create a forgery on a list of his choice.
+We discuss the security properties of ZKL in more detail in Section ssec:ZKLSec.
+
+Efficiency 
+
+We characterize the efficiency of a privacy-preserving authenticated data structure for a list, , of  items by means of the following space and time complexity measures:
+
+itemize[noitemsep,nolistsep]
+Server storage: Space at the server for storing list  and the authentication information and for processing queries. 
+Ideally, the server storage is , irrespective of the number of queries answered.
+Proof size: Size of the proof returned by the server to the client. Ideally, the proof has size proportional to the answer size.
+Setup time: Work performed by the data owner to create the authentication information that is sent to the server. Ideally, this should be .
+Query time: Work performed by the server to answer a query and produce its proof. Ideally, this work is proportional to the answer size.
+Verification time: Work performed by the client to verify the answer to a query using the proof provided by the server and the public key of the data owner. Ideally, this work is proportional to the answer size.
+itemize
+
+
+
+
+Contributions and Organization of the Paper
+
+The main contributions of this work are as follows:
+itemize[noitemsep,nolistsep]
+
+After reviewing preliminary concepts and the cryptographic primitives we use in this paper,
+in Section sec:prelim, we introduce the Zero-Knowledge List (ZKL) model, present a construction, prove its security and analyze its efficiency in Section sec:ZKL. 
+  
+In Section sec:scheme, we introduce a formal model for a privacy-preserving authenticated list that supports order queries on its elements.
+
+In Section sec:construction, we present a construction of the above data structure based on bilinear maps and we analyze its performance.
+Formal proofs for the security properties of our construction are given in Section sec: sec-proofs.
+
+itemize
+
+In Table tab:comparison we compare our constructions of a privacy-preserving authenticated list with previous work in terms of performance, and assumptions. 
+We also indicate which constructions satisfy the zero-knowledge property.
+We include a construction based on our new primitive, ZKL, and our direct construction of PPAL. We note that ZKL model is a two party model
+but can be adapted to a three party model of PPAL (see Section sec:construction for details).
+Our PPAL construction outperforms all previous work that is based on widely accepted assumptionsBrzuska10,Samelin12.
+
+table[t!]
+
+  
+
+  tabularx6.5inp0.843in> m1.4cm m1.1cm m1cm m1cm m1cm m1.2cm m1cm  m0.74cm m0.8cm
+    &  &   &    &  & &  &  &  2lThis paper               
+
+    &Steinfeld01 &Johnson02         &Chang09       &Brzuska10                &Samelin12 &Poehls12                       &Kundu12 &  ZKL & 
+
+        Zero-knowledge     &                    &                          &                      &                     &      &                           &      &            &                 
+ 
+        Setup time        &         &                       &                   &                            &             &                                    &          &        &                          
+ 
+        Server Space             &                 &                       &                   &                            &             &                                    &        &    &                          
+ 
+        Query time        &                 &            &                   &                             &               &                                  &   & &            
+
+        Verification time &    &                 &              &                            &             &                                    &     &         &                          
+
+        
+
+
+    Proof size       &                 &                  &                   &                            &             &                                    &         &     &                           
+
+       
+    
+    Assumption        & RSA                &  RSA                      &  SRSA, Division & EUCMA  &ROH, nEAE          & AnAHF  & ROH, RSA  & ROH, FC, SRSA     &  ROH,nBDHI 
+   
+      tabularx
+  
+ 
+
+tab:comparison
+    Comparison of our constructions of a privacy-preserving authenticated list with previous work.
+  ZKL is a construction based on Zero-Knowledge lists from Section sec:ZKLC
+  and  is a direct PPAL construction from Section sec:construction . All the time and space  complexities are asymptotic. Notation: 
+   is the number of elements of the list,  is the number of elements in the query, and 
+   is the number of all possible -bit strings from where list elements can be drawn from.
+  
+  Acronyms for the assumptions: 
+  Strong RSA Assumption (SRSA);
+  Existential Unforgeability under Chosen Message Attack (EUCMA) of the underlying signature scheme; 
+   Random Oracle Hypothesis (ROH);
+   -Element Aggregate Extraction Assumption (nEAE);
+  Associative non-abelian hash function (AnAHF);
+  
+   Factoring a composite (FC);
+   -Bilinear Diffie Hellman Inversion Assumption(nBDHI).
+ 
+table
+
+
+
+Privacy Preserving Authenticated List (PPAL)
+sec:scheme
+
+
+In the previous section we presented a model and a construction for a new primitive called
+zero knowledge lists. As we noticed earlier, ZKL model gives the desired functionality
+to verify order queries on lists. However, the corresponding construction does not provide the efficiency one may
+desire in cloud computing setting where the verifier (client) has limited memory resources.
+In this section we address this setting and define a model
+for privacy preserving authenticated lists, , that is executed between
+three parties. This model, arguably, fits cloud scenario better and as we will see our construction
+is also more efficient. In particular, the size of a single proof in  is
+ vs.  in ZKL.
+
+
+Model
+
+
+ is a tuple of three probabilistic polynomial time algorithms 
+executed between the owner of the data list ,
+the server who stores  and answers
+queries from the client and the client who issues queries
+and verifies corresponding answers.
+
+
+description
+
+
+ 
+ 
+ This algorithm takes the security parameter and the source list  as input and produces two digests  and  for the list.
+ This algorithm is run by the owner.  is sent to the client and  is sent to the server.
+
+  )
+  
+  This algorithm takes the key generated by the owner, , the source list,  and a queried sublist, , as input, where a sublist of a list  is defined as: ()  ().
+  The algorithm produces the list order of the elements of , , and a proof, , of the answer. This algorithm is run by the server.
+
+   
+   
+   This algorithm takes , a queried sublist ,  and  and returns a bit , where  iff ()  () and  . Otherwise,
+   . This algorithm is run by the client.
+
+description
+
+
+Security Properties
+
+A  has three important security properties. The first property is Completeness. This property ensures that for any list  and for any sublist  of ,
+if the  are generated honestly, i.e., the owner and the server honestly execute the protocol, then the client will be always convinced about the correct list order of .
+
+
+Definition[Completeness]
+def:completeness
+For all lists  and all sublists 
+
+
+eqnarray*
+[(, ) (1^k, );(, ) (,, ): 
+
+(, , , ) = ACCEPT] =1
+eqnarray*
+
+Definition
+The second security property is Soundness. This property ensures that once an honest owner generates a pair 
+for a given list ,
+even a malicious server 
+will not be able to convince the client of incorrect order of elements belonging to the list . This property ensures integrity of the scheme.
+
+Definition[Soundness]
+ def:soundness
+For all PPT malicious Query algorithms , for all lists  and all query sublists , there exists a negligible function  such that:
+align*
+ [(, ) (1^k, );(_1, _1, _2, _2) &
+
+ (, , _1, _1) = ACCEPT& 
+
+ (, , _2, _2) = ACCEPT &
+
+ (_1 _2&) ] (k)
+align* 
+ 
+Definition
+
+
+The last property is Zero-Knowledge. This property captures that even a malicious client cannot learn anything about the list (and its size)
+beyond what the client has queried for.
+Informally,
+this property involves showing that there exists a simulator such that even for adversarially chosen list , no adversarial client (verifier) can tell if it is talking to an honest owner and server pair
+who are committed to  or to the simulator who only has oracle access to the list .
+
+
+Definition[Zero-Knowledge]
+def:ZK
+
+There exists a PPT simulator  such that for all PPT malicious verifiers , there exists a negligible function  such that:
+
+align*
+  [(, _A)  _1(1^k); &(, ) (1^k, ):
+
+ &_2^(,,.)(,_A) = 1] - 
+
+ [(, _A)  _1(1^k); &(, _S) _1(1^k):
+
+ &_2^_2^(1^k,_S)(,_A) = 1]  (k)
+align*
+ 
+Definition
+
+Here  has oracle access to , that is given a sublist  of ,  can query the list  to learn only the correct list order of the sublist  and cannot look at .
+
+
+Attack onKundu12's scheme
+We observer that the scheme presented in Kundu12
+does not satisfy the zero knowledge property of   for the following reason.
+The scheme of Kundu12 generates a  bit secure name,
+where ,
+for each element of the list of size . 
+A high level idea of the scheme is as follows.
+The secure name of an element has dedicated bits, where
+each bit corresponds to the pairwise order
+between this element and every other element in the list.
+To prove the order between any two elements, the verifier needs to know secure names for
+both of them.
+Then, given any two secure names, the verifier can easily compute the required bit.
+Two order queries  and ,
+as per the scheme ofKundu12,
+reveal to the client the secure names of all three elements ,  and .
+Hence, given the secure names of  and , the client can easily compute the bit which preserves the order information between  and  and infer the order between
+them. Therefore, it is impossible to write a simulator  for an adversarially generated list such that the view of the adversary is indistinguishable as in Definition def:ZK.
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+Verifiable Member and Order Queries on a List in Zero-Knowledge
+
+Esha GhoshBrown University Olga OhrimenkoMicrosoft Research Roberto Tamassia[1]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+DefinitionDefinition[section]
+CorollaryCorollary[section]
+TheoremTheorem[section]
+ObservationObservation[section]
+
+
+
+
+
+
+
+
+
+
+Keywords:
+privacy-preserving authenticated data structure,
+integrity,
+bilinear accumulators,
+bilinear aggregate signature,
+redactable signatures,
+cloud security.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+alpha
+
+
+
+
+
+
+Preliminaries
+
+
+Data Type
+
+We consider a linearly ordered list  as a data structure
+that the owner wishes to store with the server. A list is an ordered set of elements 
+, where each , 
+and either  or .
+Hence,  is a strict order on elements of  that is irreflexive, asymmetric and transitive. 
+
+We denote the set of
+elements of the list  as ().
+A sublist of ,
+, is defined as: .
+Note that the order of elements in  may not follow the order of .
+We denote with L the permutation of the elements of  under the order of .
+
+ denotes the membership of element  in , i.e.,  if  and  if .
+We interpret  as a boolean value, i.e.,  is equivalent to  and 
+is equivalent to .
+
+For all  such that ,  denotes the rank of element  in the list, .
+
+
+Cryptographic Primitives
+
+We now describe a signature scheme that is used in our construction
+and cryptographic assumptions that underly the security of our method.
+In particular, our zero knowledge list construction relies on
+homomorphic integer commitments (Section ),
+zero knowledge protocol to prove a number is non-negative (Section ) and zero
+knowledge sets (Section ),
+while the construction for privacy preserving lists relies on bilinear aggregate signatures
+and -Bilinear Diffie Hellman Inversion assumption (Section ).
+
+Homomorphic Integer Commitment Scheme
+
+We use a homomorphic integer commitment scheme 
+that is statistically hiding and computationally binding .
+The later implies the existence of a trapdoor and, hence, can be used to
+"equivocate" a commitment, that is open the original message of the commitment
+to another message.
+The above commitment scheme is defined in terms of three algorithms
+   and the corresponding trapdoor commitment (we call it a simulator) as:
+  .
+We describe these algorithms in Figure .
+The homomorphism of   is defined as 
+.
+For specific constructions of  see Figure  in Appendix.
+
+
+
+Homomorphic Integer Commitment Protocols.
+
+[noitemsep,nolistsep]
+   
+[noitemsep,nolistsep]
+ [:] 
+ is a randomized algorithm that takes as input the security parameter and generates a public key 
+
+ [:]
+ is a randomized algorithm that takes as input the public key, an integer  and generates a commitment,opening pair  with
+additive homomorphic properties.  servers as the commitment value for  and  is the opening value.
+ 
+ [:]
+ takes as input the public key, a commitment  and the corresponding opening information  and returns the committed integer .
+
+  
+[noitemsep,nolistsep]
+ [:] 
+  takes as input the security parameter and returns a public key  and a trapdoor .
+
+ [:]
+ takes  and an integer  and returns a commitment  and the opening information .
+
+ [:]
+ takes as input  and a commitment  and the corresponding opening information  and returns an arbitrary integer , which
+might not be equal to ;  being the commitment to integer .
+
+
+
+
+Proving an integer is positive in zero-knowledge
+We use following protocol between a prover and a verifier:
+the verifier holds prover's commitment  to an integer  and wishes to verify if this
+integer is positive, ,
+without opening . We denote this protocol as  (Figure ).
+In our construction, we will use the commitment scheme  described in Figure  and
+use  to compute .
+
+
+Protocol to prove non-negativity of an integer
+ 
+ : We use this notation to concisely represent an (interactive) protocol between two parties  and :
+ sends a commitment  to a non-negative value  to  and proves, without opening , that .
+The symbol  denotes  is the commitment to  and  is the corresponding opening information. Note that  is not sent to .
+ 
+
+As a concrete construction we extend
+the protocol of  which allows one to prove that
+ to supply a prove that . This proves .
+The protocol of  is a  protocol, which is honest verifier zero knowledge and can be made 
+non-interactive general zero knowledge
+in the Random Oracle model using Fiat-Shamir heuristic.
+For details of the protocol refer to Figure .
+
+Zero Knowledge Set scheme
+Let  be a set of of key value pairs. If  is a key, value pair of , i.e, ,
+then we write  to denote  is the value corresponding to the key . For the keys that are not present in ,
+, we write .
+A Zero Knowledge Set scheme (ZKS) consists of three probabilistic polynomial time algorithms -  and queries are of the form "is key  in ?".
+We describe the algorithms in Figure .
+
+
+
+Zero Knowledge Set (ZKS) model
+
+[nolistsep,noitemsep]
+  
+
+
+[noitemsep,nolistsep]
+ [:] 
+ 
+ The  algorithm takes the security parameter as input and produces a public key  for the scheme.
+The prover and the verifier both take as input the string  that can be a random
+string (in which case, the protocol is in the common random string model) or
+have a specific structure (in which case the protocol is in the trusted parameters model).
+
+ [:]
+ 
+  takes the security parameter, the public key,  and the set  and produces a short digest commitment  for .
+ 
+ [:]
+ 
+  takes a query  and produces the corresponding value,  and the corresponding proof of membership/non-membership, .
+ 
+ 
+ [:]
+ 
+  takes the security parameter,  and a query  and an answer  and a proof  and returns a bit , where .
+
+For our construction of zero knowledge lists we pick a ZKS construction of  that
+is based on mercurial commitments and describe it in more details
+in Figure .
+
+Bilinear Aggregate Signature Scheme
+
+
+We use bilinear aggregate signature scheme developed by Boneh et al.  for our privacy preserving authenticated data structure scheme. 
+Given  signatures on  distinct messages  from  distinct users , it is possible to aggregate all these signatures into a single short signature such that 
+ the single signature (and the  messages) will convince the verifier that the  users indeed signed the  original messages (i.e., user  signed message  for ). 
+Here we describe the scheme for the case of a single user signing  distinct messages . The decryption of the generic case of  different users can be found at .
+The following notation is used in the scheme:
+
+
+[noitemsep,nolistsep]
+  are multiplicative cyclic groups of prime order 
+  is a generator of 
+  is computable bilinear nondegenerate map 
+  is a full domain hash function viewed as a random oracle that can be instantiated with a cryptographic hash function. 
+
+Formally, a bilinear aggregate signature scheme is a 5 tuple of algorithm Key Generation, Signing, Verification, Aggregation, 
+and Aggregate Verification. We discuss the construction in Figure .
+
+
+Bilinear Aggregate Signature Scheme
+
+
+[noitemsep,nolistsep]
+ Key Generation: The secret key  is a random element of  and the public key  is set to .
+ 
+ Signing: The user signs the hash of each distinct message  via .
+ 
+ Verification: Given the user's public key , a message  and its signature , accept if  holds.
+ 
+ Aggregation: This is a public algorithm which does not need the user's secret key to aggregate the individual signatures. 
+ Let  be the signature on a distinct message  by the user, according to the Signing algorithm ().
+ The aggregate signature  for a subset of  signatures, where , is produced via .
+ 
+ Aggregate Verification: Given the aggregate signature ,  original messages  and the public key :
+        [noitemsep,nolistsep]
+         ensure that all messages  are distinct, and reject otherwise.
+         accept if .
+        
+
+
+Security
+Informally, the security requirement of an aggregate signature scheme
+guarantees that the aggregate signature  is valid if and only if the aggregator
+used all 's, for , to construct it. The formal model of security is called
+the aggregate chosen-key security model. The security of aggregate signature schemes is
+expressed via a game where an adversary is challenged to
+forge an aggregate signature:
+
+
+[noitemsep,nolistsep]
+ Setup: The adversary  is provided with a public key  of
+ the aggregate signature scheme.
+ 
+ Query:  adaptively requests signatures on messages of his choice.
+ 
+ Response: Finally,  outputs  distinct messages  and an aggregate signature . 
+
+ wins if the aggregate signature  is a valid aggregate signature on messages 
+under , and  is nontrivial, i.e.,  did not request a signature on 
+under . A formal definition and a corresponding security proof
+of the scheme can be found in.
+
+
+
+
+
+
+
+Hardness assumption
+
+Let  be a large -bit prime where
+ is a security parameter. Let  be polynomial in , .
+Let  be a bilinear map where  and  are groups of prime order 
+and  be a random generator of . We denote a probabilistic polynomial time (PPT)
+adversary , or sometimes ,  as an adversary
+who is running in time .
+We use  to show that
+an adversary  has an oracle access to
+an instantiation of an algorithm  with
+first argument set to  and 
+denoting that  can give arbitrary input for the
+rest of the arguments.
+
+
+[-Bilinear Diffie Hellman Inversion (-BDHI) ]Let  be a random element of  and  be a positive integer.
+Then, for every PPT adversary  there exists a negligible function  such that:
+
+
+
+
+
+Privacy-Preserving Authenticated List (PPAL) Construction
+
+
+Notation:  is the security parameter of the scheme;  multiplicative cyclic groups of prime order  where  is large -bit prime; :
+a random generator of ; : computable bilinear nondegenerate map ;
+ : full domain hash function
+ (instantiated with a cryptographic hash function);
+ 
+all arithmetic operations are performed using.
+ is the input list of size , where  are distinct
+and .
+System parameters are .
+
+[noitemsep,nolistsep]
+
+
+
+
+
+, where
+[noitemsep,nolistsep]
+  is the input list of length ;
+ ;
+  and
+ [noitemsep,nolistsep]
+  is the secret key of the owner;
+  is member authentication information and
+  is the list ;
+  for , is order authentication informations;
+  is the digest signature of the list .
+ These elements are computed as follows:
+[noitemsep,nolistsep]
+ For every element  in : Pick . Compute member witness for index  as 
+  and signature for element  as .
+ Pick the , , which should be unique for each list.
+ Set .  is treated as a list identifier which protects against mix-and-match attack and also protects from the leakage that the queried result is the complete list.
+ The list digest signature is computed as: .
+
+
+
+, where
+ [noitemsep,nolistsep]
+  s.t. , is the queried sublist; 
+ ;
+ :
+  [noitemsep,nolistsep]
+  where ;
+ ;
+ y_1y_2, y_2y_3, ,y_m-1y_m.
+
+These elements are computed as follows:
+[noitemsep,nolistsep]
+ The digest signature for the sublist:  .
+ The member verification unit: .
+ For every :  Let  and , and  and .
+      Compute y_jy_j+1  where . 
+
+
+
+ where  are defined as above.
+ 
+The algorithm checks the following:
+[noitemsep,nolistsep]
+ Compute  and check if 
+ Check if 
+ For every , y_jy_j+1y_j+1
+Return  iff all the equalities of the three steps verify,  otherwise.  
+
+
+Related Work
+
+We discuss related literature in three sections. First, we discuss
+work on data structures that answer queries in zero knowledge.
+This work is the closest to our work on zero knowledge lists.
+We then discuss signature schemes that can be interpreted in the privacy-preserving authenticated data structure model.
+Finally, we highlight the body of literature regarding leakage-free redactable signature schemes for ordered lists in detail.
+The latter is the closest to the problem of privacy preserving authenticated lists that we are addressing in this manuscript. 
+
+Zero Knowledge Data Structures
+
+Buldas et al. showed how to prove answers to dictionary queries using
+an authenticated search tree-based construction, but did not consider privacy.
+For a set of size , the construction produces a proof of (non)membership
+of an element in the set that has size . Similar to other work on authenticated data structures ,
+the proof reveals information about the underlying set, e.g., its size and the location
+of the queried entry w.r.t. other entries.
+
+The model of a zero knowledge set (more generally, zero knowledge elementary database) was first introduced by Micali et al. .
+This is a secure data structure which allows a prover to commit to a finite set
+ in such a way that, later on, it will be able to efficiently (and non-interactively)
+prove statements of the form  or  without leaking any information about  beyond what has been queried for, not even the size of . 
+The security properties  guarantee that the prover should not be able to cheat and prove contradictory statements about an element.
+Later, Chase et al.  abstracted away Micali et al.'s solution and described the exact properties a commitment scheme should possess in order to allow a similar construction. 
+This work introduced a new commitment scheme, called mercurial commitment.
+A generalization of mercurial commitments allowing for committing to an ordered sequence of messages (-trapdoor mercurial commitment) was proposed in and 
+later improved in. A -trapdoor mercurial commitment allows a committer to commit to an ordered sequence of message and 
+later open messages with respect to specific positions.
+
+Th above zero knowledge set constructions use an implicit
+ordered -way hash tree () built
+on the universe of all possible elements. The size of this tree is exponential in the security parameter. However, only a portion of the tree of size polynomial in the security parameter is explicitly stored in the data structure.
+Let  denote the universe size. Then the proof size for membership and non-membership for an individual element is . Kate et al.  suggested a weaker primitive called nearly-zero knowledge set based on polynomial
+commitment . In their construction the proof size for membership and non-membership for every individual element is , but the set size is not private. 
+
+A related notion of vector commitments was introduced by  where they show that
+a (concise) -trapdoor mercurial commitment can 
+be obtained from a vector commitment and a trapdoor mercurial commitment.
+A vector commitment scheme allows a committer
+to commit to an ordered sequence of values  in such a way
+that the committer can later open the commitment at specific positions (e.g., prove that  is the -th committed message).
+
+Ostrovsky et al.  generalized the idea of membership queries to support membership and orthogonal
+range queries on a multidimensional dataset.  describe constructions for consistent database
+queries, which allow the prover to commit to a database, and then provide query answers that are provably consistent with the commitment.
+They also consider the problem of adding privacy to such protocols. However their construction requires interaction
+(which can be avoided in the random oracle model) and requires the prover to keep a counter for the questions asked so far.
+The use of NP-reductions and probabilistically checkable proofs makes their generic construction expensive.
+The authors of  also provide a simpler protocol based
+on explicit-hash Merkle Tree.
+However, this construction does not hide the size of the
+database as the proof size is 
+where  is the upper bound on the size of the database.
+
+Signature Schemes
+ A collection of signature schemes, namely content extraction signature, redactable signature and 
+digital document sanitizing schemecan be viewed in a three-party model where the owner digitally signs a data document
+and the server discloses to the client only part of the signed document
+along with a legitimately derived signature on it. The server derives the signature without the owner's involvement and
+the client verifies the authenticity of the document it receives from the server by running the verification algorithm of the underlying scheme.
+A related concept is that of transitive signature scheme, where given the signatures of two edges  and 
+of a graph, it is possible to compute the signature for the edge (or path)  without the signer's secret key.
+However, these signature schemes are not designed to preserve privacy of the signed object, which may include the content and/or the structure
+in which the content is stored.
+
+Ahn et al. present a unified framework for computing on authenticated data via the notion of slightly homomorphic or -homomorphic signatures, which was later improved by. 
+This broad class of -homomorphic signatures includes quotable, arithmetic, redactable, homomorphic, sanitizable and transitive signatures.
+This framework allows a third party to derive a signature on the object  from a signature on  as long as  for some predicate  that captures the authenticatable relationship between  and . 
+A derived signature reveals no extra information about the parent ,
+referred to as strong context hiding.
+This work does not consider predicates of a specific data structure.
+
+The authors propose a general RSA-accumulator based scheme
+that is expensive in terms of computation.
+In particular, the cost of signing depends on the predicate  and the size of the message space and is  for a -symbol message space.
+This privacy definition was recently refined by.
+This line of work cannot be directly used for privacy preserving data structures
+where efficiency is an important requirement and quadratic
+overhead may be prohibitive depending on the application.
+
+
+ gives definition and construction of malleable signature scheme. 
+A signature scheme is defined to be malleable if, given a signature  on a message
+, it is possible to efficiently derive a signature  on a message  such that
+ for an allowable transformation .
+Their definition of context hiding requires unlinkability and allows for adversarially-generated keys and signatures. This definition is stronger than that ofas it allows for adversarially-generated keys and signatures. 
+Unlinkability implies the following: a quoted (or derived) signature should be indistinguishable from a fresh signature.
+
+A motivating example proposed in deals with the impossibility of linking
+a quote to its source document.
+However, in the framework of privacy preserving authenticated data structures,
+it is important for the client to verify membership, i.e., given
+a quote from a document and a signature on the quote,
+the client should be able to verify that the quote is indeed in the document. Context-hiding definition in also requires unlinkability.
+
+
+
+
+Leakage-Free Signature Schemes for Ordered Lists
+
+
+A leakage-free redactable signature scheme (LRSS) allows a third party to remove parts of a
+signed document without invalidating its signature. This action, called redaction, does not require
+the signer's involvement. As a result, the verifier
+only sees the remaining redacted document and is able to verify that
+it is valid and authentic. Moreover, the redacted document and its signature do
+not reveal anything about the content  or position of the removed parts.
+This problem can be easily interpreted in the privacy-preserving authenticated data structure model, where the signer is the owner,
+the third party is the server and the verifier is the client.
+
+Kundu and Bertino were first to introduce
+the idea of structural signatures for ordered trees (subsuming ordered lists) which support public redaction
+of subtrees (by third-parties) while retaining the integrity of the remaining parts. This was later extended to DAGs and graphs.
+The notion was later formalized as LRSS for ordered trees
+in and subsequently several attacks on were also proposed in.
+
+The authors of  presented a
+leakage-free redactable signature scheme for strings (which can be viewed as an ordered list)
+that hides the location of the redacted or deleted portions of the list
+at the expense of quadratic verification cost.
+
+The basic idea of the LRSS scheme presented in is to
+sign all possible ordered pairs of elements of an ordered list.
+So both the computation cost and the storage space are quadratic in the number of elements of the list.
+Building on the work of , proposed an LRSS for lists
+that has quadratic time and space complexity.
+Poehls et al.  
+presented a LRSS scheme for a list that has linear time and space complexity
+but assumes an associative non-abelian hash function, whose existence has not been formally proved. 
+The authors of ,  presented a construction that uses quadratic space at the server and is not 
+leakage-free. We discuss the attack in Section .
+
+
+
+
+
+ 
+
+
+Security of the  Construction
+
+In this section we prove that the construction presented in Section is  construction according to definitions of completeness, soundness and zero knowledge
+in Section .
+
+Proof of Completeness
+
+If all the parties are honest, all the equations in  evaluate to true. This is easy to see just by expanding the equations as follows:
+
+[nolistsep,noitemsep]
+ [Equation  :]
+ 
+ Let 
+
+ *
+  e(_,g) = &e(_y_j  _rank(, y_j),g) = e(_y_j H(t_y_j y_i)^,g) = 
+ 
+  &e(_y_j H(t_y_j y_i),g^) = e(_y_j H(t_y_j y_i),g^) = e(,g^).
+  
+ [Equation :] Let  and .
+ We start with the right hand side.
+ 
+ *
+
+ [Equation y_jy_j+1y_j+1:]
+ 
+ Let  and  and  and . 
+ 
+ *
+
+ 
+
+
+
+Proof of Soundness
+
+Soundness follows by reduction to the -Bilinear Diffie Hellman assumption (see Definition  for details).
+To the contrary of the Soundness Definition ,
+assume that given a list , the malicious server,  produces two different orders  for some sublist 
+such that corresponding order proofs are accepted by the client, i.e., by algorithm  in Figure .
+Let .
+Since , then there exists at least one inversion pair  such that  in  and  in , where .
+Moreover, it must be the case that either  or  is the correct order in , since
+both .
+(Note that, due to the security of bilinear aggregate signature scheme, it must be the case that all the elements of  are indeed 
+elements of , i.e,  (except with negligible probability).)
+
+Without loss of generality, let us assume  is the order in  and . This implies  is the forged order for which  has successfully 
+generated a valid proof, i.e.,  has verified since  accepted the corresponding proof.
+We show that by invoking  and using its output,  , we construct a PPT adversary  that successfully 
+solves the n-BDHI Problem thereby contradicting -Bilinear Diffie Hellman assumption.
+The formal reduction follows:
+
+
+If -Bilinear Diffie Hellman assumption holds, then  scheme satisfies Soundness in Definition .
+
+
+ We show that if there exists a malicious  as discussed above, then we construct a PPT adversary  that successfully 
+solves the n-BDHI Problem. Algorithm  is given the public parameters  and
+, where .  runs as follows:
+
+[noitemsep,nolistsep]
+
+     Pick  a list  such that .
+
+     Pick  and compute .
+
+     Compute , .
+
+     Pick the  and compute .
+
+     The list digest signature is computed as: .
+
+     Set  where .
+    
+    
+     Finally  outputs two contradicting orders  for some sublist, .
+
+     As discussed above, let  be an inversion pair such that  is the order in  and .
+ 
+     This implies  is the forged order for which  has successfully generated a valid proof .
+     
+     Now  outputs x_jx_i.
+
+
+ inherits success probability of , therefore if  succeeds with non-negligible advantage, so does . Hence, a contradiction. 
+
+
+Proof of Zero-Knowledge
+
+We define Zero Knowledge Simulator  from Definition  as follows.
+ has access to the system parameters  and executes the following steps:
+[noitemsep,nolistsep]
+  picks a random element  and a random element  and publishes as  and keeps  as the secret key.
+  maintains a table of the elements already queried of tuples  where  is the element already queried and  is the corresponding random element picked from  by .
+
+ For a query on sublist ,  makes an oracle access to list  to get the list order of the elements. Let us call it .
+ [noitemsep,nolistsep]
+ For every   checks if  is in the table. If it is,
+ uses the corresponding random element from the table.
+ Otherwise,  picks a random element 
+  and adds  to the table.
+  sets the member authentication unit as  and computes .
+  sets  and 
+ For every pair of elements  in ,  computes 
+ Finally,  returns , where , , 
+ and  y_1y_2, y_2y_3, ,y_m-1y_m.
+ 
+
+The simulator  produces outputs that are identically distributed to the distribution outputs of the true  and  algorithms.
+In both cases  is picked randomly.
+Let  where  is a fixed element and . Then  is identically distributed to  in .
+In other words, if  is picked with probability , then so is .
+The same argument holds for elements in  and .
+Therefore all the units of  and  are distributed identically in both cases. Thus our PPAL scheme is simulatable and the Zero-Knowledge is perfect. We summarize the properties and efficiency of our PPAL construction in Theorem .
+
+
+
+The privacy-preserving authenticated list (PPAL) construction of
+Figure  satisfies the security properties of
+completeness (Definition ), soundness
+(Definition ) and zero-knowledge
+(Definition ).  Also, the construction has the following
+performance, where  denotes the list size and  denotes the query
+size.
+ 0pt
+The owner and server use  space.
+The owner performs the setup phase in  time.
+The server performs the preprocessing phase in  time.
+The server computes the answer to a query and its proof in
+   time.
+The client verifies the proof in  time and space.
+
+
+
+
+
+

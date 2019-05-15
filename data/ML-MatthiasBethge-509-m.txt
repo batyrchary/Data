@@ -1,0 +1,458 @@
+
+
+
+
+
+
+
+
+
+
+ 
+
+ 
+
+
+
+
+
+
+sign
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Foolbox: A Python toolbox to benchmark the robustness of machine learning models
+
+ 
+
+[
+Foolbox: A Python toolbox to benchmark the 
+
+           robustness of machine learning models
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+equal*
+
+
+Jonas Rauberequal,cin,bccn,imprs
+Wieland Brendelequal,cin,bccn
+Matthias Bethgecin,bccn,mpibc,physik
+
+
+cinCentre for Integrative Neuroscience, University of Tubingen, Germany
+mpibcMax Planck Institute for Biological Cybernetics, Tubingen, Germany
+bccnBernstein Center for Computational Neuroscience, Tubingen, Germany
+imprsInternational Max Planck Research School for Intelligent Systems, Tubingen, Germany
+physikInstitute for Theoretical Physics, University of Tubingen, Germany
+
+Jonas Rauberjonas.rauber@bethgelab.org
+
+
+
+
+python, adversarial examples, robustness, neural networks, machine learning, adversarials, adversarial attacks
+
+]
+
+
+
+
+
+
+
+
+
+
+
+ 
+
+
+ 
+Even todays most advanced machine learning models are easily fooled by almost imperceptible perturbations of their inputs. Foolbox is a new Python package to generate such adversarial perturbations and to quantify and compare the robustness of machine learning models. It is build around the idea that the most comparable robustness measure is the minimum perturbation needed to craft an adversarial example. To this end, Foolbox provides reference implementations of most published adversarial attack methods alongside some new ones, all of which perform internal hyperparameter tuning to find the minimum adversarial perturbation. Additionally, Foolbox interfaces with most popular deep learning frameworks such as PyTorch, Keras, TensorFlow, Theano and MXNet and allows different adversarial criteria such as targeted misclassification and top-k misclassification as well as different distance measures. The code is licensed under the MIT license and is openly available at https://github.com/bethgelab/foolbox. The most up-to-date documentation can be found at http://foolbox.readthedocs.io.
+ 
+
+
+In, demonstrated that minimal perturbations, often almost imperceptible to humans, can have devastating effects on machine predictions. These so-called adversarial perturbations thus demonstrate a striking difference between human and machine perception. As a result, adversarial perturbations have been subject to many studies concerning the generation of such perturbations and strategies to protect machine learning models such as deep neural networks against them.
+
+A practical definition of the robustness  of a model, first used by, is the average size of the minimum adversarial perturbation  across many samples ,
+
+
+and  is some distance measure.
+
+Unfortunately, finding the global minimum adversarial perturbation is close to impossible in any practical setting, and we thus employ heuristic attacks to find a suitable approximation. Such heuristics, however, can fail, in which case we could easily be mislead to believe that a model is robust. Our best strategy is thus to employ as many attacks as possible, and to use the minimal perturbation found across all attacks as an approximation to the true global minimum.
+
+At the moment, however, such a strategy is severely obstructed by two problems: first, the code for most known attack methods is either not available at all, or only available for one particular deep learning framework. Second, implementations of the same attack often differ in many details and are thus not directly comparable.  improves upon the existing Python package cleverhans by in three important aspects:
+
+    It interfaces with most popular machine learning frameworks such as PyTorch, Keras, TensorFlow, Theano, Lasagne and MXNet and provides a straight forward way to add support for other frameworks,
+    it provides reference implementations for more than 15 adversarial attacks with a simple and consistent API, and
+    it supports many different criteria for adversarial examples, including custom ones.
+
+This technical report is structured as follows: In section 1 we provide an overview over  and demonstrate how to benchmark a model and report the result. In section 2 we describe the adversarial attack methods that are implemented in  and explain the internal hyperparameter tuning.
+
+ Overview
+
+Structure
+
+Crafting adversarial examples requires five elements: first, a model that takes an input (e.g. an image) and makes a prediction (e.g. class-probabilities). Second, a criterion that defines what an adversarial is (e.g. misclassification). Third, a distance measure that measures the size of a perturbation (e.g. L1-norm). Finally, an attack algorithm that takes an input and its label as well as the model, the adversarial criterion and the distance measure to generate an adversarial perturbation.
+
+The structure of  naturally follows this layout and implements five Python modules (models, criteria, distances, attacks, adversarial) summarized below.
+
+Models
+
+foolbox.models
+
+This module implements interfaces to several popular machine learning libraries:
+
+    TensorFlow 
+
+    foolbox.models.TensorFlowModel
+    PyTorch 
+
+    foolbox.models.PyTorchModel
+    Theano 
+
+    foolbox.models.TheanoModel
+    Lasagne 
+
+    foolbox.models.LasagneModel
+    Keras (any backend) 
+
+    foolbox.models.KerasModel
+    MXNet 
+
+    foolbox.models.MXNetModel
+
+
+
+
+
+
+Each interface is initialized with a framework specific representation of the model (e.g. symbolic input and output tensors in TensorFlow or a neural network module in PyTorch). The interface provides the adversarial attack with a standardized set of methods to compute predictions and gradients for given inputs. It is straight-forward to implement interfaces for other frameworks by providing methods to calculate predictions and gradients in the specific framework.
+
+Additionally,  implements a
+
+CompositeModel
+that combines the predictions of one model with the gradient of another. This makes it possible to attack non-differentiable models using gradient-based attacks and allows transfer attacks of the type described by.
+
+Criteria
+
+foolbox.criteria
+
+A criterion defines under what circumstances an [input, label]-pair is considered an adversarial. The following criteria are implemented:
+
+    Misclassification 
+
+    foolbox.criteria.Misclassification 
+
+    Defines adversarials as inputs for which the predicted class is not the original class.
+    Top-k Misclassification 
+
+    foolbox.criteria.TopKMisclassification 
+
+    Defines adversarials as inputs for which the original class is not one of the top-k predicted classes.
+    Original Class Probability 
+
+    foolbox.criteria.OriginalClassProbability 
+
+    Defines adversarials as inputs for which the probability of the original class is below a given threshold.
+    Targeted Misclassification 
+
+    foolbox.criteria.TargetClass 
+
+    Defines adversarials as inputs for which the predicted class is the given target class.
+    Target Class Probability 
+
+    foolbox.criteria.TargetClassProbability 
+
+    Defines adversarials as inputs for which the probability of a given target class is above a given threshold. 
+Custom adversarial criteria can be defined and employed. Some attacks are inherently specific to particular criteria and thus only work with those.
+
+
+
+
+Distance Measures
+
+foolbox.distances
+
+Distance measures are used to quantify the size of adversarial perturbations.  implements the two commonly employed distance measures and can be extended with custom ones:
+
+    Mean Squared Distance
+
+    foolbox.distances.MeanSquaredDistance
+
+    Calculates the mean squared error
+
+between two vectors  and .
+    Mean Absolute Distance
+
+    foolbox.distances.MeanAbsoluteDistance
+
+    Calculates the mean absolute error
+
+between two vectors  and .
+    
+
+    foolbox.distances.Linfinity
+
+    Calculates the -norm  between two vectors  and .
+    
+
+    foolbox.distances.L0
+
+    Calculates the -norm  between two vectors  and .
+
+
+To achieve invariance to the scale of the input values, we normalize each element of  by the difference between the smallest and largest allowed value (e.g. 0 and 255).
+
+Attacks
+
+foolbox.attacks
+
+ implements a large number of adversarial attacks, see section 2 for an overview. Each attack takes a model for which adversarials should be found and a criterion that defines what an adversarial is. The default criterion is misclassification. It can then be applied to a reference input to which the adversarial should be close and the corresponding label. Attacks perform internal hyperparameter tuning to find the minimum perturbation. As an example, our implementation of the fast gradient sign method (FGSM) searches for the minimum step-size that turns the input into an adversarial. As a result there is no need to specify hyperparameters for attacks like FGSM. For computational efficiency, more complex attacks with several hyperparameters only tune some of them.
+
+Adversarial
+
+foolbox.adversarial
+
+
+
+An instance of the adversarial class encapsulates all information about an adversarial, including which model, criterion and distance measure was used to find it, the original unperturbed input and its label or the size of the smallest adversarial perturbation found by the attack.
+
+An adversarial object is automatically created whenever an attack is applied to an [input, label]-pair. By default, only the actual adversarial input is returned.
+
+Calling the attack with unpack set to False returns the full object instead.
+Such an adversarial object can then be passed to an adversarial attack instead of the [input, label]-pair, enabling advanced use cases such as pausing and resuming long-running attacks.
+
+Reporting Benchmark Results
+
+When reporting benchmark results generated with  the following information should be stated:
+
+
+    the version number of ,
+    the set of input samples,
+    the set of attacks applied to the inputs,
+    any non-default hyperparameter setting,
+    the criterion and
+    the distance metric.
+
+
+
+
+
+
+Versioning System
+
+Each release of  is tagged with a version number of the type MAJOR.MINOR.PATCH that follows the principles of semantic versioning(http://semver.org/) with some additional precautions for comparable benchmarking. We increment the
+
+    MAJOR version when we make changes to the API that break compatibility with previous versions.
+    MINOR version when we add functionality or make backwards compatible changes that can affect the benchmark results.
+    PATCH version when we make backwards compatible bug fixes that do not affect benchmark results.
+
+Thus, to compare the robustness of two models it is important to use the same MAJOR.MINOR version of . Accordingly, the version number of  should always be reported alongside the benchmark results, see section .
+
+Implemented Attack Methods
+
+We here give a short overview over each attack method implemented in , referring the reader to the original references for more details. We use the following notation:
+*-
+
+
+
+
+
+Gradient-Based Attacks
+Gradient-based attacks linearize the loss (e.g. cross-entropy) around an input  to find directions  to which the model predictions for class  are most sensitive to,
+
+Here  is referred to as the gradient of the loss w.r.t. the input .
+
+Gradient Attack
+
+foolbox.attacks.GradientAttack
+
+This attack computes the gradient  once and then seeks the minimum step size  such that  is adversarial.
+
+Gradient Sign Attack (FGSM)
+
+foolbox.attacks.GradientSignAttack
+
+foolbox.attacks.FGSM
+
+This attack computes the gradient  once and then seeks the minimum step size  such that  is adversarial.
+
+Iterative Gradient Attack
+
+foolbox.attacks.IterativeGradientAttack
+
+Iterative gradient ascent seeks adversarial perturbations by maximizing the loss along small steps in the gradient direction , i.e. the algorithm iteratively updates . The step-size  is tuned internally to find the minimum perturbation.
+
+Iterative Gradient Sign Attack
+
+foolbox.attacks.IterativeGradientSignAttack
+
+Similar to iterative gradient ascent, this attack seeks adversarial perturbations by maximizing the loss along small steps in the ascent direction , i.e. the algorithm iteratively updates . The step-size  is tuned internally to find the minimum perturbation.
+
+DeepFool  Attack
+
+foolbox.attacks.DeepFoolL2Attack
+
+In each iteration DeepFool computes for each class  the minimum distance  that it takes to reach the class boundary by approximating the model classifier with a linear classifier. It then makes a corresponding step in the direction of the class with the smallest distance.
+
+DeepFool  Attack
+
+foolbox.attacks.DeepFoolLinfinityAttack
+
+Like the DeepFool L2 Attack, but minimizes the -norm instead.
+
+L-BFGS Attack
+
+foolbox.attacks.LBFGSAttack
+
+L-BFGS-B is a second-order optimiser that we here use to find the minimum of
+*
+where  is the target class. A line-search is performed over the regularisation parameter  to find the minimum adversarial perturbation. If the target class is not specified we choose  as the class of the adversarial example generated by the gradient attack.
+
+SLSQP Attack
+
+foolbox.attacks.SLSQPAttack
+
+Compared to L-BFGS-B, SLSQP allows to additionally specify non-linear constraints. This enables us to skip the line-search and to directly optimise
+*
+where  is the target class. If the target class is not specified we choose  as the class of the adversarial example generated by the gradient attack.
+
+Jacobian-Based Saliency Map Attack
+
+foolbox.attacks.SaliencyMapAttack
+
+This targeted attack uses the gradient to compute a saliency score for each input feature (e.g. pixel). This saliency score reflects how strongly each feature can push the model classification from the reference to the target class. This process is iterated, and in each iteration only the feature with the maximum saliency score is perturbed.
+
+Score-Based Attacks
+Score-based attacks do not require gradients of the model, but they expect meaningful scores such as probabilites or logits which can be used to approximate gradients.
+
+Single Pixel Attack
+
+foolbox.attacks.SinglePixelAttack
+
+This attack probes the robustness of a model to changes of single pixels by setting a single pixel to white or black. It repeats this process for every pixel in the image.
+
+Local Search Attack
+
+foolbox.attacks.LocalSearchAttack
+
+This attack measures the model's sensitivity to individual pixels by applying extreme perturbations and observing the effect on the probability of the correct class. It then perturbs the pixels to which the model is most sensitive. It repeats this process until the image is adversarial, searching for additional critical pixels in the neighborhood of previously found ones.
+
+Approximate L-BFGS Attack
+
+foolbox.attacks.ApproximateLBFGSAttack
+
+Same as L-BFGS except that gradients are computed numerically. Note that this attack is only suitable if the input dimensionality is small.
+
+
+Decision-Based Attacks
+Decision-based attacks rely only on the class decision of the model. They do not require gradients or probabilities.
+
+Boundary Attack
+
+foolbox.attacks.BoundaryAttack
+
+Foolbox provides the reference implementation for the Boundary Attack boundaryattack. The Boundary Attack is the most effective decision-based adversarial attack to minimize the L2-norm of adversarial perturbations. It finds adversarial perturbations as small as the best gradient-based attacks without relying on gradients or probabilities.
+
+Pointwise Attack
+
+foolbox.attacks.PointwiseAttack
+
+Foolbox provides the reference implementation for the Pointwise Attack. The Pointwise Attack is the most effective decision-based adversarial attack to minimize the L0-norm of adversarial perturbations.
+
+Additive Uniform Noise Attack
+
+foolbox.attacks.AdditiveUniformNoiseAttack
+
+This attack probes the robustness of a model to i.i.d. uniform noise. A line-search is performed internally to find minimal adversarial perturbations.
+
+Additive Gaussian Noise Attack
+
+foolbox.attacks.AdditiveGaussianNoiseAttack
+
+This attack probes the robustness of a model to i.i.d. normal noise. A line-search is performed internally to find minimal adversarial perturbations.
+
+Salt and Pepper Noise Attack
+
+foolbox.attacks.SaltAndPepperNoiseAttack
+
+This attack probes the robustness of a model to i.i.d. salt-and-pepper noise. A line-search is performed internally to find minimal adversarial perturbations.
+
+Contrast Reduction Attack
+
+foolbox.attacks.ContrastReductionAttack
+
+This attack probes the robustness of a model to contrast reduction. A line-search is performed internally to find minimal adversarial perturbations.
+
+Gaussian Blur Attack
+
+foolbox.attacks.GaussianBlurAttack
+
+This attack probes the robustness of a model to Gaussian blur. A line-search is performed internally to find minimal blur needed to turn the image into an adversarial.
+
+Precomputed Images Attack
+
+foolbox.attacks.PrecomputedImagesAttack
+
+Special attack that is initialized with a set of expected input images and corresponding adversarial candidates. When applied to an image, it tests the models robustness to the precomputed adversarial candidate corresponding to the given image. This can be useful to test a models robustness against image perturbations created using an external method.
+
+Acknowledgements
+
+This work was supported by the Carl Zeiss Foundation (0563-2.8/558/3), the Bosch Forschungsstiftung (Stifterverband, T113/30057/17), the International Max Planck Research School for Intelligent Systems (IMPRS-IS), the German Research Foundation (DFG, CRC 1233, Robust Vision: Inference Principles and Neural Mechanisms) and the Intelligence Advanced Research Projects Activity (IARPA) via Department of Interior/Interior Business Center (DoI/IBC) contract number D16PC00003. The U.S. Government is authorized to reproduce and distribute reprints for Governmental purposes notwithstanding any copyright annotation thereon. Disclaimer: The views and conclusions contained herein are those of the authors and should not be interpreted as necessarily representing the official policies or endorsements, either expressed or implied, of IARPA, DoI/IBC, or the U.S. Government.
+
+
+icml2017
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+

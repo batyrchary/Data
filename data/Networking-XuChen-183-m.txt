@@ -1,0 +1,1700 @@
+Proof of Theorem thm:The-social-physical-gameproof1
+Suppose that a user  changes its channel  to
+ such that the channel selection profile changes from
+ to . We have that
+align
+(a^')-(a) = _1(a^')-_1(a)+_2(a^')-_2(a).eq:PP0
+align
+
+
+For the part , we have that
+align
+   & _1(a^')-_1(a)
+
+  = & -12_mN_k^pP_md_mk^-I_a_k^'=a_m-12_nk_kN_n^pP_kd_kn^-I_a_n=a_k^'
+
+  & -_a_k^'^k +12_mN_k^pP_md_mk^-I_a_k=a_m
+
+  & +12_nk_kN_n^pP_kd_kn^-I_a_n=a_k+_a_k^k.eq:PP1
+align
+Since users access the spectrum with the same power level and the interference relationship and distance measurement are symmetry, we know
+that
+align
+_nk_kN_n^pP_kd_kn^-  = _nN_k^pP_kd_kn^- = _nN_k^pP_nd_nk^-.eq:PP2
+align
+Combining (eq:PP1) and (eq:PP2), we
+have that
+align
+   & _1(a^')-_1(a)
+
+  = & -12_mN_k^pP_md_mk^-I_a_k^'=a_m-12_nN_k^pP_nd_nk^-I_a_n=a_k^'-_a_k^'^k
+
+   & +12_mN_k^pP_md_mk^-I_a_k=a_m+12_nN_k^pP_nd_nk^-I_a_n=a_k+_a_k^k
+
+  = & -_mN_k^pP_md_mk^-I_a_k^'=a_m-_a_k^'^k
+
+   & +_mN_k^pP_md_mk^-I_a_k=a_m+_a_k^k
+
+  = & -_k(a^')+_k(a)= U_k(a^')-U_k(a).eq:PP4
+align
+
+
+Similarly, for the part , we have that
+align
+  & _2(a^')-_2(a)
+
+  
+  = & _nN_k^spw_kn(-P_kd_kn^-I_a_n=a_k^'+P_kd_kn^-I_a_n=a_k)
+
+  = & _nN_k^spw_kn
+
+  & (-P_kd_kn^-I_a_n=a_k^'-_mk_mN_n^pP_md_mn^-I_a_n=a_m-_a_n^k.
+
+   & .+P_kd_kn^-I_a_n=a_k+_mk_mN_n^pP_md_mn^-I_a_n=a_m+_a_n^k)
+
+  = & _nN_k^spw_kn(-_n(a^')+_n(a))
+
+  = & _nN_k^spw_kn(U_n(a^')-U_n(a)).eq:PP8
+align
+
+Finally, substituting (eq:PP4) and (eq:PP8) into (eq:PP0),
+we obtain that
+align
+   & (a^')-(a)
+
+  = & U_k(a^')-U_k(a)+_nN_k^spw_kn(U_n(a^')-U_n(a)).eq:PP9
+align
+Since user  can not generate interference to any user ,
+we have that
+
+U_n(a^')=U_n(a),nN_k^sN_k^sp.
+
+This implies that
+align*
+   & (a^')-(a)
+
+  = & U_k(a^')-U_k(a)+_nN_k^spw_kn(U_n(a^')-U_n(a))
+
+ & +_nN_k^sN_k^spw_kn(U_n(a^')-U_n(a))
+
+  = & U_k(a^')-U_k(a)+_nN_k^sw_kn(U_n(a^')-U_n(a)),
+align*
+which completes the proof. Proof of Theorem thm:The-distributed-D2Dproof2
+As mentioned, the system state of the spectrum access Markov chain
+is defined as the channel selection profile 
+of all users. Since it is possible to get from any state to any
+other state within finite steps of transition, the spectrum access
+Markov chain is hence irreducible and has a stationary distribution.
+
+
+
+We then show that the Markov chain is time reversible by showing that
+the distribution in (eq:qq1) satisfies the following detailed
+balance equations:
+equation
+q_a^*q_a,a^'=q_a^'^*q_a^',a,a,a^'.eq:phh7
+equation
+To see this, we consider the following two cases:
+
+1) If , we have
+
+and the equation (eq:phh7) holds.
+
+2) If , according to
+(eq:qq1) and (eq:PPP4), we have
+eqnarray*
+ &  & q_a^*q_a,a^'
+
+ & = & _nM_n((a))_a((a))
+
+ &  & (S_n(a_n^',a_-n))(S_n(a_n^',a_-n)), (S_n(a_n,a_-n))
+
+ & = & _nM_n(((a)+ S_n(a_n^',a_-n)))_a((a))
+
+ &  & 1(S_n(a_n^',a_-n)), (S_n(a_n,a_-n)),
+eqnarray*
+and similarly,
+eqnarray*
+ &  & q_a^'^*q_a^',a
+
+ & = & _nM_n(((a^')+ S_n(a_n,a_-n)))_a((a))
+
+ &  & 1(S_n(a_n^',a_-n)), (S_n(a_n,a_-n)).
+eqnarray*
+Thus, according to (eq:Potential), we must have
+eqnarray*
+ &  & q_a^*q_a,a^'=q_a^'^*q_a^',a.
+eqnarray*
+The spectrum access Markov chain is hence time-reversible and has
+the unique stationary distribution as given in (eq:qq1). Proof of Theorem thm:mixingproof33
+
+(a) For the first part, we prove the result based on the spectral analysis method for mixing
+timelevin2009markov,chen2010markov. First, the the spectrum access Markov chain
+is a continuous-time Markov chain with the stationary distribution
+given as
+
+q_a^*=((a))_a((a)),a.
+
+Since 
+and , then the minimum
+probability in the stationary distribution is
+eqnarray
+q_^* & & _aq_a^* (_)(_)
+
+ & & (-(_-_))M_^N.eq:mt1
+eqnarray
+
+
+Using the spectral analysis methodlevin2009markov, we carry out
+the uniformization over the continuous-time spectrum access Markov
+chain. We denote 
+as the transition rate matrix of the spectrum access Markov chain
+and construct a discrete-time Markov chain  with the transition
+matrix ,
+where  is the uniform rate parameter satisfying .
+Since 
+it follows that
+equation
+_M_(-)q_a,a^'_M_,a,a^',
+equation
+where . Hence, we have
+equation
+_M_(-(_-_))q_a,a^'_M_,a,a^'. eq:mt2
+equation
+
+Due to the fact that from a state , the Markov chain
+can transit to at most  other states, we now have that
+
+and we can hence set the uniform rate parameter .
+
+Then, based on the spectral gap inequalitylevin2009markov, it follows that
+eqnarray*
+_a_0q_t(a_0)-q^*_TV & & (-(1-_2)t)2q_^*,
+eqnarray*
+where  is the second largest eigenvalue of transition
+matrix for the discrete-time Markov chain  by uniformization.
+Therefore, the mixing time  satisfies that
+equation
+T_12+121q_^*(1-_2).eq:tm3
+equation
+Furthermore, applying Cheeger's Inequalitylevin2009markov, we have that
+
+1-_2^22,
+
+ where
+eqnarray
+& & _a^'a,q_a,a^'>0q_a^*q_a,a^',eq:tm4
+eqnarray
+implying that
+eqnarray
+ &  & q_^*_M_(-).eq:tm5
+eqnarray
+
+
+Combining (eq:mt1), (eq:mt2), (eq:tm3), (eq:tm4),
+and (eq:tm5), we finally conclude  that
+align*
+T_  & 212+1q_^*^2 (2)212+1q_^*(q_^*_M_)^2
+
+  & NM_^2N+3_M__^2(4(_-_))
+
+   & [212+NM_+(_-_)].
+align*
+
+(b) For the second part, we analyze the mixing time using the coupling methodlevin2009markov.
+The key idea is to carefully construct a discrete-time Markov chain
+that satisfies the spectrum access Markov chain uniformization condition,
+and then show this discrete-time Markov chain possesses the one-step
+path coupling property when . By doing so, we
+can derive a tighter upper-bound of the mixing time of the spectrum
+access Markov chain.
+
+First of all, according to the result in Part (a), we can define the
+discrete-time Markov chain  such that at each step, a user
+ is selected purely randomly for the channel update. Specifically,
+for each time slot, we carry out the following: 1) choose a user 
+with a probability ; 2) choose a new channel 
+randomly with ; 3) let user  switch
+to the new channel with a probability .
+As shown in Part (a), such discrete-time Markov chain has the transition
+matrix ,
+with  being the uniformization parameter .
+
+We then apply the coupling method to derive the mixing time of the
+Markov chain . Here a coupling of the Markov chain 
+presents a joint stochastic process  on 
+such that  and  are the copies of the original Markov
+chain  with the transition matrix . Let 
+denote the Hamming distance between the system states  and
+, which equals the number of users with different accessed
+channels between these two states. The Markov chain  satisfies
+the one-step path coupling condition, if 
+where .
+
+Since it is difficult to analyze the couplings for all pairs ,
+according to the path coupling techniquelevin2009markov, we can restrict
+attention to the pairs in a connected subset , i.e., those pairs with one step difference. Let  denote user 's channel selection at a state . Without loss of generality, for a pair ,
+we assume only user  chooses different channels, and the other
+users choose the same channels at the states , respectively.
+That is,  and 
+for any .
+
+Now at the time slot , a user  is randomly selected to update
+channel, resulting in the pair transition from  to
+(). We denote 
+and . We consider the following two
+cases:
+
+(1) When , we have . Without
+loss of generality, we assume . In this
+case, for we have
+
+eqnarray*
+p_k,n & = & M__nM__(S_n(X_t))(S_n(X_t)),(S_n(X_t+1))
+
+ & & M__M__(-(_-_)).
+eqnarray*
+Similarly, for  we have
+
+q_k,nM__M__(-(_-_)).
+
+And when  since  and , we have
+eqnarray*
+p_1,n & = & q_1,n
+
+ & = & M__nM__M__M__(-(_-_)).
+eqnarray*
+
+
+(2) When , we have . Without
+loss of generality, we assume  and .
+In this case, we have
+eqnarray*
+p_1,n & = & q_2,n
+
+ & = & M__nM__M__M__(-(_-_)),
+eqnarray*
+and for ,
+eqnarray*
+p_k,n & = & M__nM__(S_n(X_t))(S_n(X_t)),(S_n(X_t+1))
+
+ & & M__M__(-(_-_)).
+eqnarray*
+Similarly, for  we have
+
+q_k,nM__M__(-(_-_)).
+
+
+
+Let . It is known fromlevin2009markov,chen2010markov that
+
+E[d(X_t+1,Y_t+1)X_t,Y_t,n=1]=1-_k=1^M_nr_k,n,
+
+
+E[d(X_t+1,Y_t+1)X_t,Y_t,n1]=2-_k=1^M_nr_k,n,
+
+which imply that
+eqnarray*
+ &  & E[d(X_t+1,Y_t+1)X_t,Y_t]
+
+ & = & _i=1^NPrn=iE[d(X_t+1,Y_t+1)X_t,Y_t,n=i]
+
+ & = & 1N(2N-1-_n=1^N_k=1^M_nr_k,n)
+
+ & & 1N(2N-1-NM_^2_M__(-(_-_))).
+eqnarray*
+Thus, when  we have , and
+align*
+E[d(X_t+1,Y_t+1)X_t,Y_t]< & 1-LN
+
+  = & (1-LN)d(X_t,Y_t),
+align*
+which satisfies the one step path coupling condition.
+
+Then, regarding to the mixing time bound of the original Markov chain,
+we know fromlevin2009markov,chen2010markov that
+eqnarray*
+ &  & q_t(a_0)-q^*_TV
+
+ & & N(-T_LN)
+
+ & = & N(-M__M_T_L).
+eqnarray*
+It follows that
+
+T_NM_M__L.
+
+
+
+
+Proof of Theorem thm:For-the-distributed-1proof6666
+First of all, we must have that .
+
+According to (eq:pp4) and (eq:pp5), we then have that
+equation
+_(q_a:a)_aq_a(a)_(q_a:a)_aq_a(a)-1_aq_aq_a,eq:hhhhh1
+equation
+which is due to the fact that .
+Since  is the optimal solution to (eq:pp5) and
+,
+according to (eq:hhhhh1), we know that
+align*
+^* & _aq_a^*(a)-1_aq_a^*q_a^*
+
+ & _aq_a^*(a)+1 _+1,
+align*
+which completes the proof. Proof of Theorem thm:The-performance-gap1proof3333
+Let  as the convergent SNE by the distributed spectrum access algorithm when  (i.e., ). According to (eq:interference1) and (eq:potential2),
+we have that
+align*
+V(a)  = & _n=1^NU_n(a)= -_n=1^N_mN_n^pP_md_mn^-I_a_n=a_m-_n=1^N_a_n^n
+
+ 
+
+
+
+  = & (a)-12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^-I_a_n=a_m
+
+   & -12_n=1^N_mN_n^pN_n^spP_md_mn^-I_a_n=a_m.
+align*
+We then have that
+align
+= & V(a)-V(a)= (a)-(a)
+
+   & -12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^-(I_a_n=a_m-I_a_n=a_m)
+
+   & -12_n=1^N_mN_n^pN_n^spP_md_mn^-(I_a_n=a_m-I_a_n=a_m).eq:hhhes
+align
+Since 
+and ,
+we know from (eq:hhhes) that
+align*
+& 12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^-(I_a_n=a_m-I_a_n=a_m)
+
+   & +12_n=1^N_mN_n^pN_n^spP_md_mn^-(I_a_n=a_m-I_a_n=a_m)
+
+  & 12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^-+12_n=1^N_mN_n^pN_n^spP_md_mn^-.
+align*
+
+Then we know that
+eqnarray*
+& = & V(a)-V_
+
+ & = & _q_a^*(V(a)-V(a))
+
+ & & _q_a^*((a)-(a)
+
+ &  & +12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^-
+
+ &  & +12_n=1^N_mN_n^pN_n^spP_md_mn^-
+
+ & = & (a)-_q_a^*(a)
+
+ &  & +12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^-
+
+ &  & +12_n=1^N_mN_n^pN_n^spP_md_mn^-
+
+ & = & (a)-_
+
+ &  & +12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^-
+
+ &  & +12_n=1^N_mN_n^pN_n^spP_md_mn^-
+
+ & & (a)-^*+1_n=1^NM_n
+
+ &  & +12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^-
+
+ &  & +12_n=1^N_mN_n^pN_n^spP_md_mn^-
+
+ & & 1_n=1^NM_n
+
+ &  & +12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^-
+
+ &  & +12_n=1^N_mN_n^pN_n^spP_md_mn^-.
+eqnarray* Proof of Theorem thm:2user_NEproof3
+
+Since
+align*
+U_1(p_1,p_2) &= (h_1p_1n_1 + g_21p_2)  - c_1p_1 +
+
+& w_12(h_2p_2n_2 + g_12p_1)- w_12c_2p_2,
+align*
+we have
+U_1(p_1,p_2)p_1 = 1p_1 - w_12g_12n_2 + g_12p_1 - c_1.
+Since
+_p_10 (1p_1 - w_12g_12n_2 + g_12p_1) _p_10 (1p_1 - w_12p_1) = 
+and
+_p_1 (1p_1 - w_12g_12n_2 + g_12p_1) = 0
+and
+align*
+(1p_1 - w_12g_12n_2 + g_12p_1)p_1 &= -1p_1^2 + w_12g_12^2(n_2 + g_12p_1)^2 
+
+&= (w_12-1)g_12^2p_1^2-2n_2g_12p_1-n_2^2p_1^2(n_2 + g_12p_1)^2 
+
+&< 0,
+align*
+there exists a unique value of  such that
+alignequation1
+1p_1 - w_12g_12n_2 + g_12p_1 - c_1 = 0,
+align
+which is also the value of . Solving equation1, we obtain the desired result. Similarly, we can obtain . Proof of Proposition lm:2user_socialproof4444
+Since
+align*
+V(p_1,p_2) &= (h_1p_1n_1 + g_21p_2)  - c_1p_1 
+
+&+ (h_2p_2n_2 + g_12p_1)- c_2p_2
+align*
+we have
+V(p_1,p_2)p_1 = 1p_1 - g_12n_2 + g_12p_1 - c_1.
+Using the same argument as in the proof of Theorem thm:2user_NE, the optimal value  of  for  is the unique solution of
+1p_1 - g_12n_2 + g_12p_1 - c_1 = 0.
+In particular, we have . Since  when ,  is decreasing in  when . Using Lemma lm:2user_NE,  is decreasing in , and hence  is increasing in  since  is independent of . Similarly, we can show that  is increasing in . Proof of Theorem thm:log_utilityproof7777
+Since
+align*
+S_i(p_i,p_-i) &= (h_ip_in_i + _jig_jip_j) - c_ip_i +
+
+& _kiw_ik((h_kp_kn_k + _jkg_jkp_j) -c_kp_k),
+align*
+we have
+S_i(p_i,p_-i)p_i = 1p_i - _kiw_ikg_ikn_k + _jkg_jkp_j - c_i.
+Since each term in the above summation term is decreasing in , , it follows that
+^2 S_i(p_i,p_-i)p_i p_j > 0, jNi
+which implies that the social group utility function  is supermodular. It follows from Topkis98 that there exists at least one SNE.Proof of Theorem thm:random_NEproof4
+
+Since align*S_i(q_i,q_-i) &= (z_iq_i_jI^-_i(1 - q_j)) -c_iq_i
+
+& _ji w_ij[(z_jq_j_kI^-_j(1 - p_k))-c_jq_j],
+align*
+by the first-order condition, it follows that
+alignderivative1
+S_i(q_i,q_-i)q_i &= 1q_i - _jI^+_i w_ij1 - q_i - c_i
+
+&=c_iq_i^2-(_jI^+_i w_ij+1+c_i)q_i+1q_i(1 - q_i)=0.
+align
+Then, the smaller root of equation derivative1 is
+align*
+&_jI^+_i w_ij+1+c_i-(_jI^+_i w_ij+1+c_i)^2-4c_i2c_i 
+
+&1+c_i-(1+c_i)^2-4c_i2c_i1,
+align*
+where the first inequality follows from that the first-order derivative of the small root with respect to  is
+alignderivative2
+12c_i(1 - _jI^+_i w_ij+1+c_i(_jI^+_i w_ij+1+c_i)^2-4c_i)<0.
+align
+Further, the larger root of equation derivative1 is
+align*
+&_jI^+_i w_ij+1+c_i+(_jI^+_i w_ij+1+c_i)^2-4c_i2c_i 
+
+&1+c_i+(1+c_i)^2-4c_i2c_i1.
+align*
+Therefore, the access probability  at the SNE is unique and is the small root of equation derivative1.  Proof of Proposition lm:random_socialproof5555
+Since
+V(q_1,,q_N) = ^N_i=1 [(z_iq_i_jI^-_i(1 - q_j))-c_iq_i],
+by the first-order condition, we have
+alignderivative3
+V(q_1,,q_N)q_i = c_iq_i^2-(I^+_i+1+c_i)q_i+1q_i(1 - q_i)=0.
+align
+Similar to the proof of Theorem thm:random_NE, we obtain the optimal strategy  for maximizing  as the smaller root of equation derivative3, which is
+q_i^SO = I^+_i+1+c_i-(I^+_i+1+c_i)^2-4c_i2c_i.
+Since the larger root of equation derivative3 is
+align*
+&I^+_i+1+c_i+(I^+_i+1+c_i)^2-4c_i2c_i 
+
+&1+c_i+(1+c_i)^2-4c_i2c_i1,
+align*
+we have  for , and hence  is decreasing in  when . Using Corollary lm:random_NE,  is decreasing in , , and hence  is increasing in , . 
+conclusionConclusion
+In this paper, we have developed a general SGUM framework that highlights the interplay between the physical coupling and the social coupling among users. We showed that the SGUM framework can provide rich modeling flexibility and span the continuum between non-cooperative game and network utility maximization. In particular, we have studied the application in database assisted spectrum access, power control, and random access control under this framework. For the case of database assisted spectrum access, we show that the SGUM game is a potential game and always admits a socially-aware Nash equilibrium (SNE). We also design a distributed spectrum access algorithm that can achieve the SNE of the game and quantify its performance gap. We further show that the upper-bound of the performance gap decreases as the strength of social ties among users increases.  For the cases of power control and random access control, we showed that there exists a unique SNE. Furthermore, as the strength of social ties increases from the minimum to the maximum, a player's SNE strategy (i.e.,  transmit power or access probability) migrates from the Nash equilibrium strategy in a standard non-cooperative game to the socially-optimal strategy in network utility maximization.
+
+We are currently studying the SGUM framework with both positive and negative social ties to build a thorough understanding of the impact of altruistic and malicious behaviors on network performance and security. Beyond the supermodular/potential game approaches in this paper, one can resort to other powerful tools such as monotone game to characterize SNE and design distributed mechanisms accordingly.  We believe that this framework will open a new door for future networking system design by exploiting social interactions.
+sec:System-ModelSocial Group Utility Maximization For Database Assisted Spectrum Access
+
+In this section we apply the SGUM framework for the database assisted spectrum access.
+
+
+
+
+
+
+
+
+
+
+
+
+
+SGUM Game Formulation
+
+We consider a set of white-space users 
+where  is the total number of users. We denote the set of TV
+channels as . According to the recent ruling by FCCFCC, to protect the incumbent primary TV users, each white-space user  will first
+send a spectrum access request message containing its geo-location
+information to a Geo-location database (see Figure fig:Database for an illustration). The database then feeds
+back the set of vacant channels  and
+the allowable transmission power level  to user . The ruling by FCC indicates that the allowable transmission
+power limit for personal/portable white-space devices (e.g., mobile
+phones) is  mWFCC. For ease of exposition, we hence assume
+that each user  accesses the white-space spectrum with the same
+power level. Each user  then chooses a feasible channel  from the
+vacant channel set  for data transmission.  Although the database-assisted approach obviates the need of spectrum sensing by individual users, it remains challenging to achieve reliable distributed spectrum access, because many different white-space users may choose to access the same vacant channel and thus incur severe interference to each otheryangton13,Database2013.
+
+
+figure[tt]
+center
+Database
+fig:DatabaseAn illustration of database assisted spectrum access
+center
+figure
+
+
+To stimulate effective cooperation among users for interference mitigation, we leverage the social ties among users and apply the SGUM approach. To capture the physical coupling and account for the accumulative nature of interference, we construct the physical interference graph  based on the physical interference modelgupta2000capacity. Here the set of white-space users 
+is the vertex set, and 
+is the edge set where  if and only if users 
+and  can receive interference from each other(The
+physical interference model enables us to capture the cumulative nature of interference by defining
+the individual utility function  based on user's total received interference from other users. This is different from the
+protocol interference graph model where two neighboring users' data transmissions are blocked once they transmit
+simultaneously over the same vacant channel.). To account for the potential interference from every user choosing the same vacant channel, we can regard the interference graph  as a complete graph. Nevertheless, our model can also apply for the case that the underlying interference graph is undirected but not complete. This can be applicable, for example, when we would like to factor those users can generate significant impact only and neglect the users that are too far away (e.g., with the interference power even less than the noise)zhou2013practical. Let 
+be the channel selection profile of all users. Given the channel
+selection profile , the total interference received by
+user  can be computed as
+equation
+_n(a)=_mN_n^pP_md_mn^-I_a_n=a_m+_a_n^n.eq:interference1
+equation
+Here  is the path loss factor and  is an indicator
+function with  if the event  is true and 
+otherwise. Furthermore,  denotes the noise power
+including the interference from primary TV users on the channel . We then define the individual utility function 
+as
+align
+U_n(a)  = -_n(a) = -_mN_n^pP_md_mn^-I_a_n=a_m-_a_n^n.eq:utility
+align
+Here the negative sign comes from the convention that utility functions
+are typically the ones to be maximized. The individual utility of user
+ reflects the fact that each user  has interest to reduce
+its own received interference.  Similar to many previous studies such asramachandran2006interference,tutschku1999interference,chen2011cross, we focus on the objective of interference minimization. By exploiting the additive structure of the accumulative interference functions, we are going to analyze the SGUM game for interference minimization by resorting to the useful tool of potential gamemonderer1996potential. Note that, although from the individual utility perspective maximizing a user's data rate is equivalent to minimizing its received interference, this may not be true from the social group utility perspective. Due to the complicated couplings among users in both social and physical domains, the SGUM game of data rate maximization is technically very challenging, and the potential game approach can not apply in this case.
+
+
+Next, given the social ties (i.e., ) among the users on the social graph , we can define the social group utility function   of user  according to (eq:SocialUtility0). We then formulate the database assisted spectrum access problem with social ties as a SGUM game ,
+where the set of white-space users  is the set of players,
+the set of vacant channels  is the set of strategies
+for each player , and the social group utility function
+ of each user  is the payoff function of player .
+
+
+
+Properties of SGUM game
+
+We next study the existence of SNE of the SGUM game for database assisted spectrum access. Here we resort
+to the tool of potential gamemonderer1996potential.
+defn
+A game is called a potential game if it admits a potential function
+ such that for every  and
+, for any ,
+align
+S_n(a_n^',a_-n)-S_n(a_n,a_-n)=(a_n^',a_-n)-(a_n,a_-n). eq:Potential
+align
+defn
+
+An appealing property of a potential game with a finite strategy set is that it always admits
+a Nash equilibrium, and any strategy profile that maximizes the potential
+function  is a Nash equilibriummonderer1996potential. For the SGUM game   for database assisted spectrum access, we can show that it is a potential
+game. For ease of exposition, we first introduce the physical-social
+graph  to capture both physical coupling and social coupling simultaneously. Here the
+vertex set is the same as the user set  and the
+edge set is given as 
+where  if and only if users  and  have
+social tie between each other (i.e., ) and can also
+generate interference to each other (i.e., ). We denote
+the set of users that have social ties and can also generate
+interference to user  as .
+
+Based on the physical-social graph , we show in
+Theorem thm:The-social-physical-game that the SGUM game 
+is a potential game with the following potential function
+align
+(a)= & -12_n=1^N_mN_n^pP_md_mn^-I_a_n=a_m -_n=1^N_a_n^n__1(a): due to Physical Coupling 
+
+ & -12_n=1^N_mN_n^spw_nmP_md_mn^-I_a_n=a_m__2(a): due to Social Coupling.eq:potential2
+align
+
+The potential function in (eq:potential2) can be decomposed into two parts:
+ and . The first part  reflects the system-wide interference level (including background noise)
+due to physical coupling in the physical domain and the second part  captures the interdependence of user utilities (i.e., the received interferences)  due to social
+coupling in the social domain.
+
+thm
+thm:The-social-physical-gameWhen the transmission power of the users are the same (i.e., ), the physical interference graph is undirected and the social tie between two users is symmetric (i.e., ), the SGUM game for database assisted spectrum access is a potential game
+with the potential function  given
+in (eq:potential2), and hence has a SNE.thm
+
+
+
+The proof can be found in the online appendixSGUM2016. Note that when  for any user
+ (i.e., all users are selfish), the potential function , which does not involve the social coupling part . In this case, the SGUM game  for database assisted spectrum access degenerates to the non-cooperative spectrum access game. When  for any user  (i.e., all users are fully altruistic), the potential function ,  which is the system-wide utility.  In this case, the SGUM becomes the network utility maximization.
+
+We next design a distributed spectrum access algorithm that
+can achieve the SNE of the SGUM game  for database assisted spectrum access.
+
+
+
+
+
+
+
+sec:algorithmDistributed Spectrum Access Algorithm For Social Group Utility Maximization
+
+In this section we study the distributed spectrum access algorithm
+design.
+
+Algorithm Design Principles
+According to the property of potential game, any channel selection
+profile  that maximizes the potential function 
+is a Nash equilibriummonderer1996potential. We hence design a distributed spectrum
+access algorithm that achieves the SNE of the SGUM  by maximizing the potential function . Note that since the SGUM game is a potential game, one can choose to use the asynchronous best response update approach such that in each iteration a user is selected to optimize its own strategynisan2007algorithmic. However, there are several drawbacks associated with  the asynchronous best response update approach for our problem: (1) the asynchronous best response update is sensitive to the initial state as well as the update sequence. This implies that given different initial channel selections and different channel update schedules, the spectrum access algorithm based on the asynchronous best response update may reach different convergent points; (2) as the potential function of the SGUM game captures both physical and social couplings among users for interference minimization, a larger value of potential function  which implies a lower interference level is hence more desirable. However, the asynchronous best response update (such that each user locally and greedily optimizes its own strategy) may get stuck at a local optimum of the potential function. Thus, this motivates us to design the distributed spectrum access algorithm based on Markov chain design,  which can converge to a unique stationary distribution regardless of the given initial channel selection and update sequence. Moreover, we show that the algorithm can asymptotically converge to the global optimum of the potential function with an arbitrarily large probability. Note that one may consider to adopt the learning algorithm inpradelski2012learning to achieve an efficient equilibrium. However, the algorithm inpradelski2012learning requires the strong assumptions of synchronization and interdependence, which are difficult to be satisfied in our case.
+
+To proceed, first consider the problem that the  users collectively
+compute the optimal channel selection profile such that the potential
+function is maximized, i.e.,
+equation
+_a_n=1^NM_n(a).eq:pp3
+equation
+The problem (eq:pp3) involves  a combinatorial optimization over the discrete
+solution space . In general, it is very challenging
+to solve such a problem exactly especially when the system size is large (i.e., the
+solution space  is large).
+
+We then consider to approach the potential function maximization solution approximately.
+To proceed, we first write the problem (eq:pp3) as the following
+equivalent randomized problem:
+eqnarray
+_(q_a0:a) & _aq_a(a)eq:pp4
+
+s.t. & _aq_a=1,eqnarray
+where  is the probability that channel selection
+profile  is adopted. Obviously, the optimal solution
+to problem (eq:pp4) is to choose the optimal channel selection
+profiles with probability one. It is known from the Markov approximation approachchen2010markov that problem
+(eq:pp4) can be approximated by the following convex optimization
+problem:
+eqnarray
+_(q_a0:a) & _aq_a(a)-1_aq_aq_aeq:pp5
+
+s.t. & _aq_a=1,eqnarray
+where  is the parameter that controls the approximation ratio. Note that the approximation in (eq:pp5) can guarantee the asymptotic optimality. This is because that when , the problem (eq:pp5)
+boils down to  exactly the same as problem (eq:pp4). That is, when
+, the optimal solutions that maximize the
+potential function  will be selected with probability
+one. Moreover, the approximation in (eq:pp5) enables us to obtain the close-form solution, which facilitates the distributed
+algorithm design later. More specifically, by the KKT conditionsboyd2004convex,
+the optimal solution to problem (eq:pp5) is given as
+equation
+q_a^*=((a))_a((a)).eq:qq1
+equation
+
+
+Inspired by the idea of Glauber dynamicsrajagopalan2008distributed,jiang2010distributed,ni2012q,hegde2012simulation,  based on (eq:qq1) we then design a self-organizing algorithm
+such that the asynchronous channel selection updates of the  users
+form a Markov chain (with the system state as the channel selection
+profile  of all users). As long as the Markov chain
+converges to the stationary distribution as given in (eq:qq1),
+we can approach the Nash equilibrium channel selection profile that
+maximizes the potential function by setting a large enough parameter
+. We should emphasize that the existing works such asrajagopalan2008distributed,jiang2010distributed,ni2012q,hegde2012simulation focus on the NUM problem, whereas in this paper we consider the SGUM problem, which has significant differences. For example,  for NUM, the optimization objective
+of each user is aligned. In contrast, for SGUM, different users have different optimization objectives due to the heterogenous social coupling among them. The existing works use the transition probability matrix for Markov chain design based on the canonical Glauber dynamics.  In contrast, in this paper we leverage the structural property of the SGUM game to devise the transition probability for the spectrum access Markov chain. We also quantify the impact of social tie on the networking performance, which has not been found in
+the existing works.
+
+
+Markov Chain Design for Distributed Spectrum Access
+
+algorithm[tt]
+algorithmic[1]
+initialization:
+ set the parameter  and the channel update rate .
+ choose a channel  randomly for each  user 
+end initialization
+
+ for each user  in parallel:
+        compute the social group utility   on the chosen channel .
+        generate  a timer value following  the exponential distribution with the mean equal to .
+        count down until the timer expires.
+        the timer expires
+            choose  a new channel  randomly.
+            compute the social group utility  on the new channel .
+            stay in the new channel  with probability , Or move back to the original channel  with probability .
+        algorithmic
+alg:DSSA Distributed Spectrum Access Algorithm For Social Group Utility Maximization
+algorithm
+
+Motivated by the adaptive CSMA mechanismjiang2010distributed,chen2010markov, we propose
+a distributed spectrum access algorithm in Algorithm alg:DSSA such that each  user
+ updates its channel selection according to a timer value that
+follows the exponential distribution with a rate of .
+
+Appealing to the property of exponential distributions, we have that the probability that more than one users generate the same timer value and update their channels simultaneously equals zero. Since one  user will activate for the channel selection update at
+a time, the direct transitions between two system states 
+and  are feasible if these two system states
+differ by one and only one  user's channel selection. We also denote
+the set of system states that can be transited directly from the state
+ as ,
+where  denotes the size of a set. According to (eq:SocialUtility0),
+a  user  can compute the social group utility  by locally enquiring
+the users having social ties with it about their received interferences.
+Then user  will randomly choose a new channel 
+and stay in this channel with a probability of
+equation
+(S_n(a_n^',a_-n))(S_n(a_n^',a_-n)), (S_n(a_n,a_-n)). eq:kkkkk
+equation
+The underlying rationale  behind (eq:kkkkk) is as follows.
+When  (i.e., the new channel  offers the better performance), user  will stay in the new channel  with probability one. According to the property of potential game in (eq:Potential), we know that choosing the new channel  can help to increase both user 's social group utility   and the potential function  of the SGUM game. When  (i.e., the original channel  offers the better performance), user  will switch back to the original channel  with a probability of . That is, the probability that user  will switch back to the original channel  increases with the performance gap . We would like to emphasize that such probabilistic channel selections are necessary such that all the users can explore the feasible channel selection space to prevent the algorithm from getting stuck at a local optimum.
+
+Then from a system-wide perspective, the probability of transition from state  to
+ due to user 's channel selection update is given as
+equation
+1M_n(S_n(a_n^',a_-n))(S_n(a_n^',a_-n)), (S_n(a_n,a_-n)).eq:ppppp
+equation
+Since each user  activates
+its channel selection update according to the countdown timer mechanism
+with a rate of , hence if ,
+the transition rate from state  to state 
+is given as
+equation
+q_a,a^'=_nM_n(S_n(a_n^',a_-n))(S_n(a_n^',a_-n)), (S_n(a_n,a_-n)).eq:PPP4
+equation
+Otherwise, we have . We
+show in Theorem thm:The-distributed-D2D that the spectrum access
+Markov chain is time reversible. Time reversibility means that when
+tracing the Markov chain backwards, the stochastic behavior of the
+reverse Markov chain remains the same. A nice property of a time reversible
+Markov chain is that it always admits a unique stationary distribution,
+which is independent of the initial system state. This implies that
+given any initial channel selections the distributed spectrum
+access algorithm can drive the system converging to the stationary
+distribution given in (eq:qq1).
+thm
+thm:The-distributed-D2DThe distributed spectrum access algorithm
+induces a time-reversible Markov chain with the unique stationary
+distribution as given in (eq:qq1).thm
+
+The proof is given in the online appendixSGUM2016.  To implement the distributed spectrum access algorithm, as mentioned in Section sec:framework, each user can first identify the social tie with other users prior to the spectrum access process. Then a user can locally measure its received interference and exchange this information with its social friends for computing the social group utility, which will be used for channel selection update.
+
+
+We next analyze the convergence time of the proposed algorithm in terms
+of mixing time in Markov chainlevin2009markov. Let  denote the
+stationary distribution in (eq:qq1) and 
+denote the distribution of the spectrum access Markov chain at time
+ for a given initial channel selection state .
+Then, according tolevin2009markov, for , the mixing time of
+the chain is defined by
+
+T_t0:_a_0q_t(a_0)-q^*_TV,
+
+where the total variation distance  is given by  q_t(a_0)-q^*_TV12_aq_a,t(a_0),q_a^*.
+We further denote ,
+, ,
+ 
+.
+By resorting to the tools of spectral analysis and path couplingchen2010markov,levin2009markov, we can show in Theorem thm:mixing the convergence time of the spectrum
+access Markov chain.
+thmthm:mixing
+For a general , the mixing time of the spectrum
+access Markov chain is upper-bounded as
+eqnarray*
+T_ & & NM_^2N+3_M__^2(4(_-_))
+
+ &  & [212+NM_+(_-_)].
+eqnarray*
+When  where ,
+we have a tighter upper bound as
+
+
+
+
+align*
+T_ NM_M__((_-_))M_^2_M__+1-NN((_-_)).
+align*
+thm
+
+
+The proof is given in the online appendixSGUM2016. Theorem thm:mixing provides an upper-bound of the convergence time of the distributed spectrum access algorithm. In particular, it reveals when the parameter   is small, the proposed spectrum access algorithm scales very well (in the order of ) with the increase of user size .
+
+Note that compared with existing studiesrajagopalan2008distributed,jiang2010distributed,ni2012q,hegde2012simulation on applying the Glauber dynamics, we have the following new contributions for the convergence time analysis: 1) we use the spectral gap analysis to show the mixing time upper-bound for a general parameter , and the existing studies only show the mixing time upper-bound when the parameter  is within some specific range by adopting the path coupling method. This is due to the restriction that the path coupling approach imposes some structural condition on the Markov chain; 2) since in our problem the
+underlying optimization objective and the Markov chain structure are different
+from existing studies, we have carefully constructed a discrete-time Markov chain by uniformization of the original spectrum access Markov chain, and showed that when  the constructed Markov chain satisfies the one-step path coupling condition. This leads to significant differences from the existing works when applying the path coupling method.
+
+
+
+
+
+
+Performance Analysis
+
+According to Theorem thm:The-distributed-D2D, we can achieve
+the SNE that maximizes the potential
+function  of the SGUM game 
+by setting . However, in practice one has to choose to implement
+only a finite value of  (e.g., to reduce the convergence time). Let 
+be the expected potential by Algorithm alg:DSSA with a given  and 
+be the maximum potential. We show in Theorem thm:For-the-distributed-1
+that, when a large enough  is adopted in practice, the
+gap between  and  is negligible. Combining Theorems thm:mixing and thm:For-the-distributed-1, we see that in practice by tuning the parameter , we can significantly reduce the convergence time (at the order of ) at the cost of a relatively small performance loss (at the order of ). This has also been corroborated  by the numerical result in Section sec:simulation.
+
+thm
+thm:For-the-distributed-1For the distributed spectrum access
+algorithm with a finite , we have that 
+where  denotes the number of vacant channels of  user .thm
+
+The proof is given in the online appendixSGUM2016. We next benchmark the performance of the solution by the distributed spectrum access algorithm with respect to the system optimal solution. Let  be the total individual utility received by all the users under the
+channel selection profile  (i.e., ) and  be the total utility of the solution by the distributed spectrum access algorithm with a finite  (i.e., ).
+We denote  as the NUM solution
+that maximizes the system-wide utility (i.e., ).
+We then define the performance gap  as the difference between the total utility received at the NUM solution
+ and that of the distributed spectrum access algorithm with a finite  (i.e., ).
+We have the following result.
+thm
+thm:The-performance-gap1For a finite ,  the performance gap  of the distributed spectrum access algorithm is at most
+align*
+ & 1_n=1^NM_n + 12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^- 
+
+ & +12_n=1^N_mN_n^pN_n^spP_md_mn^-.
+align*
+thm
+
+The proof is given in the online appendixSGUM2016. Let  as the convergent SNE by
+the distributed spectrum access algorithm when  (i.e., ). According to Theorem thm:The-performance-gap1, the performance gap of the SNE  is given as follows.
+
+cor
+thm:The-performance-gap When , the performance gap of the SNE  by the distributed spectrum access algorithm is at most
+align*
+12_n=1^N_mN_n^sp(1-w_nm)P_md_mn^- +12_n=1^N_mN_n^pN_n^spP_md_mn^-.
+align*
+cor
+
+
+
+From the results above we see that the upper-bound
+of the performance gap decreases as the strength of social
+tie  among users increases.  When  for any user  (i.e., all users
+are fully altruistic), the SGUM becomes
+the NUM and the performance gap is zero.  In Section sec:simulation, we also evaluate the performance of the SGUM solution by real social data traces. Numerical results demonstrate that the performance gap between the SGUM solution and the NUM solution is at most .
+
+
+
+
+
+sec:simulationNumerical Evaluation
+
+In this section, we evaluate the SGUM solution for database assisted spectrum access by numerical studies based on both Erdos-Renyi social graphs and real trace based social graphs.
+
+
+Social Graph with 8 White-Space Users
+figure
+Area
+fig:A-square-areaA square area of a length of 500 m with 8
+scattered white-space users
+figure
+
+
+figure*[tt]
+minipage[t]0.32
+Potential2
+fig:Potential-value-The convergent potential value 
+with different parameters 
+minipage
+minipage[t]0.32
+Potential1
+fig:Dynamics-of-potentialDynamics of potential value 
+when 
+minipage
+minipage[t]0.32
+newfig1
+fig:iterationNumber of iterations with different maximum allowable performance loss
+minipage
+figure*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+figure*[tt]
+minipage[t]0.32
+NewER
+fig:System-wide-interference-withNormalized system-wide interference
+with different social network density
+minipage
+minipage[t]0.32
+newfig2
+fig:rangeNormalized system-wide interference
+with different social detection ranges
+minipage
+minipage[t]0.32
+NewBK
+fig:System-wide-interference-with-1Normalized system-wide interference
+with different number of users
+minipage
+figure*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+We first consider a database assisted spectrum access network consisting
+of  channels and  white-space users, which are scattered
+across a square area of a length of  m (see Figure fig:A-square-area).
+The transmission power of each user is  mWFCC, the path loss
+factor , and the background interference power 
+for each channel  and user  is randomly assigned in the interval
+of  dBm. Each user  has a different set of
+vacant channels by consulting the geo-location database. For example, the vacant channels for user 
+are . For the interference graph , we define that the user's transmission range  m and two users can generate inference to each other if their
+distance is not greater than . The social
+graph  is given in Figure fig:A-square-area where two users have
+social tie if there is an edge between them and the numerical value associated with each edge represents the strength of social tie.
+
+We implement the proposed distributed spectrum access algorithm for
+the SGUM game with different parameters 
+in Figure fig:Potential-value-. We see that the convergent
+potential function value  of the SGUM game increases
+as the parameter  increases. When the parameter 
+is large enough (e.g., ), the algorithm can approach
+the maximum potential function value .
+To verify that the algorithm can approach the SNE
+of the SGUM game, we show the dynamics of the potential
+value  in Figure fig:Dynamics-of-potential.
+We see that the distributed spectrum access algorithm can
+drive the potential value  increasing and approach the maximum
+potential value . According to the property of potential
+game, the algorithm hence can approach the SNE of the SGUM game.
+
+
+To verify the trade-off between the performance and the convergence time, we show in Figure fig:iteration  the number iterations for convergence by the distributed spectrum access algorithm with different maximum allowable performance loss (by tuning the parameter ). We see that, compared with the case with the optimal performance, if we allow  at most  and  performance loss, then we can reduce the convergence time by up-to  and , respectively.
+
+
+
+Erdos-Renyi Social Graph
+
+We then consider  users that randomly scattered across a square
+area of a length of  m. We evaluate the SGUM game solution by the distributed spectrum access
+algorithm with the social graph represented by the Erdos-Renyi
+(ER) graph modelnewman2002random, where a social link exists between any two
+users with a probability of . We set the strength
+of social tie  for each social link. To evaluate the impact
+of social link density of the social graph, we implement the simulations
+with different social link probabilities , respectively.
+For each given , we average over  runs. To benchmark the SGUM solution, we also
+implement the the following two solutions:
+
+(1) Non-cooperative spectrum access: we implement the non-cooperative game based solution such that each user aims to maximize its individual utility, i.e., we set  in the distributed spectrum access algorithm.
+
+(2) Network utility maximization: we implement the social optimal solution such that the system-wide utility  is maximized, i.e., we set  in the distributed spectrum access algorithm.
+
+Similar to the price of anarchy in non-cooperative gameroughgarden2005selfish, we normalize the system-wide interference of these solutions with respect to that of the social optimal solution (i.e., network utility maximum solution). The results are given in Figure fig:System-wide-interference-with.
+We see that the performance of the SGUM solution always
+dominates that of the non-cooperative spectrum access. This is non-trivial since non-cooperative game promotes the competition among users to increase the system-wide utility and has been widely adopted to devise efficient distributed resource allocation mechanisms in wireless networkshan2012game. Moreover, we observe that
+the performance gain of the SGUM solution increases
+as the social link probability  increases. When the social
+link probability , the SGUM solution achieves the same performance of the network utility maximization and can reduce  system-wide interference over the non-cooperative spectrum access. This also demonstrates that the proposed SGUM framework spans the continuum between non-cooperative game and network utility maximization - two extreme paradigms based on drastically different assumptions that users are selfish and altruistic, respectively.
+
+
+We then investigate the scenario that a user may only take into nearby users with social ties. This can correspond to the case that a user can only detect the social friends within a fixed physical distance. In the simulation we set the social link probability  and set the social detection range for identifying nearby social friends as , respectively. We see from Figure fig:range that the performance of SGUM solution improves as the social detection range increases. Intuitively, when the social detection range increases, the number of social links increases and hence the performance  of SGUM solution improves.
+
+
+
+
+
+Real Trace Based Social Graph
+
+We next evaluate the SGUM solution by
+the distributed spectrum access algorithm based on the social
+graph represented by the friendship network of the real data trace
+Brightkitecho2011friendship. Brightkite contains an explicit friendship network among the users. Different from the Erdos-Renyi (ER) social graph, the friendship network of Brightkite is scale-free such that the node degree distribution follows a power lawKONECT2013. We implement experiments with the number of users
+ respectively. We randomly select  nodes from Brightkite and construct the social graph based on the friendship relationship among these  nodes in the friendship network of Brightkite. For each given , we average over  runs.  As the benchmark, we also implement
+the solutions of non-cooperative spectrum access and network utility maximization.
+
+The results are shown in Figure fig:System-wide-interference-with-1.
+We see that the non-cooperative spectrum access solution will increase the system-wide interference up-to  over the network utility maximization solution.  Upon comparison, the system-wide interference by the the SGUM solution will increase at most , compared with the network utility maximization solution. This verifies the effectiveness of leveraging social tie to stimulate user cooperation for achieving efficient distributed spectrum access in practices.
+Further Discussionextension
+
+In the sections above, we study the social group utility maximization (SGUM) framework with the "positive" social tie between two users (e.g., family members or friends). In this case, one user cares about the welfare of the other. To generalize  the SGUM framework, we can further consider the case that the social tie between two users is "negative" (e.g., due to malicious behavior) such that one user may intend to damage the other's welfare. Hence, the generalized SGUM framework with both positive and negative social ties can be very useful for modeling the network security issues.
+
+
+
+
+
+
+
+
+figure[t]
+bridge_gap
+The social group utility maximization (SGUM) game framework spans the continuum from zero-sum game (ZSG) to general-sum non-cooperative game (NCG) to network utility maximization (NUM).
+fg:bridge_gap
+figure
+
+
+Formally, we can define that : When , it represents the extent to which user  cares about user 's utility, and it reaches the highest when  (i.e., user  cares about user 's utility as much as its own utility); when , it pinpoints to how much user  intends to damage user 's utility, and reaches the extreme as  goes to  (i.e., user  would sacrifice all of its own utility to damage user 's utility).
+
+Zero-sum game (i.e., all players' payoffs are summed up to ) is widely adopted for modelling the interactions between attackers and defenders in network security problemsibidunmoye2013modeling. Interestingly, the generalized SGUM framework also encompasses the zero-sum game as a special case. Specifically, when the accumulated negative social ties of each user satisfies that , for any , we have that
+align*
+_i=1^NS_i(x)  =   _i=1^NU_i(x)+_i=1^NU_i(x)_j:iN_j^sw_ji=0.
+
+
+align*
+In this case, the SGUM game degenerates to a zero-sum game, where each user views the total gain of other users as its loss (see Figure fg:bridge_gap for an illustration). For example, a SGUM game of two users with  and , or  and , is a zero-sum game.
+
+
+Building on that the generalized SGUM framework with both positive and negative social ties,  we can devise more effective and efficient defense mechanisms against the attacks by the malicious users (i.e., users with negative social ties), by leveraging trustworthy helps and collaborations from the social friends (i.e., users with positive social ties). Due to space limit, we will pursuit a thorough understanding of the generalized SGUM framework in a future work.
+
+
+
+
+
+
+
+
+sec:SGUFSocial Group Utility Maximization Framework
+Mathematically, we can model the database assisted  distributed spectrum access problem with social tie as a physical-social game formulation. Let  denote the set of white-space device users and  denote the set of white-space channels. By consulting the geo-location database, each device user  can obtain the set of vacant channels  for data transmission. Each device user  then chooses a feasible channel  from the vacant channel set  for data transmission. Based on the channel selection profile of all device users , we introduce the individual utility function    to represent the payoff of of user  due to the physical coupling of device users in data transmission. For example,  can be the achieved data rate or the satisfaction of quality of service (QoS) requirement of device user  under the channel selection profile . For the social coupling, we introduce the social graph  to model the social tie among the device users. There is an social link between two device users if and only if they have social tie between each other, which can be kinship, friendship, or colleague relationship between two device users. Furthermore, we formalize
+the strength of social tie between two device users  and  who have a social edge between them on the social graph as ,
+with a higher value of  being a stronger social tie. Based on the social graph model, we further define the social group utility of each device user  as
+equation
+S_n(a)=U_n(a)+_mN_n^sw_nmU_m(a),eq:SocialUtility
+equation
+where  denotes the set of device users that have social tie with device . The social group utility  of each device user consists two parts: his (her) individual utility
+and the weighted sum of the individual utilities of other users having
+social tie with him. The social group utility function captures the feature that each device
+user is social aware and cares about the users having social tie with him.
+
+
+The distributed spectrum access problem with social
+tie is then given as follow. Given other device users' channel selections , each device user 
+wants to choose a proper channel  to maximize
+his (her) social group utility, i.e.,
+
+_a_nM_nS_n(a_n,a_-n),nN.
+
+The distributed nature of the channel selection problem naturally
+leads to a formulation based game theory, such that each device user
+can self-organize into a stable channel selection (Nash equilibrium)
+ wherein no user can
+improve unilaterally, i.e.,
+
+a_n^*=_a_nM_nS_n(a_n,a_-n),nN.
+
+We thus formulate the distributed spectrum access problem with social
+tie as a physical-social game formulation ,
+where the set of device users  is the set of players,
+the set of vacant channels  is the set of strategies
+for each user , and the social group utility function
+ of each user  is the payoff function of player .
+
+
+
+
+
+
+
+
+
+
+We would like to emphasize that, by using different social graphs, the proposed social-physical game formulation can provide rich flexibility for modeling the distributed spectrum access problem (see Figure fig:Spectrum for an illustration). When the social graph consists of isolated nodes (i.e., all device users are selfish), the social-physical game degenerates to the non-cooperative game formulation for distributed spectrum access. When the social graph is fully meshed with edge weight  (i.e., each user is social aware and cares enough about other users), the social-physical game becomes the social welfare optimization problem, which aims to maximize the system-wide utility. The social-physical game formulation in this paper allows general social graphs and hence is feasible for modeling more general application scenarios. For example, we can consider the scenario that different device users belong to different authorities (e.g, network operators).  In this case, the users that belong to the same authority would like maximize their utilities collectively and meanwhile they will compete with other device users that are from other authorities. The social-physical game formulation can model such a scenario by defining the social graph in which the device users belonging to the same authority are connected with each other.
+ Introduction
+Mobile networks have been projected to continue growing rapidly in the foreseeable future. For example, mobile phone shipments are projected to reach  billions in Cisco and mobile data traffic is predicted to grow further by over  times in the next ten yearsCisco. Different from other networks (e.g., sensor networks), a distinctive characteristic of mobile networks is that mobile devices are carried and
+operated by human beings. With the explosive growth of online social networks such as Facebook and Twitter, more and more people are actively involved in online social interactions, and social relationships among people are hence extensively broadened and significantly enhanced. Then it is natural to ask whether "social relationships" among
+mobile users can impact the communications and interactions among their devices, and if yes, how the social structure can
+be cleverly leveraged?  With this insight, as illustrated in Figure fig:PhySocial, we view a mobile network as
+an overlay/underlay system where a "virtual social network" overlays the physical communication network (the  "social network" is virtual, in the sense that the social tie structure therein results from  existing human relationship and  online social networks), and leverage the intrinsic social tie structure among mobile users  to facilitate cooperative wireless networking.
+
+
+figure[tt]
+center
+PhySocial
+fig:PhySocialAn illustration of the social group utility maximization framework. In the physical domain, users have different physical coupling subject to physical relationships (e.g., interference). In the social domain, users have heterogeneous social coupling due to the social ties among users.
+center
+figure
+
+
+
+With this motivation, we advocate a novel social group utility maximization (SGUM) framework that takes into account both the
+users' social relationships and physical coupling. As illustrated in Figure fig:PhySocial, a key observation
+is that users are coupled not only in the physical domain due to the physical relationship (e.g., interference), and but also in the social domain due to the social ties among them. It would be a win-win case for users to help those users having social ties with them. Specifically, we cast the distributed decision making problem for cooperative networking among users as a SGUM game, where each user maximizes its social group utility, defined as the sum of its own individual utility and the weighted sum of the utilities of other users having social tie with it. Interestingly, as illustrated in Figure fig:Spectrum, the SGUM framework can bridge the gap between non-cooperative game and network utility maximization - two traditionally disjoint paradigms for network optimization.  These two paradigms are captured under the proposed framework as two special cases where no social tie exists among users (i.e., users are socially oblivious) and all users are connected by the strongest social ties (i.e., users are fully altruistic), respectively.
+
+
+figure[tt]
+center
+ProblemSpectrum
+fig:SpectrumNetwork optimization with different users' social awareness levels
+center
+figure
+
+
+To get a more concrete sense of the SGUM framework, in this paper we study three important network applications, namely, database assisted spectrum access, power control, and random access control. For the case of database assisted spectrum access, we prove that the SGUM game is a potential game and always admits a socially-aware Nash equilibrium (SNE). Moreover, we show that the potential function of the game exhibits a nice structure that can be decomposed into two parts, capturing the impact of the physical coupling and social coupling in spectrum access, respectively. To overcome the drawback that
+the asynchronous best response update approach would achieve a suboptimal SNE, we design a randomized distributed spectrum access algorithm that can achieve the optimal SNE (that maximizes the potential function) of the SGUM game for database assisted spectrum access. Using Markov chain uniformization and spectral analysis, we derive an upper bound on the convergence time in the Glauber dynamics and also quantify the trade-off between the performance and convergence time of the algorithm. We further derive the upper-bound of the performance gap of the SNE from the NUM solution, and show that the upper-bound of the performance gap decreases as the strength of social
+ties among users increases and the performance gap is zero when the strengths of social ties among users reach the maximum values.
+
+For the cases of power control and random access control, we show that there exists a unique SNE. Furthermore, as the strength of social ties increases from the minimum (selfish) to the maximum (fully altruistic), a player's SNE strategy (i.e., access probability or transmit power) migrates from the Nash equilibrium strategy in a standard non-cooperative game to the social-optimal strategy in network utility maximization.
+
+
+
+We should emphasize that the SGUM framework highlights the interplay between the physical coupling subject to users' physical relationships and the social coupling due to the social ties among users. The SGUM framework spans the continuum between non-cooperative game and network utility maximization - two extreme paradigms based on drastically different assumptions that users are selfish and altruistic, respectively, and hence can provide rich flexibility for modeling cooperative networking problems.
+
+
+The rest of the paper is organized as follows. We discuss the related work in Section ReWork and introduce the SGUM framework in Section sec:framework. We apply the framework to the applications of database assisted spectrum access, power control, random access control in Sections sc:power, sc:random, and sec:System-Model, respectively. We discuss the possible generalization of the SGUM framework in Section extension, and finally conclude the paper in Section conclusion.
+
+
+
+Related WorkReWork
+Game theory has been extensively used for a variety of networking applicationsAltman06. A standard non-cooperative game assumes that all users are selfish, i.e., each user  cares about only its own welfare and behaves without regard to its impact on other users. Along a different line, network utility maximization has been extensively studied for resource allocation problems of various networksPalomar06, where all users are assumed to have the same objective of maximizing the total welfare of all users (i.e., network utility). However, all these paradigms cannot capture a mobile social network where users have diverse social relationships, which is a primary objective of the SGUM framework under consideration. In fact, the SGUM framework provides rich modeling flexibility by spanning the continuum between these traditionally disjoint paradigms.
+
+
+
+Although there exists a significant body of work on non-cooperative game and network utility maximization, very little attention has been paid to the continuum between these extreme paradigms, especially in the context of mobile social networks. Recent works chen2008altruism,hoefer2009altruism have studied the impact of altruistic behavior in a routing game.Kesidis10 has recently investigated a random access game between two symmetrically altruistic users.ashlagi2008social introduces different approaches to integrate user's social awareness into the payoff function design, including the cases that a user cares about only its best/worst performing friend or the friends within some specific communities (e.g., the cliques by partitioning the social graph). Moreover,ashlagi2008social  considers only the  binary social setting (i.e., friend or not). In contrast, in the SGUM framework we consider a general weighted social graph and define the social group utility function as the weighted sum of the individual utilities of the social neighbors with the weights proportional to the social tie strength among the users.hoefer2012social considers a similar socially-aware payoff function as that in the SGUM framework. Nevertheless,hoefer2012social focuses on the symmetric social network and mainly considers the congestion game in which the payoff of a player depends on the number of players choosing the same strategy. In contrast, the payoff of a user in the SGUM games in mobile networks depends on a variety of factors including interference relationships and the specific interacting user set. We should emphasize that a key objective of this paper to develop a general modeling framework for exploiting the social relationships among  users for cooperative wireless networking design. To this end, we propose the SGUM framework and introduce both physical and social graphs to model the physical and social couplings among users in both physical and social domains, respectively. We also highlight its connections with non-cooperative game and NUM, two widely adopted modeling frameworks in wireless networks. These features are missing inashlagi2008social,hoefer2012social.
+
+
+
+
+
+
+
+
+The social aspect is now becoming a new and important dimension for
+communication system designkayastha2011applications,chen2014exploiting. As the development
+of online and mobile social networks such as Facebook and Twitter, more and more
+real-world data and traces of human social interactions are being generated. This enables researchers
+and engineers to observe, analyze, and incorporate the social
+factors into engineering system design in a way never previously
+possiblekayastha2011applications.  A channel recommendation system based on cooperative social interactions is developed for dynamic spectrum access inchen2012adaptive. Gao et al. ingao2009multicasting exploited social structures such as social
+community to design efficient data forwarding
+and routing algorithms in delay tolerant networks. Hui et al. inhui2011bubble used the social betweenness and centrality as the forwarding metric. Costa et al. incosta2008socially proposed predictions based on metrics of social interaction to identify the best information carriers for content publish-subscribe.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+acknowledgementAcknowledgement
+axiomAxiom
+assumptionAssumption
+caseCase
+claimClaim
+conclusionConclusion
+conditionCondition
+conjectureConjecture
+criterionCriterion
+exampleExample
+exerciseExercise
+notationNotation
+problemProblem
+remarkRemark
+solutionSolution
+summarySummary
+lemmaLemma
+lemLemma
+corollaryCorollary
+corCorollary
+propositionProposition
+definitionDefinition
+theoremTheorem
+thmTheorem
+defnDefinition
+lmLemma
+dfDefinition
+asAssumption
+pbProblem
+ppProposition
+
+
+sgn
+
+
+
+
+
+
+0
+ 
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Exploiting Social Tie Structure for Cooperative Wireless Networking: A Social Group Utility Maximization Framework
+
+
+Xu Chen, Member, IEEE,  Xiaowen Gong, Student Member, IEEE, Lei Yang, Member, IEEE, and Junshan Zhang, Fellow, IEEE
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+In this paper, we develop a social group utility maximization (SGUM) framework for cooperative wireless networking that takes into account both social
+relationships and physical coupling among users. Specifically, instead of maximizing its individual utility or the overall network utility, each user
+aims to maximize its social group utility that hinges heavily on its social tie structure with other users. We show that
+this framework provides rich modeling flexibility and spans the continuum between non-cooperative game and network utility maximization (NUM) - two traditionally disjoint paradigms for network optimization. Based on this framework, we study three important applications of SGUM, in database assisted spectrum access, power control, and random access control, respectively. For the case of database assisted spectrum access, we show that the SGUM game is a potential game and always admits a socially-aware Nash equilibrium (SNE). To overcome the suboptimality associated with the asynchronous best response update approach, we develop a randomized distributed spectrum access algorithm that can asymptotically converge to the optimal SNE with high probability. Using spectral gap analysis and path coupling argument, we derive upper bounds on the convergence time in the Glauber dynamics and also quantify the trade-off between the performance and convergence time of the algorithm. We further show that the performance gap of SNE by the algorithm from the NUM solution decreases as the strength of social ties among users increases and the performance gap is zero when the strengths of social ties among users reach the maximum values. For the cases of power control and random access control, we show that there exists a unique SNE. Furthermore, as the strength of social ties increases from the minimum to the maximum, a player's SNE strategy (i.e., access probability or transmit power) migrates from the Nash equilibrium strategy in a standard non-cooperative game to the socially-optimal strategy in network utility maximization. Numerical results corroborate that the SGUM solutions can achieve superior performance using real social data trace. Furthermore, we show that the SGUM framework can be generalized to take into account both positive and negative social ties among users. The generalized SGUM framework also encompasses the zero-sum game as a special case and can be a useful tool for studying network security problems.
+
+
+
+
+
+
+Cooperative Networking, Mobile Social Networking, Social Group Utility Maximization, Game Theory
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ieeetran
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Social Group Utility Maximization Based Power Control
+
+
+
+
+
+
+
+
+In this section we study power control under the SGUM framework. Note that existing literature (e.g.,) on power control game typically assume that users are selfish and do not take the social factors into account. In this section, we will investigate the impact of the social ties among the users on the system performance.
+
+SGUM Game Formulation
+
+We consider a set of users under the physical interference model, where user  is a link consisting of a transmitter  and a receiver . The channel gain of communication link  is , and the channel gain of the interference link between transmitter  and receiver  is . The noise at receiver  is . Note that here we can view the physical graph  among users as a complete graph and the degree of physical coupling (i.e., interference) between any two users is captured by the channel gain.  Then the signal to interference and noise ratio (SINR)  of link  is given by
+
+where  denotes the transmit power of . We consider that the individual utility  of user  is given by
+
+where  denotes the cost of per unit power consumption. Similar to many studies, here we use the logarithmic function to model the utility of a user.
+
+Then, given the social ties (i.e., ) among the users on the social graph , we can define the social group utility function   of user  accordingly to (). We then formulate the power control problem with social ties as a SGUM game .
+
+
+SGUM Game Analysis
+For ease of exposition, we will first focus on the SGUM based power control game with two users, because the two-user case can shed light on the impact of social ties on users' strategies and social welfare.
+
+For the two-user SGUM based power control game, there exists a unique SNE, where
+
+with
+
+and
+
+
+
+The proof is given in the online appendix. Using Theorem , we have the following result.
+
+For the two-user SGUM based power control game, each user's SNE strategy decreases when its social tie with the other increases.
+
+
+
+For the two-user SGUM based power control game, as social tie  increases from 0 to 1, each user's SNE strategy  migrates from its NE strategy  for a standard NCG to its social optimal strategy  for NUM. The social welfare of the SNE  also migrates correspondingly.
+
+Corollary  shows that a users' SNE strategy is monotonically decreasing with the social tie. The following result shows that the social welfare of the SNE is also a monotonic function of social ties.
+
+For the two-user SGUM based power control game, the social welfare of the SNE increases when social ties increase.
+
+The proof is given in in the online appendix. According to Proposition , as illustrated in Figure , when the social tie increases from  to , a user's SNE strategy migrates from its NE strategy for a standard NCG to its social optimal strategy for NUM.
+
+We next study the existence of SNE for the SGUM based power control game with multiple users. Motivated by the observation that the two-user game is supermodular such that
+
+we have the following result.
+The SGUM based power control game with multiple users is a supermodular game, and thus there exists at least one SNE.
+
+
+The proof is given in the online appendix. Since the SGUM game for power control is a supermodular game, similar to the scheme in ,  users can start from the smallest transmission power (i.e., ) and use asynchronous best response updates, so that their strategies will converge to a SNE. The game with more than two users does not yield closed-form SNE strategies, and hence is difficult to analyze the impact of social tie on system performance. In the following section we will use numerical results to show that the insight we draw from the analysis of
+the two-user case also holds for the general multi-user case: the SNE for SGUM migrates monotonically from the NE for NCG to the social optimal solution for NUM.
+
+
+
+Numerical Results
+
+We consider  users, each of which is a link consisting of a transmitter and a receiver. Each transmitter or receiver is randomly located in a square area with side length 500m. Under the physical interference model, we assume that the channel condition of a link (communication or interference link) only depends on the path loss effect with path loss factor . We assume that the transmit power of each link is 1W and the noise power at each receiver is 0.1W. We simulate the
+social graph based on the Erdos-Renyi (ER) graph, and the real data trace of
+the friendship network from Brightkite.  We set the social tie of a social link as 1 if it exists.
+
+Figure  shows the normalized social welfare for a varying number of users . For the Erdos-Renyi (ER) graph, the social link probability . We can see that the SGUM solution for the ER model based social graph can achieve a performance gain up to 23 over the NCG solution, and its performance loss from the NUM solution is at most 10. The SGUM solution for the real data based social graph can achieve a performance gain up to 15.
+
+Figure  shows the normalized social welfare as the social link density probability   in the ER graph varies from 0 to 1. We set the number of users  as 20. We observe that as  increases, the social welfare of the SNE for the SGUM game increases monotonically from that of NE for NCG to that of the social optimal solution for NUM. This demonstrates that the SGUM spans the continuum between NCG and NUM.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Impact of  for SGUM based power control game.
+Impact of  for SGUM based power control game.
+Social Group Utility Maximization Based Random Access Control
+
+In this section we study random access control under the SGUM framework. Note that most existing work (e.g.,) on random access control game assume that users are selfish and do not take the social factors into account. To best of our knowledge, is the most related work, which considers a  two-user socially-aware random access control game with the assumption that the social tie among the two users are symmetric. While, we study the general case of multi-user socially-aware random access control game with asymmetric/sysmetric social ties among the users.
+
+
+
+SGUM Game Formulation
+
+We consider a set of users under the protocol interference model, where user  is a link consisting of transmitter  and receiver . We can construct the the physical graph  among users for the random access control as follows. Let  denote the set of receivers that transmitter  cause interference to, and  denote the set of transmitters that causes interference to receiver . Each user  contends for the opportunity of data transmission with probability  in a time slot. If multiple interfering links contend in the same time slot, a collision occurs and no link can grab the transmission opportunity. Then the probability  that user  can grab the transmission opportunity is given by
+*
+b_i(q_i, q_-i) = q_i_jI^-_i(1 - q_j).
+We assume that the individual utility of user  is given by
+*
+U_i(q_i,q_-i) = (z_ib_i(q_i, q_-i)) - c_iq_i,
+where  represents user 's efficiency of utilizing the transmission opportunity (e.g., transmission rate), and  represents user 's cost of contention (e.g., energy consumption).
+
+
+Then, given the social ties (i.e., ) among the users on the social graph , we can define the social group utility function  of user  accordingly to (). We then formulate the random access control problem with social ties as a SGUM game .
+
+
+
+
+
+
+
+
+
+SGUM Game Analysis
+
+For the SGUM based random access control game, we have the following result.
+
+
+For the SGUM based random access control game, there exists a unique SNE, where for any user , the access probability   is
+ _jI^+_i w_ij+1+c_i-(_jI^+_i w_ij+1+c_i)^2-4c_i2c_i.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The proof is given in the online appendix. Using Theorem , by showing the first-order derivative of the access probability  in terms of  is negative, we have the following result.
+
+For the SGUM based random access control game, each user's SNE strategy decreases when its social ties with others increase.
+
+Corollary  shows that a users' SNE strategy is monotonically decreasing with the social tie. Intuitively, when a user's access probability increases, it increases the collision probability of the users within its interference range, and hence reduces their individual utilities. Therefore, a user would reduce its access probability when its social ties with those within its interference range increase (as illustrated in Figure ). Furthermore, Theorem  shows that each user's SNE strategy is independent of other users' strategies, but depends on the user's social ties with others. This can facilitate the implementation of the SGUM game solution for random access control in a distributed manner, such that each user  locally sets the access probability accordingly to the social ties of its neighbors.
+
+The following result shows that the social welfare of the SNE is also a monotonic function of social ties.
+
+
+For a two-user SGUM based random access control game, as social tie  increases from 0 to 1, each user's SNE strategy  migrates from its NE strategy  for a standard NCG to its socially optimal strategy  for NUM. The social welfare of the SNE  also migrates correspondingly.
+
+For the SGUM based random access control game, the social welfare of the SNE increases when social ties increase.
+
+The proof is given in the online appendix. Intuitively, since users' individual utilities are summed up with equal weights in the social welfare, a user's SNE strategy becomes closer to its social optimal strategy when other users weigh more (i.e., the social ties increase) in that user's social group utility, and the social welfare also increases. As illustrated in Figure , when social ties increase, a user's SNE strategy migrates from its NE strategy for a standard NCG to its socially optimal strategy for NUM. This demonstrates that the SGUM game framework spans the continuum between these traditionally disjoint paradigms.
+
+Numerical Results
+We consider  users, each of which is a link consisting of a transmitter and a receiver. Each transmitter or receiver is randomly located in a square area with side length 500m. Under the
+protocol interference model, we assume that a link causes interference to another link if the former link's transmitter is within 100m of the latter link's receiver. We simulate the
+social graph based on the Erdos-Renyi (ER) graph with the social link probability , and the real data trace of
+the friendship network from Brightkite.  We set the social tie of a social link as 1 if it exists.
+
+To illustrate the system efficiency of the SGUM solution, we compare it with the NCG solution where each user aims to maximize its individual utility, and the NUM solution where the total
+individual utility of all users is maximized. Figure  depicts the social welfare of the SNE for SGUM and the social optimal solution for NUM normalized with respect to the NE
+for NCG, as the number of users increases. We can see that the SGUM solution for the ER model based social graph always dominates that of the NCG, with a substantial performance gain up to
+22. On the other hand, it performs almost as well as the NUM solution. This demonstrates that system efficiency can be significantly improved by exploiting social ties. We observe that the
+SGUM solution for the real data based social graph is worse than that for the ER model based social graph due to that social ties are weaker in the real data than in the ER graph with link
+probability . However, it still can achieve a performance gain up to 13 over that of the NCG solution.
+
+
+Impact of  for SGUM based random access control game.
+A Social Group Utility Maximization (SGUM) Framework
+In this section we introduce the SGUM framework for cooperative networking. As illustrated in Figure , the framework can be projected onto two domains: the physical domain and the social domain. In the physical domain, different wireless users have different physical coupling due to their heterogeneous physical relationships (e.g., interference). In the social domain, different users have different social coupling due to their intrinsic social ties. We next discuss both physical and social
+domains in detail.
+
+
+
+A Physical Network Graph Model
+
+We consider a set of wireless users  where  is the total number of users. We denote the set of feasible strategies for each user  as . For instance, a strategy  can be choosing either a channel or a power level for wireless transmissions. Subject to heterogeneous physical constraints, the strategy set  can be user-specific. For example, the strategy set  can be a set of feasible relay users that are in vicinity of user  for cooperative communication.
+
+
+
+To capture the physical coupling among the users in the physical domain, we introduce the physical graph  (see Figure
+ for example). Here the set of users 
+is the vertex set, and 
+is the edge set where  if and only if users 
+and  have physical coupling, i.e.,  users  and  can affect each other's payoff by taking some actions. For example, two users have the physical coupling if they can cause interference to each other when using the same channel for data transmission. We also denote
+the set of users that have physical coupling with user  as
+.
+
+Let  be the strategy profile of all users. Given the strategy
+profile , the individual utility function of user  is denoted as , which represents the payoff of user , accounting for the physical coupling among users. For example,  can be the achieved data rate or the satisfaction of quality of service (QoS) requirement of user  under the strategy profile . Note that in general the underlying physical graph plays a critical role in determining the individual utility . For example, users' achieved data rates are determined by the interference graph and channel quality.
+
+
+
+A Social Network Graph Model
+
+We next introduce the social graph model to describe the social ties among users. The underlying rationale of considering social ties is that the hand-held devices are carried by human beings and the knowledge of human social
+ties can be utilized to enhance the performance of cooperative networking.
+
+Specifically, we introduce the social graph 
+to model the social ties among the users. Here the vertex set
+is the same as the user set  and the edge set is given
+as 
+where  if and only if users  and  have
+social tie between each other, which can be kinship, friendship, or
+colleague relationship between two users. Furthermore, for a pair of users  and  who have a social
+edge between them on the social graph, we formalize
+the strength of social tie as ,
+with a higher value of  being a stronger social tie. We define user 's social group  as
+the set of users that have social ties with user , i.e.,
+.
+
+To identify the social relationships among users, two users can locally carry out the
+identification process through the proximity communications (e.g., using Bluetooth/WiFi-Direct/Device-To-Device communications).
+Two users can detect their social relationship by
+carrying out the "matching" process to identify the common
+social features among them. For example, two users can
+match their mobile phones' contact books. If they have the
+phone numbers of each other or many of their phone numbers
+are the same, then it is very likely that they know each
+other. As another example, two users can match their
+home and working addresses and identify whether they are
+neighbors or colleagues. Furthermore, two users can
+detect the social relationship among them by accessing to
+the online social networks such as Facebook and Twitter.
+For example, Facebook has exposed access to their social
+graph including the objects of friends, events, groups, profile
+information, and photos. Any authenticated Facebook user
+can have access to these information through the OpenGraph
+API. Based on the identified social relationships, a user  can then specify the social tie strength  towards its social neighbors  in the social group  .
+
+Based on the physical and social graph models above, users are coupled in the physical domain due to the physical relationships, and also coupled in the social domain due to the social ties among them. It would be a win-win case for users to help those users having social ties with them. With this insight, we further define the social group utility of each user  as
+It follows that the social group utility of each user consists of two parts: 1) its own individual utility and 2) the
+weighted sum of the individual utilities of other users having social ties with it. In a nutshell,
+the social group utility function captures the feature that each user is socially-aware and cares about the users having social ties with it.
+
+
+
+Social Group Utility Maximization Game
+
+We next consider the distributed decision making problem among the users, aiming to maximize their social group utilities. Let  be the set of strategies chosen by all other users except user . Given the other users' strategies , user 
+wants to choose a strategy  to maximize
+its social group utility, i.e.,
+
+
+
+The distributed nature of the problem above naturally
+leads to a formulation based on game theory such that each user aims to maximize
+its social group utility.  We thus formulate the decision making problem among the users as a strategic game ,
+where the set of users  is the set of players,
+ is the set of strategies
+for each user , and the social group utility function
+ of each user  is the payoff function of player .  In the sequel, we call the game  as the SGUM game. We next introduce the concept of socially-aware Nash equilibrium (SNE).
+
+
+A strategy profile   is a socially-aware Nash equilibrium of the SGUM game if no
+player can improve its social group utility by unilaterally changing its strategy, i.e.,
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+It is worth noting that under different social graphs, the proposed SGUM game formulation can provide rich flexibility for modeling the network optimization problem (as illustrated in Figure ). When the social graph consists of isolated nodes with  for any  (i.e., all users are selfish), the SGUM game degenerates to the non-cooperative game formulation. When the social graph is fully meshed with edge weight  for any  (i.e., each user is fully altruistic and cares enough about other users), the SGUM game becomes the network utility maximization problem, which aims to maximize the system-wide utility. The SGUM framework in this study is applicable to  general social graphs and hence can bridge the gap between non-cooperative game and network utility maximization - two traditionally disjoint paradigms for network optimization. Roughly speaking, we can interpret the SGUM framework from the perspective of information sharing. If in the system more users would like to share the information of their individual utilities, then more informed decision making for optimizing the collective performance can be achieved,  and hence the system performance could be improved as the social link density increases.
+
+The SGUM is a general framework that can be applied for many networking applications. To get a more concrete sense of the framework, in the following sections, we will study its applications in database assisted spectrum access, power control, and random access control.

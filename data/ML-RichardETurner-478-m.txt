@@ -1,0 +1,728 @@
+Appendix
+
+Experiment Detailssec:experimental_details
+
+Q-Prop Experiments
+We modified the Q-Prop implementation published by the authors at https://github.com/shaneshixiang/rllabplusplus (commit: 4d55f96). We used the conservative variant of Q-Prop, as is used throughout the experimental section in the original paper. We used the default choices of policy and value functions, learning rates, and other hyperparameters as dictated by the code. 
+
+We used a batch size of 5000 steps. We ran each of the three algorithms on a discrete (CartPole-v0) and two continuous (HalfCheetah-v1, Humanoid-v1) environments environments using OpenAI Gym brockman2016openai and Mujoco 1.3.
+
+To generate the TRPO and (biased) Q-Prop results, we run the code as is.  For the unbiased Q-Prop, recall the expression for the biased gradient estimator:
+align*
+g(s, a, ) = & 1 ( A(s, a, ) - (s, a) -  ) (as) 
+    
+
+    &+ E_a[ (s, a) ],
+align*
+To debias the Q-Prop gradient estimator, we divide the bias correction term, , by . 
+
+Stein Control Variate Experiments
+We used the Stein control variate implementation published by the authors at https://github.com/DartML/PPO-Stein-Control-Variate (commit: 6eec471). We used the default hyperparameters and test on two continuous control environments, HalfCheetah-v1 and Humanoid-v1 using OpenAI Gym and Mujoco 1.3.
+
+We evaluated five algorithms in this experiment: PPO, the Stein control variates algorithm as implemented bypliu2018sample, a variant of the biased Stein algorithm that does not use importance sampling to compute the bias correction term (described below), an unbiased state-dependent baseline, and an unbiased state-action-dependent Stein baseline. All of the learned baselines were trained to minimize the approximation to the variance of the gradient estimator as described inpliu2018sample.
+
+We use the code as is to run the first two variants. In the next variant, we estimate  with an extra sample of  instead of importance weighting samples from the current batch (see Eq. 20 inpliu2018sample. For the unbiased baselines, we ensure that the policy update steps for the current batch are performed before updating the baselines.
+
+Backpropagating through the Voidsec:backprop_void
+We used the implementation published by the authors (https://github.com/wgrathwohl/BackpropThroughTheVoidRL, commit: 0e6623d) with the following modification: we measure the variance of the policy gradient estimator. In the original code, the authors accidentally measure the variance of a gradient estimator that neither method uses. We note thattgrathwohl2018backpropagation recently corrected a bug in the code that caused the LAX method to use a different advantage estimator than the base method. We use this bug fix.
+
+Horizon-Aware Value Function Experiments
+sec:disc_app
+For these experiments, we modify the open-source TRPO implementation: https://github.com/ikostrikov/pytorch-trpo (commit: 27400b8). We test four different algorithms on three different continuous control algorithms: HalfCheetah-v1, Walker2d-v1, and Humanoid-v1 using OpenAI Gym and Mujoco 1.3. 
+
+The policy network is a two-layer MLP with 64 units per hidden layer with tanh nonlinearities. It parameterizes the mean and standard deviation of a Gaussian distribution from which actions are sampled. The value function is parameterized similarly. We implement the two outputs of the horizon-aware value function as a single neural network with two heads. Both heads have a separate linear layer off of the last hidden layer. We estimate the value functions by regressing on Monte Carlo returns. We optimize the value functions with L-BFGS liu1989limited. We use  and  for GAE, a batch size of 5000 steps, and the maximum time per episode is set to 1000. 
+
+For the experiments in which we train an additional state-dependent or state-action-dependent baseline on the advantage estimates, we parameterize those similarly to the normal value function and train them with a learning rate of  optimized with Adam kingma2014adam. We fit the baselines to minimize the mean squared error of predicting the GAE estimates. With the state-action-dependent baseline, we estimate  using the reparameterization trick as inpliu2018sample,grathwohl2018backpropagation.
+
+Variance computations in Linear-Quadratic-Gaussian (LQG) systems
+sec:lqr
+Linear-Quadratic-Gaussian (LQG) systems stengel1986optimal are one of the most studied control/continuous states and actions RL problems. The LQG problems are expressed in the following generic form for a finite horizon scenario. To simplify exposition, we focus on open-loop control without observation matrices, however, it is straightforward to extend our analysis.
+align*
+&p(s_0) =  N(^S_0, ^S_0) 
+
+
+&(a_t ) = N(^A_t, ^A_t)
+
+&p(s_t+1  s_t, a_t) = N(^SSA_t+1, ^SSA_t+1), ^SSA_t+1 = A_t s_t + B_t a_t 
+
+&J() = E_s_0:T,a_0:T[ _t=0^T ^t r_t ],r_t = - s_t^T Q_t s_t - a_t^T R_t a_t
+align*
+The policy parameters, dynamics parameters, and reward parameters are 
+
+
+, and , respectively. While the goal of LQG is to find control parameters , which can be solved analytically through dynamic programming, we are interested in analyzing its gradient estimator properties when a policy gradient algorithm is applied. 
+
+Computing 
+In a LQG system, both the state-action value function  and state value function  corresponding to policy  can be derived analytically. To achieve that, we first note that the marginal state distributions  at  given  can be computed iteratively by the following equation,
+align*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+& p(s_t+k) = N(_t+k^S, ^S_t+k) 
+
+&_t+k^S = L_t,k A_t_t^S +m_t,k 
+
+&_t+k^S = L_t,k A_t _t^S (L_t,k A_t)^T + M_t,k
+
+&L_t,k = (_i=1^k-1 A_t+i^T)^T = A_t+k-1 L_t,k-1
+
+
+&m_t,k = _j=0^k-1 L_t+j,k-j B_t+j ^A_t+j 
+
+&= A_t+k-1 m_t,k-1 + B_t+k-1_t+k-1^A 
+
+&M_t,k = _j=0^k-1 L_t+j,k-j (B_t+j ^A_t+jB_t+j^T + ^SSA_t+j+1)L_t+j,k-j^T 
+
+&= A_t+k-1 M_t,k-1  A_t+k-1^T 
+
+&+ B_t+k-1 ^A_t+k-1B_t+k-1^T + ^SSA_t+k 
+
+&L_t,1=I, m_t,0=0, M_t,0=0
+
+
+
+align*
+To compute , we simply modify the above to first compute all future state-action-conditional marginals ,
+align*
+& p(s_t+ks_t,a_t) = N(_t+k^Ss_t,a_t, ^Ss_t,a_t_t+k) 
+
+&_t+k^Ss_t,a_t = L_t,k A_t s_t + L_t,k B_t a_t + m_t+1,k-1 
+
+&_t+k^Ss_t,a_t = L_t,k _t+1^SSA L_t,k^T + M_t+1,k-1
+
+align*
+and integrate with respect to quadratic costs at each time step,
+align*
+&Q(s_t,a_t) =  r_t + _k=1^T-t^k E_p(s_t+ks_t,a_t)(a_t+k)[r_t+k]
+
+&= - _k=1^T-t ^k((_t+k^Ss_t,a_t)^T Q_t+k _t+k^Ss_t,a_t
+
+&+Tr(Q_t+k_t+k^Ss_t,a_t)
+
+&+ (_t+k^A)^T R_t+k _t+k^A + Tr(R_t+k_t+k^A) )+r_t 
+
+&= - ( s_t^T P^SS_t s_t + a_t^T P^AA_t a_t+ s_t^T P^SA_t a_t 
+
+&+ s^T_t p^S_t + a^T_t p^A_t + c_t ), 
+
+align*
+whose resulting coefficients are,
+align*
+&P_t^SS = Q_t + _k=1^T-t ^k (L_t,kA_t)^T Q_t+k L_t,kA_t 
+
+&P_t^AA = R_t + _k=1^T-t ^k (L_t,kB_t)^T Q_t+k L_t,kB_t 
+
+&P_t^SA = 2_k=1^T-t ^k (L_t,kA_t)^T Q_t+k L_t,kB_t 
+
+&p_t^S = 2_k=1^T-t ^k (L_t,kA_t)^T Q_t+k m_t+1,k-1 
+
+&p_t^A = 2_k=1^T-t ^k (L_t,kB_t)^T Q_t+k m_t+1,k-1,
+align*
+and  denotes constant terms that do not depend on  or . Note that the  is non-stationary due to the finite time horizon. Given the quadratic , it is straight-forward to derive the value function ,
+align*
+&V(s_t) = - ( s_t^T P^SS_t s_t + (_t^A)^T P^AA_t ^A_t+ s_t^T P^SA_t ^A_t 
+
+&+ s^T_t p^S_t + (^A_t)^T p^A_t + Tr(P_t^AA_t^A ) + c_t ), 
+
+align*
+and the advantage function ,
+align*
+&A(s_t,a_t) = -( a_t^T P^AA_t a_t+ s_t^T P^SA_t a_t + a^T_t p^A_t 
+
+&- (_t^A)^T P^AA_t ^A_t- s_t^T P^SA_t ^A_t - (^A_t)^T p^A_t
+
+&- Tr(P_t^AA_t^A ) ) 
+
+&= -( a_t^T P^AA_t a_t+ s_t^T P^SA_t a_t + s^T_t p^S_t + a^T_t p^A_t + c_t ) 
+
+&p^S_t = P_t^SA _t^A, 
+
+&c_t = - (_t^A)^T P^AA_t ^A_t -  (^A_t)^T p^A_t - Tr(P_t^AA_t^A ). 
+align*
+
+Computing the LQG analytic gradients
+Given quadratic  and , it is tractable to compute the exact gradient with respect to the Gaussian parameters. For the gradient with respect to the mean , the derivation is given below, where we drop the time index  since it applies to every time step.
+align*
+g^(s) &= E_a [Q(s,a) _ (a) ] 
+
+&= -E_a [((s^T P^SA a + a^T P^AA a + a^T_t p_t^A) 
+
+&(a^T - ^T) (^A)^-1)^T] 
+
+&=-( (P^SA)^T s + 2 P^AA + p_t^A )
+align*
+Written with time indices, the state-conditional gradient and the full gradient are tractably expressed as the following for both  and -based estimators,
+align*
+&g^(s_t) = -((P^SA_t)^Ts_t + 2 P^AA_t ^A_t + p_t^A )
+
+&g^_t = -((P_t^SA)^T_t^S + 2 P^AA ^A_t + p_t^A ).
+align*
+Similarly, the gradients with respect to the covariance  can be computed analytically. For the LQG system, we analyze the variance with respect to the mean parameters, so we omit the derivations here.
+
+Estimating the LQG variances
+Given analytic expressions for ,  and , it is simple to estimate the variance terms , , and  in Eq. eq:var.  is the simplest and given by,
+align*
+_s,t^&= Var_s_t E_a_t [ Q(s_t,a_t) _ (a_t) ] 
+
+&= Var_s_t (- (P^SA_t)^Ts_t - 2 P^AA_t ^A_t - p_t^A ) 
+
+&= (P^SA_t)^T _t^S P^SA_t.
+align*
+ term can also be computed analytically; however, to avoid integrating complex fourth-order terms, we use a sample-based estimate over  and , which is sufficiently low variance. For the gradient estimator with , the variance expression is,
+align*
+_a,t^,Q &= E_s_t Var_a_t( Q(s_t,a_t) _ (a_t)  ) 
+
+&= E_s_t ( E_a_t [ Q^2(s_t,a_t)_ (a_t) _ (a_t)^T ]
+
+& - g^(s_t) (g^(s_t))^T ).
+align*
+The sample-based estimate is the follow, where  and ,
+align*
+_a,t^,Q &=  Q^2(s',a')_ (a') _ (a')^T 
+
+&- g^(s') (g^(s'))^T.
+align*
+The sample-based estimate with -based estimator , i.e. , is the same, except  above is replaced by . In addition, an unbiased estimate for  can be derived,
+align*
+ _a,t^,Q - _a,t^,A &= (Q(s',a')^2-A(s',a')^2)
+
+ &_ (a') _ (a')^T.
+align*
+Importantly,  is the variance reduction from using  as the state-dependent baseline, and  is the extra variance reduction from using , the optimal variance reducing state-action-dependent baseline.
+
+Lastly, analytic computation for the  term is also tractable, since  is a Gaussian, and the integrand is quadratic. However, computing this full Gaussian is computationally expensive, so instead we use the following form, which is still sufficiently low variance,
+align*
+_,t^&= E_s_t E_a_t ( _ (a_t) _ (a_t)^T
+
+&Var__t+1s_t,a_t Q(s_t,a_t,_t+1)   )
+
+&= E_s_t E_a_t ( _ (a_t)_ (a_t)^T
+
+& E__t+1s_t,a_t (Q(s_t,a_t,_t+1)^2-Q(s_t,a_t)^2)   ).
+align*
+whose sample estimate is given with ,  and  as,
+align*
+_,t^&= _ (a_t)_ (a_t)^T 
+
+&(Q(s_t,a_t,_t+1)^2-Q(s_t,a_t)^2).
+align*
+
+LQG Experiments
+For experimental evaluation of variances in LQG, we used a simple 2D point mass system, whose dynamics and cost matrices are expressed as,
+align*
+&A =
+bmatrix
+   1 & 0 & dt & 0  
+
+    0 & 1 & 0 & dt  
+
+    0 & 0 & 1 & 0  
+
+    0 & 0 & 0 & 1 
+bmatrix, B = 
+bmatrix
+  0 & 0   
+
+    0 & 0  
+
+   dt/m & 0   
+
+    0 & dt/m   
+
+bmatrix 
+
+& Q = bmatrix
+   q & 0 & 0 & 0  
+
+    0 & q & 0 & 0  
+
+    0 & 0 & q & 0  
+
+    0 & 0 & 0 & q 
+bmatrix, 
+R = bmatrix
+   r & 0 & 0 & 0  
+
+    0 & r & 0 & 0  
+
+    0 & 0 & r & 0  
+
+    0 & 0 & 0 & r 
+bmatrix,
+align*
+where we set , , , . We set the initial state mean as  and set the state variances as . 
+
+To initialize the time-varying open-loop policy, we draw the means from  and set the variances as . We choose time horizon  for our experiments. To evaluate all variance terms, we use sample size  where Monte Carlo estimates are used.
+
+We optimize the policy parameters to show how the variance decomposition changes as the policy is trained. We focus on analyzing the mean variances, so we only optimize . Analytic gradients  are used for gradient descent with learning rate  and momentum . The cost improves monotonically. Figure fig:lqg_var2 complements Figure fig:lqg_var with additional visualizations on the policy at different stages of learning.
+
+figure*[h]
+    
+  
+  lqg_traj
+  out_variances_4row
+  
+  Evaluating the variance terms (Eq. eq:var) of the policy gradient estimator on a 2D point mass task (an LQG system) with finite horizon . The figure includes Figure fig:lqg_var in addition to subplots visualizing on-policy trajectories at different stages of learning. The cost matrices encourage the point mass to reach and stay at the (0, 0) coordinate. Note that the task is challenging because the policy variances are not optimized and the policy uses open-loop controls. We include animated GIF visualizations of the variance terms and policy as learning progresses in the Supplementary Materials. 
+  fig:lqg_var2
+figure*
+
+Estimating variance terms
+sec:est_var
+To empirically evaluate the variance terms, we use an unbiased single sample estimator for each of the three variance terms, which can be repeated to drive the measurement variance to an acceptable level.
+
+First, we draw a batch of data according to . Then, we select a random state  from the batch and draw . 
+
+To estimate the first term, we draw  and the estimator is
+ (A(s, a, )^2 - A(s, a, )A(s, a, (a  s)^2. 
+
+We estimate the second term in two cases:  and (When , then  a standard choice of a state-dependent control variate.). When , we draw  and  and the estimator is
+align*
+	A(s, a, )&A(s, a, (a  s)^2 
+
+    &- A(s, a, )A(s, a", (a  s)(a"  s).
+align*
+When , we draw , , and  and the estimator is
+align*
+	(&A(s, a, ) - A(s, a_1, _1))(A(s, a, - A(s, a_2, _2)) 
+
+    &(a  s)^2 
+
+    &- (A(s, a, ) - A(s, a_1, _1)) 
+
+    &(A(s, a", - A(s, a_2, _2)) 
+
+    &(a  s)(a"  s).
+align*
+
+Finally, the third term is
+align*
+_s &( E_as [ A(s, a) (as) ] ) 
+
+	&=  E_s [ E_as [ A(s, a) (as) ]^2 ] 
+     - E_s, a, [g]^2 
+
+    &E_s [ E_as [ A(s, a) (as) ]^2 ]
+align*
+Computing an unbiased estimate of  is straightforward, but it turns out to be small relative to all other terms, so we are satisfied with an upper bound. We can estimate the upper bound by
+ A(s, a, )A(s, a", (a  s)(a"  s). 
+
+Gradient Bias and Variance with IPG
+sec:app_ipg
+Similarly to IPG gu2017interpolated, we consider a convex combination of estimators
+align*
+	g(s, a, ) =& ( A(s, a, ) - (s, a) ) (as)     
+
+    &+ E_as[ (s, a) ],
+align*
+controlled by , where  is unbiased and  is low variance, but biased. Using the law of total variance, we can write the variance of the estimator as
+align*
+    &^2 E_s [ _a, s ( ( A(s, a, ) - (s, a) ) (as) ) ] 
+
+    &+ _s  E_a s [ _ s, a [ ( A(s, a, ) ] + (1 - )(s, a) ) (as) ].
+align*
+So when , introducing  effectively reduces the variance by  On the other hand, the bias introduced by  is
+ (1 - ) _s, a [ ( (s, a)  - _ s, a [ A(s, a, ) ] ) (as) ]. 
+Dynamically trading off between these quantities is a promising area of future research.
+
+
+
+
+
+
+
+
+
+
+
+figure*
+    reward
+  Evaluating the standard value function parameterization, the horizon-aware value function parameterization, and the value function with time left as an input. For these plots, we use discounted return for  and a value function baseline. We plot mean episode reward and standard deviation intervals capped at the minimum and maximum across 5 random seeds. The batch size across all experiments was 25000.
+  fig:app_horizon_reward
+figure*
+
+figure*
+    variance
+  Evaluating the variance of the policy gradient estimator when using different value function baselines: the standard value function parameterization, the horizon-aware value function parameterization, and the value function with time left as an input. We follow the parameter trajectory from the standard value function parameterization. At each training iteration, we compute estimates of the gradient variance when using different value functions as a baseline. We average the variance estimate over all timesteps in the batch, which explains the difference in variance magnitude from previous plots. The batch size across all experiments was 25000.
+  fig:app_horizon_variance
+figure*
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+figure*[!ht]
+    stein_mean_stds_all2
+  Evaluation of the (biased) Stein control variate state-action-dependent baseline, a biased variant without importance sampling for the bias correction term, an unbiased variant using a state-dependent baseline, an unbiased variant using only a state-dependent baseline, and PPO (implementations based on the code accompanyingpliu2018sample). We plot mean episode reward and standard deviation intervals capped at the minimum and maximum across 5 random seeds. The batch size across all experiments was 10000.
+  fig:stein
+  
+figure*
+
+figure*[!ht]
+    HalfCheetah-v1_variance
+  Evaluating the variance terms (Eq. eq:var) of the gradient estimator when  is the discounted return (left) and GAE (right) with various baselines on HalfCheetah. The x-axis denotes the number of environment steps used for training. The policy is trained with TRPO. We set  and . The "learned" label in the legend indicates that a function approximator to  was used instead of directly using . Note that when using ,  is , so is not plotted. Since  is small, we plot an upper bound on . The upper and lower bands indicate two standard errors of the mean. In the left plot, lines for  and  overlap and in the right plot, lines for , and  overlap.
+  fig:halfcheetah_var
+figure*
+
+figure*[!ht]
+    Humanoid-v1-disc_variance
+  Evaluating the variance terms (Eq. eq:var) of the gradient estimator when  is the discounted return (left) and GAE (right) with various baselines on Humanoid. The x-axis denotes the number of environment steps used for training. The policy is trained with TRPO and the horizon-aware value function. We set  and . The "learned" label in the legend indicates that a function approximator to  was used instead of directly using . Note that when using ,  is , so is not plotted. Since  is small, we plot an upper bound on . The upper and lower bands indicate two standard errors of the mean. In the left plot, lines for  and  overlap and in the right plot, lines for , and  overlap.
+  fig:humanoid_disc_var
+figure*
+
+figure*[!ht]
+    HalfCheetah-v1-disc_variance
+  Evaluating the variance terms (Eq. eq:var) of the gradient estimator when  is the discounted return (left) and GAE (right) with various baselines on HalfCheetah. The x-axis denotes the number of environment steps used for training. The policy is trained with TRPO and the horizon-aware value function. We set  and . The "learned" label in the legend indicates that a function approximator to  was used instead of directly using . Note that when using ,  is , so is not plotted. Since  is small, we plot an upper bound on . The upper and lower bands indicate two standard errors of the mean. In the left plot, lines for  and  overlap and in the right plot, lines for , and  overlap.
+  fig:halfcheetah_disc_var
+figure*
+
+figure*[!ht]
+    stein
+  Evaluating an approximation of the variance of the policy gradient estimator with no additional state-dependent baseline (Value), a state-dependent baseline (state only), and a state-action-dependent baseline. FitQ indicates that the baseline was fit by regressing to Monte Carlo returns. MinVar indicates the baseline was fit by minimizing an approximation to the variance of the gradient estimator. We found that the state-dependent and state-action-dependent baselines reduce variance similarly. The large gap between Value and the rest of the methods is due to poor value function fitting. These results were generated by modifying the Stein control variate implementation liu2018sample.
+  fig:stein_var
+figure*
+
+figure*[!ht]
+    InversePendulum-v1.pdf
+  Evaluation of the state-action-dependent baseline (LAX) compared to a state-dependent baseline (Baseline) with the implementation from grathwohl2018backpropagation on the InvertedPendulum-v1 task. We plot episode reward (left) and log variance of the policy gradient estimator (right) averaged across 5 randomly seeded training runs. The error intervals are a single standard deviation capped at the min and max across the 5 runs. We used a batch size of 2500 steps.
+  fig:bttv
+figure*
+
+
+
+
+ images/ 
+ 
+
+
+
+
+
+
+
+
+
+
+
+Var
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+The Mirage of Action-Dependent Baselines in Reinforcement Learning
+
+[
+The Mirage of Action-Dependent Baselines in Reinforcement Learning
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+equal*
+
+
+George Tuckergoo
+Surya Bhupatirajugoo,res
+Shixiang Gugoo,cam,mpi
+Richard E. Turnercam
+Zoubin Ghahramanicam,uber
+Sergey Levinegoo,berk
+
+gooGoogle Brain, USA
+camUniversity of Cambridge, UK
+mpiMax Planck Institute for Intelligent Systems, Germany
+berkUC Berkeley, USA
+uberUber AI Labs, USA
+resWork was done during the Google AI Residency.
+
+
+George Tuckergjt@google.com
+
+
+
+
+Machine Learning, Reinforcement Learning, Variance Reduction, Control Variate, Baseline, Action-dependent baseline
+
+]
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+Policy gradient methods are a widely used class of model-free reinforcement learning algorithms where a state-dependent baseline is used to reduce gradient estimator variance. Several recent papers extend the baseline to depend on both the state and action and suggest that this significantly reduces variance and improves sample efficiency without introducing bias into the gradient estimates. To better understand this development, we decompose the variance of the policy gradient estimator and numerically show that learned state-action-dependent baselines do not in fact reduce variance over a state-dependent baseline in commonly tested benchmark domains. We confirm this unexpected result by reviewing the open-source code accompanying these prior papers, and show that subtle implementation decisions cause deviations from the methods presented in the papers and explain the source of the previously observed empirical gains. Furthermore, the variance decomposition highlights areas for improvement, which we demonstrate by illustrating a simple change to the typical value function parameterization that can significantly improve performance.
+
+Introduction
+Model-free reinforcement learning (RL) with flexible function approximators, such as neural networks (i.e., deep reinforcement learning), has shown success in goal-directed sequential decision-making problems in high dimensional state spaces mnih2015human,schulman2015high,lillicrap2015continuous,silver2016mastering. Policy gradient methods williams1992simple,sutton2000policy,kakade2002natural,peters2006policy,silver2014deterministic,schulman2015trust,schulman2017proximal are a class of model-free RL algorithms that have found widespread adoption due to their stability and ease of use. Because these methods directly estimate the gradient of the expected reward RL objective, they exhibit stable convergence both in theory and practice sutton2000policy,kakade2002natural,schulman2015trust,gu2017interpolated.
+In contrast, methods such as Q-learning lack convergence guarantees in the case of nonlinear function approximation sutton1998reinforcement.
+
+On-policy Monte-Carlo policy gradient estimates suffer from high variance, and therefore require large batch sizes to reliably estimate the gradient for stable iterative optimization schulman2015trust. This limits their applicability to real-world problems, where sample efficiency is a critical constraint. Actor-critic methods sutton2000policy,silver2014deterministic and -weighted return estimation tesauro1995temporal,schulman2015high replace the high variance Monte-Carlo return with an estimate based on the sampled return and a function approximator. This reduces variance at the expense of introducing bias from the function approximator, which can lead to instability and sensitivity to hyperparameters. In contrast, state-dependent baselines williams1992simple,weaver2001optimal reduce variance without introducing bias. This is desirable because it does not compromise the stability of the original method.
+
+gu2017q,grathwohl2018backpropagation,liu2018sample,wu2018variance present promising results extending the classic state-dependent baselines to state-action-dependent baselines. The standard explanation for the benefits of such approaches is that they achieve large reductions in variance grathwohl2018backpropagation,liu2018sample, which translates to improvements over methods that only condition the baseline on the state. This line of investigation is attractive, because by definition, baselines do not introduce bias and thus do not compromise the stability of the underlying policy gradient algorithm, but still provide improved sample efficiency. In other words, they retain the advantages of the underlying algorithms with no unintended side-effects.
+
+In this paper, we aim to improve our understanding of state-action-dependent baselines and to identify targets for further unbiased variance reduction. Toward this goal, we present a decomposition of the variance of the policy gradient estimator which isolates the potential variance reduction due to state-action-dependent baselines. We numerically evaluate the variance components on a synthetic linear-quadratic-Gaussian (LQG) task, where the variances are nearly analytically tractable, and on benchmark continuous control tasks and draw two conclusions: (1) on these tasks, a learned state-action-dependent baseline does not significantly reduce variance over a learned state-dependent baseline
+, and (2) the variance caused by using a function approximator for the value function or state-dependent baseline is much larger than the variance reduction from adding action dependence to the baseline.
+
+To resolve the apparent contradiction arising from (1), we carefully reviewed the open-source implementations(At the time of submission, code for was not available.) accompanying Q-prop gu2017q, Stein control variates liu2018sample, and LAX grathwohl2018backpropagation and show that subtle implementation decisions cause the code to diverge from the unbiased methods presented in the papers. We explain and empirically evaluate variants of these prior methods to demonstrate that these subtle implementation details, which trade variance for bias, are in fact crucial for their empirical success. These results motivate further study of these design decisions.
+
+The second observation (2), that function approximators poorly estimate the value function, suggests that there is room for improvement. Although many common benchmark tasks are finite horizon problems, most value function parameterizations ignore this fact. We propose a horizon-aware value function parameterization, and this improves performance compared with the state-action-dependent baseline without biasing the underlying method.
+
+We emphasize that without the open-source code accompanying gu2017q,liu2018sample,grathwohl2018backpropagation, this work would not be possible. Releasing the code has allowed us to present a new view on their work and to identify interesting implementation decisions for further study that the original authors may not have been aware of. 
+
+We have made our code and additional visualizations available at  https://sites.google.com/view/mirage-rl.
+
+Background
+Reinforcement learning aims to learn a policy for an agent to maximize a sum of reward signals sutton1998reinforcement. The agent starts at an initial state . Then, the agent repeatedly samples an action  from a policy  with parameters , receives a reward , and transitions to a subsequent state  according to the Markovian dynamics  of the environment. This generates a trajectory of states, actions, and rewards . We abbreviate the trajectory after the initial state and action by .
+
+The goal is to maximize the discounted sum of rewards along sampled trajectories
+
+where  is a discount parameter and  is the unnormalized discounted state visitation frequency. 
+
+Policy gradient methods differentiate the expected return objective with respect to the policy parameters and apply gradient-based optimization sutton1998reinforcement. The policy gradient can be written as an expectation amenable to Monte Carlo estimation
+
+_J() &= _s ^(s), a,  [ Q^(s, a) (a  s) ] 
+
+	&= _s ^(s), a,  [ A^(s, a) (a  s) ] where  is the state-action value function,  is the value function, and  is the advantage function. The equality in the last line follows from the fact that  williams1992simple.
+
+In practice, most policy gradient methods (including this paper) use the undiscounted state visitation frequencies (i.e.,  for ), which produces a biased estimator for  and more closely aligns with maximizing average reward .
+
+We can estimate the gradient with a Monte-Carlo estimator
+
+	g(s, a, ) = A(s, a, )_(as),
+    where  is an estimator of the advantage function up to a state-dependent constant (e.g., ).
+
+Advantage Function Estimation
+Given a value function estimator, , we can form a -step advantage function estimator,
+
+A^(k)(s_t,a_t,_t+1) = _i=0^k-1 ^i r_t+i + ^k V(s_t+k) - V(s_t) , where  and .
+ produces an unbiased gradient estimator when used in Eq.  regardless of the choice of . However, the other estimators () produce biased estimates unless . Advantage actor critic (A2C and A3C) methods  and generalized advantage estimators (GAE)  use a single or linear combination of  estimators as the advantage estimator in Eq. . In practice, the value function estimator is never perfect, so these methods produce biased gradient estimates. As a result, the hyperparameters that control the combination of  must be carefully tuned to balance bias and variance schulman2015high, demonstrating the perils and sensitivity of biased gradient estimators. For the experiments in this paper, unless stated otherwise, we use the GAE estimator. Our focus will be on the additional bias introduced beyond that of GAE.
+
+Baselines for Variance Reduction
+The policy gradient estimator in Eq.  typically suffers from high variance. Control variates are a well-studied technique for reducing variance in Monte Carlo estimators without biasing the estimator owen2013monte. They require a correlated function whose expectation we can analytically evaluate or estimate with low variance. Because , any function of the form  can serve as a control variate, where  is commonly referred to as a baseline williams1992simple. With a baseline, the policy gradient estimator becomes
+*
+	g(s, a, ) =& ( A(s, a, ) - (s) ) (as),
+which does not introduce bias. Several recent methods gu2017q,thomas2017policy,grathwohl2018backpropagation,liu2018sample,wu2018variance have extended the approach to state-action-dependent baselines (i.e.,  is a function of the state and the action).  With a state-action dependent baseline , the policy gradient estimator is
+
+	g(s, a, ) =& ( A(s, a, ) - (s, a) ) (as)     
+
+    &+ E_as[ (s, a) ],
+    Now,  in general, so it must be analytically evaluated or estimated with low variance for the baseline to be effective. 
+
+*[h]
+      Evaluating the variance terms (Eq. ) of the policy gradient estimator on a 2D point mass task (an LQG system) with finite horizon . The total variance of the gradient estimator covariance is plotted against time in the task (). Each plot from left to right corresponds to a different stage in learning (see Appendix  for policy visualizations), and its title indicates the number of policy updates completed.  and  correspond to the  term without a baseline and using the value function as a state-dependent baseline, respectively. Importantly, an optimal state-action-dependent baseline reduces  to , so  upper bounds the variance reduction possible from using a state-action-dependent baseline over a state-dependent baseline. In this task,  is much smaller than , so the reduction in overall variance from using a state-action-dependent baseline would be minimal.  indicates the  term with GAE-based return estimates. We include animated GIF visualizations of the variance terms and policy as learning progresses in the Supplementary Materials.
+   
+  
+When the action set is discrete and not large, it is straightforward to analytically evaluate the expectation in the second term gu2017interpolated,gruslys2017reactor. In the continuous action case, set  to be the first order Taylor expansion of a learned advantage function approximator. Because  is linear in , the expectation can be analytically computed. set  to be a learned function approximator and leverage the reparameterization trick to estimate  with low variance when  is reparameterizable kingma2013auto,rezende2014stochastic.
+
+*[h]
+      Evaluating the variance terms (Eq. ) of the gradient estimator when  is the discounted return (left) and GAE (right) with various baselines on Humanoid (See Appendix Figure  for results on HalfCheetah). The x-axis denotes the number of environment steps used for training. The policy is trained with TRPO. We set  and . The "learned" label in the legend indicates that a function approximator to  was used instead of directly using . Note that when using ,  is , so is not plotted. Since  is small, we plot an upper bound on . The upper and lower bands indicate two standard errors of the mean. In the left plot, lines for  and  overlap and in the right plot, lines for , and  overlap.
+    
+
+Policy Gradient Variance Decomposition
+Now, we analyze the variance of the policy gradient estimator with a state-action dependent baseline (Eq. ). This is an unbiased estimator of  for any choice of . For theoretical analysis, we assume that we can analytically evaluate the expectation over  in the second term because it only depends on  and , which we can evaluate multiple times without querying the environment.
+
+The variance of the policy gradient estimator in Eq. , , can be decomposed using the law of total variance as
+
+where the simplification of the second term is because the baseline does not introduce bias. We can further decompose the first term,
+*
+	
+    
+    
+    E_s & [ _a, s ( ( A(s, a, ) - (s, a) ) (as) ) ] 
+
+	=&  E_s, a [ _ s, a ( A(s, a, ) (as) ) ] 
+
+    &+ E_s [ _a  s ( ( A(s, a)  - (s, a) ) (as) ) ],
+where . Putting the terms together, we arrive at the following:
+
+
+
+  =& E_s, a [ _ s, a ( A(s, a, ) (as) ) ]__ 
+
+ 	&+ E_s [ _a  s ( ( A(s, a)  - (s, a) ) (as) ) ]__a 
+
+    &+ _s ( E_as [ A(s, a) (as) ] )__s. 
+
+
+
+
+
+
+
+
+
+
+
+
+Notably, only  involves , and it is clear that the variance minimizing choice of  is . For example, if , the discounted return, then the optimal choice of  is , the state-action value function.
+
+The variance in the on-policy gradient estimate arises from the fact that we only collect data from a limited number of states , that we only take a single action  in each state, and that we only rollout a single path from there on .  Intuitively,  describes the variance due to sampling a single ,  describes the variance due to sampling a single , and lastly  describes the variance coming from visiting a limited number of states. The magnitudes of these terms depends on task specific parameters and the policy. 
+
+The relative magnitudes of the variance terms will determine the effectiveness of the optimal state-action-dependent baseline. In particular, denoting the value of the second term when using a state-dependent baseline by , the variance of the policy gradient estimator with a state-dependent baseline is . When  is optimal,  vanishes, so the variance is . Thus, an optimal state-action-dependent baseline will be beneficial when  is large relative to . We expect this to be the case when single actions have a large effect on the overall discounted return (e.g., in a Cliffworld domain, where a single action could cause the agent to fall of the cliff and suffer a large negative reward). Practical implementations of a state-action-dependent baseline require learning , which will further restrict the potential benefits.
+
+Variance in LQG Systems
+Linear-quadratic-Gaussian (LQG) systems stengel1986optimal are a family of widely studied continuous control problems with closed-form expressions for optimal controls, quadratic value functions, and Gaussian state marginals. We first analyze the variance decomposition in an LQG system because it allows nearly analytic measurement of the variance terms in Eq.  (See Appendix  for measurement details). 
+
+Figure  plots the variance terms for a simple 2D point mass task using discounted returns as the choice of  (See Appendix  for task details). As expected, without a baseline (), the variance of  is much larger than  and . Further, using the value function as a state-dependent baseline (), results in a large variance reduction (compare the lines for  and  in Figure ). An optimal state-action-dependent baseline would reduce  to , however, for this task, such a baseline would not significantly reduce the total variance because  is already large relative to  (Figure ). 
+
+We also plot the effect of using GAE(For the LQG system, we use the oracle value function to compute the GAE estimator. In the rest of the experiments, GAE is computed using a learned value function.) schulman2015high on  for .  Baselines and GAE reduce different components of the gradient variances, and this figure compares their effects throughout the learning process.
+
+Empirical Variance Measurements
+We estimate the magnitude of the three terms for benchmark continuous action tasks as training proceeds. Once we decide on the form of , approximating  is a learning problem in itself. To understand the approximation error, we evaluate the situation where we have access to an oracle  and when we learn a function approximator for . Estimating the terms in Eq.  is nontrivial because the expectations and variances are not available in closed form. We construct unbiased estimators of the variance terms and repeatedly draw samples to drive down the measurement error (see Appendix  for details). We train a policy using TRPO(The relative magnitudes of the variance terms depend on the task, policy, and network structures. For evaluation, we use a well-tuned implementation of TRPO (Appendix ).)  and as training proceeds, we plot each of the individual terms , and  of the gradient estimator variance for Humanoid in Figure  and for HalfCheetah in Appendix Figure . Additionally, we repeat the experiment with the horizon-aware value functions (described in Section ) in Appendix Figures  and . 
+
+We plot the variance decomposition for two choices of : the discounted return, , and GAE . In both cases, we set  and  (the optimal state-action-dependent baseline). When using the discounted return, we found that  dominates , suggesting that even an optimal state-action-dependent baseline (which would reduce  to 0) would not improve over a state-dependent baseline (Figure ). In contrast, with GAE,  is reduced and now the optimal state-action-dependent baseline would reduce the overall variance compared to a state-dependent baseline. However, when we used function approximators to , we found that the state-dependent and state-action-dependent function approximators produced similar variance and much higher variance than when using an oracle  (Figure ). This suggests that, in practice, we would not see improved learning performance using a state-action-dependent baseline over a state-dependent baseline on these tasks. We confirm this in later experiments in Sections  and .
+
+Furthermore, we see that closing the function approximation gap of  and  would produce much larger reductions in variance than from using the optimal state-action-dependent baseline over the state-dependent baseline. This suggests that improved function approximation of both  and  should be a priority. Finally,  is relatively small in both cases, suggesting that focusing on reducing variance from the first two terms of Eq. ,  and , will be more fruitful. 
+*[ht] 
+      Evaluation of Q-Prop, an unbiased version of Q-Prop that applies the normalization to all terms, and TRPO (implementations based on the code accompanying). We plot mean episode reward with standard deviation intervals capped at the minimum and maximum across 10 random seeds. The batch size across all experiments was 5000. On the continuous control tasks (HalfCheetah and Humanoid), we found that that the unbiased Q-Prop performs similarly to TRPO, while the (biased) Q-Prop outperforms both. On the discrete task (CartPole), we found almost no difference between the three algorithms.
+    
+
+
+Unveiling the Mirage 
+In the previous section, we decomposed the policy gradient variance into several sources, and we found that in practice, the source of variance reduced by the state-action-dependent baseline is not reduced when a function approximator for  is used. However, this appears to be a paradox: if the state-action-dependent baseline does not reduce variance, how are prior methods that propose state-action-dependent baselines able to report significant improvements in learning performance? We analyze implementations accompanying these works, and show that they actually introduce bias into the policy gradient due to subtle implementation decisions(The implementation of the state-action-dependent baselines for continuous control in suffered from two critical issues (see Appendix  for details), so it was challenging to determine the source of their observed performance. After correcting these issues in their implementation, we do not observe an improvement over a state-dependent baseline, as shown in Appendix Figure . We emphasize that these observations are restricted to the continuous control experiments as the rest of the experiments in that paper use a separate codebase that is unaffected.). 
+We find that these methods are effective not because of unbiased variance reduction, but instead because they introduce bias for variance reduction.
+
+Advantage Normalization
+Although Q-Prop and IPG gu2017interpolated (when ) claim to be unbiased, the implementations of Q-Prop and IPG apply an adaptive normalization to only some of the estimator terms, which introduces a bias. Practical implementations of policy gradient methods mnih2014neural,schulman2015high,duan2016benchmarking
+often normalize the advantage estimate , also commonly referred to as the learning signal, to unit variance with batch statistics. This effectively serves as an adaptive learning rate heuristic that bounds the gradient variance.
+
+The implementations of Q-Prop and IPG normalize the learning signal , but not the bias correction term . Explicitly, the estimator with such a normalization is,
+*
+g(s, a, ) = & 1 ( A(s, a, ) - (s, a) -  ) (as) 
+    
+
+    &+ E_as[ (s, a) ],
+where  and  are batch-based estimates of the mean and standard deviation of . This deviates from the method presented in the paper and introduces bias. In fact, IPG gu2017interpolated analyzes the bias in the implied objective that would be introduced when the first term has a different weight from the bias correction term, proposing such a weight as a means to trade off bias and variance. We analyze the bias and variance of the gradient estimator in Appendix . However, the weight actually used in the implementation is off by the factor , and never one (which corresponds to the unbiased case). This introduces an adaptive bias-variance trade-off that constrains the learning signal variance to 1 by automatically adding bias if necessary. 
+
+In Figure , we compare the implementation of Q-Prop from, an unbiased implementation of Q-Prop that applies the normalization to all terms, and TRPO. We found that the adaptive bias-variance trade-off induced by the asymmetric normalization is crucial for the gains observed in. If implemented as unbiased, it does not outperform TRPO.
+
+Poorly Fit Value Functions
+
+In contrast to our results, report that state-action-dependent baselines significantly reduce variance over state-dependent baselines on continuous action benchmark tasks (in some cases by six orders of magnitude). We find that this conclusion was caused by a poorly fit value function.
+
+The GAE advantage estimator has mean zero when , which suggests that a state-dependent baseline is unnecessary if . As a result, a state-dependent baseline is typically omitted when the GAE advantage estimator is used. This is the case in liu2018sample. However, when  poorly approximates , the GAE advantage estimator has nonzero mean, and a state-dependent baseline can reduce variance. We show that is the case by taking the open-source code accompanying liu2018sample, and implementing a state-dependent baseline. It achieves comparable variance reduction to the state-action-dependent baseline (Appendix Figure ).
+
+This situation can occur when the value function approximator is not trained sufficiently (e.g., if a small number of SGD steps are used to train ). Then, it can appear that adding a state-action-dependent baseline reduces variance where a state-dependent baseline would have the same effect.
+
+Sample-Reuse in Baseline Fitting
+Recent work on state-action-dependent baselines fits the baselines using on-policy samples liu2018sample,grathwohl2018backpropagation either by regressing to the Monte Carlo return or minimizing an approximation to the variance of the gradient estimator. This must be carefully implemented to avoid bias. Specifically, fitting the baseline to the current batch of data and then using the updated baseline to form the estimator results in a biased gradient jie2010connection.
+
+Although this can reduce the variance of the gradient estimator, it is challenging to analyze the bias introduced. The bias is controlled by the implicit or explicit regularization (e.g., early stopping, size of the network, etc.) of the function approximator used to fit . A powerful enough function approximator can trivially overfit the current batch of data and reduce the learning signal to . This is especially important when flexible neural networks are used as the function approximators.
+
+liu2018sample fit the baseline using the current batch before computing the policy gradient estimator. Using the open-source code accompanying, we evaluate several variants: an unbiased version that fits the state-action-dependent baseline after computing the policy step, an unbiased version that fits a state-dependent baseline after computing the policy step, and a version that estimates  with an extra sample of  instead of importance weighting samples from the current batch. Our results are summarized in Appendix Figure . Notably, we found that using an extra sample, which should reduce variance by avoiding importance sampling, decreases performance because the baseline is overfit to the current batch. The performance of the unbiased state-dependent baseline matched the performance of the unbiased state-action-dependent baseline. On Humanoid, the biased method implemented in performs best. However, on HalfCheetah, the biased methods suffer from instability.
+
+*[!ht]
+     Evaluating the horizon-aware value function, TRPO with a state-dependent baseline, TRPO state-action-dependent baseline, and TRPO. We plot mean episode reward and standard deviation intervals capped at the minimum and maximum across 5 random seeds. The batch size across all experiments was 5000.
+    
+
+Horizon-Aware Value Functions
+
+The empirical variance decomposition illustrated in Figure  and Appendix Figure  reveals deficiencies in the commonly used value function approximator, and as we showed in Section , a poor value approximator can produce misleading results. To fix one deficiency with the value function approximator, we propose a new horizon-aware parameterization of the value function. As with the state-action-dependent baselines, such a modification is appealing because it does not introduce bias into the underlying method.
+
+The standard continuous control benchmarks use a fixed time horizon , yet most value function parameterizations are stationary, as though the task had infinite horizon. Near the end of an episode, the expected return will necessarily be small because there are few remaining steps to accumulate reward. To remedy this, our value function approximator outputs two values:  and  and then we combine them with the discounted time left to form a value function estimate
+*
+V(s_t) = (_i=t^T ^i-t )r(s_t) + V^'(s_t), 
+where  is the maximum length of the episode. Conceptually, we can think of  as predicting the average reward over future states and  as a state-dependent offset.  is a rate of return, so we multiply it be the remaining discounted time in the episode.
+
+
+Including time as an input to the value function can also resolve this issue (e.g.,). We compare our horizon-aware parameterization against including time as an input to the value function and find that the horizon-aware value function performs favorably (Appendix Figures  and ).
+
+In Figure , we compare TRPO with a horizon-aware value function against TRPO, TRPO with a state-dependent baseline, and TRPO with a state-action-dependent baseline. Across environments, the horizon-aware value function outperforms the other methods. By prioritizing the largest variance components for reduction, we can realize practical performance improvements without introducing bias.
+
+Related Work 
+Baselines in RL fall under the umbrella of control variates, a general technique for reducing variance in Monte Carlo estimators without biasing the estimator owen2013monte. analyzes the optimal state-dependent baseline, and in this work, we extend the analysis to state-action-dependent baselines in addition to analyzing the variance of the GAE estimator tesauro1995temporal,schulman2015trust.
+
+dudik2011doubly introduced the community to doubly-robust estimators, a specific form of control variate, for off-policy evaluation in bandit problems. The state-action-dependent baselines gu2017q,wu2018variance,liu2018sample,grathwohl2018backpropagation,gruslys2017reactor can be seen as the natural extension of the doubly robust estimator to the policy gradient setting. In fact, for the discrete action case, the policy gradient estimator with the state-action-dependent baseline can be seen as the gradient of a doubly robust estimator.
+
+
+
+Prior work has explored model-based sutton1990integrated,heess2015learning,gu2016continuous and off-policy critic-based gradient estimators lillicrap2015continuous. In off-policy evaluation, practitioners have long realized that constraining the estimator to be unbiased is too limiting. Instead, recent methods mix unbiased doubly-robust estimators with biased model-based estimates and minimize the mean squared error (MSE) of the combined estimator thomas2016data,wang2016optimal. In this direction, several recent methods have successfully mixed high-variance, unbiased on-policy gradient estimates directly with low-variance, biased off-policy or model-based gradient estimates to improve performance o2016pgq,wang2016sample,gu2017interpolated. It would be interesting to see if the ideas from off-policy evaluation could be further adapted to the policy gradient setting.
+
+Discussion
+State-action-dependent baselines promise variance reduction without introducing bias. In this work, we clarify the practical effect of state-action-dependent baselines in common continuous control benchmark tasks. Although an optimal state-action-dependent baseline is guaranteed not to increase variance and has the potential to reduce variance, in practice, currently used function approximators for the state-action-dependent baselines are unable to achieve significant variance reduction. Furthermore, we found that much larger gains could be achieved by instead improving the accuracy of the value function or the state-dependent baseline function approximators. 
+
+With these insights, we re-examined previous work on state-action-dependent baselines and identified a number of pitfalls. We were also able to correctly attribute the previously observed results to implementation decisions that introduce bias in exchange for variance reduction. We intend to further explore the trade-off between bias and variance in future work.
+
+Motivated by the gap between the value function approximator and the true value function, we propose a novel modification of the value function parameterization that makes it aware of the finite time horizon. This gave consistent improvements over TRPO, whereas the unbiased state-action-dependent baseline did not outperform TRPO. 
+
+
+Finally, we note that the relative contributions of each of the terms to the policy gradient variance are problem specific. A learned state-action-dependent baseline will be beneficial when  is large relative to . In this paper, we focused on continuous control benchmarks where we found this not to be the case. We speculate that in environments where single actions have a strong influence on the discounted return (and hence  is large),  may be large. For example, in a discrete task with a critical decision point such as a Cliffworld domain, where a single action could cause the agent to fall of the cliff and suffer a large negative reward. Future work will investigate the variance decomposition in additional domains.
+
+Acknowledgments 
+We thank Jascha Sohl-Dickstein, Luke Metz, Gerry Che, Yuchen Lu, and Cathy Wu for helpful discussions. We thank Hao Liu and Qiang Liu for assisting our understanding of their code. SG acknowledges support from a Cambridge-Tubingen PhD Fellowship. RET acknowledges support from Google and EPSRC grants EP/M0269571 and EP/L000776/1. ZG acknowledges support from EPSRC grant EP/J012300/1.
+icml2018
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

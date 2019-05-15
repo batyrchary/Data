@@ -1,0 +1,1041 @@
+
+
+
+
+
+
+
+
+
+
+
+3#1 #2
+
+[3.68pt].
+
+
+
+
+
+
+
+#1
+
+
+
+
+#1
+
+
+
+definitionDefinition
+proposition[definition]Proposition
+theorem[definition]Theorem
+corollary[definition]Corollary
+lemma[definition]Lemma
+algorithm[definition]Algorithm
+axiom[definition]Axiom
+
+
+.ps,.eps,.pdf
+
+
+ 
+AADEBUG 2000Finding Failure Causes through Automated Testing 
+Finding Failure Causes through Automated Testing(In 
+    M. Ducasse (ed), 
+    proceedings of the Fourth International Workshop on Automated
+    Debugging (AADEBUG 2000), August 2000, Munich. COmputer Research Repository
+    (http://www.acm.org/corr/), cs.SE/0012009; 
+    whole proceedings: cs.SE/0010035.)
+Holger Cleve 
+ 
+        Universitat Passau
+
+        Lehrstuhl Software-Systeme
+
+        Innstrasse 33
+
+        94032 Passau, Germany
+
+        +49 851 509-3094
+
+        cleve@fmi.uni-passau.de
+                Andreas Zeller
+
+        Universitat Passau
+
+        Lehrstuhl Software-Systeme
+
+        Innstrasse 33
+
+        94032 Passau, Germany
+
+        +49 851 509-3095
+
+        zeller@acm.org
+
+
+
+
+A program fails.  Under which circumstances does this failure occur?
+One single algorithm, the delta debugging algorithm, suffices
+to determine these failure-inducing circumstances.  Delta
+debugging tests a program systematically and automatically to isolate
+failure-inducing circumstances such as the program input, changes to
+the program code, or executed statements.
+Keywords: Testing and debugging, debugging aids,
+  combinatorial testing, execution tracing
+
+
+Debugging by Testing
+
+Debugging falls into three phases: reproducing a failure, finding the
+root cause of the failure, and correcting the error such that the
+failure no longer occurs.  While failure reproduction and correction
+are important issues, it is the second phase, finding the root cause,
+which is the most significant.  Early studies have shown that finding
+the root cause accounts for 95 of the whole debugging
+effort .
+
+The common definition of a cause is some preceding event without
+  which the effect would not have occurred.  This implies that any
+claim for causality can only be verified by experimentation.  To prove
+that an event is the cause, the effect must no longer occur if the
+event is missing.
+
+In the context of debugging, the "effect" is a failure, and the
+"event" is some circumstance of the program execution.  To prove
+that some circumstance has caused a failure, one must remove it in a
+way that the failure no longer occurs.  This is typically done as the
+very last debugging step: After correcting the error, one re-tests the
+program, verifies that the failure is gone, and thus proves that the
+original error was indeed the failure cause.
+
+In order to prove causality, there can be no substitute for
+testing-not even the most sophisticated analysis of the original
+program run.  In other words: Analysis can show the absence of
+  causality, but only testing can show its presence.
+
+In this paper, we give an overview on delta debugging-an
+automated debugging method that relies on systematic testing to prove
+and isolate failure causes-circumstances such as the program input,
+changes to the program code, or executed statements.  Basically, delta
+debugging sets up subsets of the original circumstances, and tests
+these configurations whether the failure still occurs.  Eventually,
+delta debugging returns a subset of circumstances where every single
+circumstance is relevant for producing the failure.
+
+This paper unifies our previous work on delta
+debugging  by
+showing that a single algorithm suffices.  For the first time, the
+isolation of failure-inducing statements is discussed.  After basic
+definitions and a discussion of the algorithm, we show how to apply
+delta debugging to identify failure-inducing changes, failure-inducing
+program input, and failure-inducing statements.  We close with
+discussions of related and future work.
+
+Configurations and Tests
+
+Let us begin with some basic definitions.  First of all, what are the
+"circumstances" of a failure?  Roughly speaking, a failure
+circumstance is anything that might influence the existence of the
+failure.  Without any further knowledge, this is anything that may
+influence the program's execution: its environment, its input, its
+code.  All these are circumstances of a failure.
+
+We call a set of circumstances a scenario.  Obviously, the root
+cause of a problem is somewhere within this scenario.  To isolate the
+root cause, we must separate the chaff from the wheat, or irrelevant
+from relevant failure circumstances.
+
+Let us now have a specific failing scenario to investigate.  Normally,
+we also know a working scenario under which the failure does
+not occur.  Let us assume we have some gradual
+  transition from the working scenario to the failing scenario-for
+instance, by adding or altering circumstances.  The idea then is to
+systematically test scenarios along this transition in order to
+isolate failure-inducing circumstances and to use the test outcome to
+generate new hypotheses.
+
+Formally, we view a failure-inducing scenario  as the
+result of applying a number of changes 
+ to some working scenario.  This way, we have a
+gradual transition from the working scenario (= no changes
+applied) to  (= all changes applied).
+
+We can describe any scenario between the working scenario and  as
+a configuration of changes:
+
+[Scenario]
+  Let  be a set of changes.  
+  A change set  is called a scenario.
+
+A scenario is constructed by applying changes to the working scenario:
+[Working scenario]
+An empty scenario  is called the working scenario.
+
+We do not impose any constraints on how changes may be combined; in
+particular, we do not assume that changes are ordered.  Thus, in the
+worst case, there are  possible scenarios for  changes.
+
+To determine whether a scenario fails, we assume a
+testing function with three standard outcomes:
+
+[Test]
+The function 
+determines for a scenario whether
+some given failure occurs () 
+or not () 
+or whether the test is unresolved ().
+
+In practice, would construct the scenario by applying the given
+changes to the working scenario, execute the scenario and return
+the outcome.
+
+
+*[t]
+Minimizing Delta Debugging Algorithm
+
+
+The minimizing delta debugging algorithm  is 
+*
+(c) &= _2(c, 2) where 
+
+_2(c, n) &= 
+
+_2(c_i, 2) & if  for some  
+
+  & ("reduce to subset") 
+
+_2(c_i, (n - 1, 2)) & else if  for some  
+
+  & ("reduce to complement") 
+
+_2(c, (c, 2n)) & else if  
+
+  & ("increase granularity") 
+
+c  & otherwise ("done").
+where  such that , all
+ are pairwise disjoint, , 
+as well as .
+The recursion invariant (and thus precondition) for  is 
+.
+Minimizing delta debugging algorithm
+
+
+*[t]
+
+Delta Debugging Algorithm
+
+
+Let  be a pair of configurations with , 
+ ("yesterday"), and  ("today").
+The delta debugging algorithm  returns a pair 
+ such that , ,
+ and  is 1-minimal.
+ is defined as , where
+*
+(c, c', n) &= 
+
+(c, c c_i, 2) & if  for some  
+
+(c' - c_i, c', 2) & else if  for some  
+
+(c c_i, c', (n - 1, 2)) & else if  for some  
+
+(c, c' - c_i, (n - 1, 2)) & else if  for some  
+
+(c, c', (2n, c' - c)) & else if  
+
+(c, c') & otherwise
+where  such that 
+, all  are pairwise disjoint, as well as
+.
+The recursion invariant (and thus precondition) for  is 
+.
+Delta Debugging Algorithm
+
+
+
+Let us now model our initial setting.  We have some working
+  scenario that works fine and some scenario that fails:
+
+[Scenarios]  
+   ("working scenario") and 
+   ("failing scenario") hold.
+
+Our goal is now to minimize the failing scenario -that
+is, making it as similar as possible to the working scenario.  A
+scenario  being "minimal" means that no subset of  causes the
+test to fail.  Formally:
+
+[Minimal scenario]
+A scenario  is minimal if
+
+
+
+holds.
+
+This is what we want: to minimize a scenario such that all
+  circumstances are relevant in producing the failure-removing any
+change causes the failure to disappear.
+
+
+Minimality of Scenarios
+
+How can one actually determine a minimal scenarios?  Here comes bad
+news.  Let there be some scenario  consisting of  changes to
+the minimal scenario.  Relying on alone to determine minimality
+requires testing all  true subsets of , which
+obviously has exponential complexity.
+
+What we can determine, however, is an approximation-for
+instance, a scenario where still every part on its own is significant
+in producing the failure, but we do not check whether removing several
+parts at once might make the scenario even smaller.  Formally, we
+define this property as 1-minimality, where
+-minimality is defined as:
+
+[-minimality]
+A scenario  is -minimal if
+
+
+
+holds.
+
+If  is -minimal, then  is minimal in the sense of
+Definition .
+
+Definition  gives a first idea of what we should be
+aiming at.  However, given a scenario with, say, 100,000 changes, we
+cannot simply undo each individual change in order to minimize it.
+Thus, we need an effective algorithm to reduce our scenario efficiently.
+
+An example of such a minimization algorithm is the minimizing
+  delta debugging algorithm , shown in
+Figure fig:tcmin and discussed
+in .   is based on the
+idea of divide and conquer.  Initially, it partitions the set
+of changes into two subsets  and  and tests each of them: if
+any test fails, the search is continued with this reduced subset.
+
+If no test fails,  increases the granularity by
+doubling the number of subsets.  It then tests each subset and
+each complement; if the test fails, the search is continued
+with this reduced subset.  The process is continued until each subset
+has a size of 1 and no further reduction is possible.
+
+The whole process is illustrated in Figure fig:tcmin3.  Here,
+we assume that every test outcome is unresolved.  We see how 
+first partitions the whole set of changes (a rectangle) into two
+subsets (gray areas), then into four, then into eight, sixteen, etc.,
+testing each subset as well as its complement.
+
+
+Tests carried out by 
+
+
+The  algorithm guarantees that the returned set is 1-minimal;
+that is, no single change that can be removed such that the test still
+fails.  In the last stages of Figure , we see how this
+guarantee is achieved:  returns only when all complements have
+passed the test, and this means that each remaining change has been
+removed at least once.
+
+This guarantee comes at a price.  In the worst case (every test fails
+but the last complement),  requires up to  tests for
+ changes .  However, in the
+best case (every test fails),  requires only  tests.
+
+The performance of  can be dramatically improved if we know
+that once a set of changes passes the test, then every subset passes
+the test as well-the so-called monotony.  If we know that a
+set of changes is monotone, we need not test sets whose supersets have
+already passed the test:  can simply return  without
+actually carrying out the test.
+
+This optimization makes  linear at worst-but only if there
+are no unresolved test outcomes.  The number of tests required by
+ largely depends on our ability to group the scenario
+transitions such that we avoid unresolved test outcomes and increase
+our chances to get failing tests.
+
+
+Finding Failure-Inducing Changes
+
+In our first case study , we applied delta
+debugging to a common, yet simple regression case.  The situation is
+as follows: There is some old version of the program ("yesterday"),
+which works, and a new version ("today") which does not.  The goal
+is to identify the changes to the program code which induce the
+failure.
+
+This situation fits nicely into the scenario model of
+Section .  The "yesterday" version is the working
+scenario; the changes are textual changes to the program code; the
+"today" version is the failing scenario where all changes are
+applied.  Using the scenario minimization algorithm, we should be able
+to minimize the set of applied changes and thus identify a small set
+of failure-inducing changes.(In this first case study, we
+  actually used a variant of , called
+   .  For the examples in this Section,
+   has exactly the same performance as  under monotony;
+  i.e.  returns  without actually testing  if a
+  superset of  has already passed the test.   does not
+  guarantee 1-minimality, which is why we recommend  (possibly
+  with the monotony optimization), as a general replacement for
+  .)
+
+Our results with delta debugging were quite promising.  First, if the
+dependency between changes was known (from a version history, for
+instance), then delta debugging became quite trivial: If every change
+ depended on earlier changes , then every
+scenario which would not fulfill these constraints could be rejected
+straight away.  Under these conditions, only configurations with a
+full set of changes  actually had to be
+tested- degraded into a simple binary search with
+logarithmic complexity.
+
+But even when the dependency between changes was not known, or when a
+single logical change was still too large,  performed
+satisfactorily.  In one case study, we had a single 178,000-line
+change to the debugger (); this change was broken down into
+8721 textual changes in the source, with any two textual changes
+separated by a context of at least two unchanged lines.  The problem
+was, of course, that applying any subset of these 8721 changes did not
+have many chances to result in something consistent.
+
+
+Simplifying failure-inducing changes
+
+
+To summarize: Nearly all tests were unresolved.   had a chance
+to succeed only after the subsets and their complements had become
+sufficiently close to  and , respectively.  As shown
+in Figure fig:gdb,  required 470 tests to isolate the
+single failure-inducing change.  Each test involved change
+application, smart reconstruction of , and running the test, which
+took an average time of 190 seconds.(All times were measured
+  on a Linux PC with a 500 MHz Pentium III processor.)
+
+After grouping changes by location criteria (i.e. common files and
+directories),  required 289 tests.  After applying syntactic
+criteria (grouping of changes according to functions), 
+required only 97 tests, or about 4 hours.
+
+
+Simplifying Test Cases
+
+In a second case study , we used
+delta debugging to simplify failing test cases-by minimizing
+the differences between the failing input and a trivial (empty) input.
+
+Having a minimal test case is an important issue for debugging.  Not
+only does it show the relevant failure circumstances; simplifying test
+cases also helps to identify and eliminate duplicate bug reports.  It
+turned out that  works just as well to minimize failure-inducing
+input than to minimize failure-inducing changes.
+
+Here comes another case study.  Mozilla, Netscape's new web
+browser project , is still in beta status and thus
+shows numerous bugs.  We hunted a bug in which printing a certain page caused the browser to fail.  This scenario gave us two things to
+look for:
+
+
+Which parts of the page are relevant in reproducing the failure?
+Which user actions are relevant in reproducing the failure?
+
+Using delta debugging, we could successfully simplify both the
+sequence of user actions as well as the page.  It turned out that
+a number of user actions (such as changing the printer settings) were
+not relevant in reproducing the failure.  As shown in
+Figure fig:mozilla, our prototype minimized 95 user actions
+into 3 after 39 test runs (or 25 minutes): In order to crash Mozilla,
+it suffices to press Alt+P and press and release the mouse
+button on Print.(Note that releasing the P key
+  is not required.)  Likewise, in 57 test runs, our prototype reduced
+the page from 896 lines to a single line:
+
+<SELECT NAME="priority" MULTIPLE SIZE=7>
+
+
+
+Simplifying failure-inducing Mozilla input
+
+
+Automatic test case minimization was also applied to the C
+compiler as well as various utilities, all with promising
+results.  All one needs is an input, a sequence of user actions, an
+observable failure-and a little time to let the computer do the
+minimization.
+
+
+Reducing Execution Traces
+
+
+As a further example, we show how delta debugging can be helpful in
+identifying failure-inducing events during the execution of the
+program.  We assume an execution trace as a sequence of
+program states during execution, starting with a working
+(empty) state and ending in a failing state.  During a program run,
+statements are executed that access and alter the program state.  The
+goal is now to identify those events (i.e. statement executions) that
+were relevant in producing the failure and to eliminate those that
+were not.
+
+Again, this nicely fits into our scenario model of
+Section .  The "working" scenario is no execution at
+all.  The "failing" scenario is the result of the state changes 
+ induced by the executed statements.
+Applying delta debugging to minimize  means to isolate exactly
+those state changes that were relevant in producing the final
+state-very much like well-known dynamic slicing
+techniques 
+, but relying on partial execution rather than
+analysis of control and data flow and thus showing real causality
+instead of potential causality.
+
+As an example, consider the following program.  It reads in two
+numbers  and  and computes the sum  as
+well as the product :
+
+[7pt][r]#1
+ 1 sum = 0;
+ 2 mul = 1;
+ 3 print a? ; ;
+ 4 print b? ; ;
+ 5 while  
+ 6     ;
+ 7     ;
+ 8     ;
+ 9 
+10 print sum = , sum, n;
+11 print mul = , mul, n;
+
+Here is an example run of sample.pl>:
+
+
+ perl ./sample.pl
+a? 0
+b? 5
+sum = 15
+mul = 0
+ 
+
+For this run, we wanted to determine the events which have influenced
+the final program output.  We set up a prototype called
+(STRIPE = "Systematic Trace Reduction by Iterative
+  Partial Execution") which applies the  algorithm on
+execution traces.
+
+In a first step, determines the execution trace-that is, the
+values of the program counter during execution.  Then, runs
+the  algorithm on the execution trace.  To omit a
+statement  from execution, uses a conventional interactive
+debugger to insert a breakpoint at .  The breakpoint causes the
+program to interrupt whenever  is reached; an associated breakpoint
+command causes the debugger to resume execution behind .
+
+*
+2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+run on sample.pl> with program output as test criterion
+
+*
+
+
+Execution traces of sample.pl>
+
+In our example, the  function would return
+
+ whenever the expected behavior was actually reproduced,
+ when anything else was produced, and
+ if the program did not produce anything, i.e. the
+  program crashed or hung.
+
+Figure fig:sample-log shows the run.  required
+a total of 176 tests (i.e. partial executions) to reduce the
+execution trace.  Each bullet  stands for an
+applied , or executed statement.  We see that most tests
+either result in  or .  Only after 50 tests do we
+see a  test outcome-the expected output was produced and the
+trace can be reduced to the shown set of statements.  The last line
+shows the final 1-minimal trace.  The actual result is shown in
+Figure .  All events are listed in the form
+.
+
+
+The original trace is shown in the first column; we see how the
+  variables  and  are read in (events  and  in
+  Figure ) and how  and  are
+  computed and printed.
+  
+The reduced trace in the second column shows that several of
+  these statements are actually irrelevant for computing the
+  output-executing the original trace and the reduced trace has the
+  same effect.  Thus, we find that the initialization of
+   () is irrelevant, since whatever it is initialized
+  to,  will always be zero.(Likewise, all later
+    assignments to  () do not
+    change its value.  Finally, all control statements are irrelevant,
+    since the control flow is explicitly stated in the execution
+    trace.)
+
+In the third column, we have run with a  function
+  that compares only the  output.  This means that the few
+  statements related to  can be eliminated as well.
+  
+In the fourth and last column, we have run with a
+   function that compares only the  output.  Only the
+  initial assignment and the final output remain.
+
+We see how effectively reduces execution traces to those
+events which were actually relevant (or critical) in reaching
+the final state.  We thus call this sequence of events a
+critical slice-similar to the critical slices as explored by
+DeMillo, Pan and Spafford , but
+guaranteeing 1-minimality and with a much better best-case efficiency.
+Furthermore, delta debugging does not require any program analysis (in
+the case of programs such as sample.pl>, this is an almost
+impossible issue, anyway).
+
+
+Conclusion and Future Work
+
+Delta debugging automates the most time-consuming debugging issue:
+determining the relevant problem circumstances.  Relevant
+circumstances include the program input, changes to the program code,
+or executed statements.  All that is required is an automated
+test.
+
+Delta debugging comes at a price: Although the  algorithm
+guarantees 1-minimality, the worst-case quadratic complexity is a
+severe penalty for real-world programs-especially considering
+program runs with billions of executed statements.  Consequently, our
+future work will concentrate on introducing domain knowledge
+into delta debugging.  In the domain of code changes, we have seen
+significant improvements by grouping changes according to files,
+functions, or static program slices, and rejecting infeasible
+configurations; we expect similar improvements for program input and
+program statements.
+
+Our long-term vision is that, to debug a program, all one has to do is
+to set up an appropriate  function.  Then, one can let the
+computer do the debugging, isolating failure circumstances using a
+combination of program analysis and automated testing.  Automatic
+isolation of failure causes is no longer beyond the state of the
+art.  It is just a question of how much computing power and 
+program analysis you are willing to spend on it.
+Acknowledgements.  Ralf Hildebrandt, Kerstin Reese, and
+Gregor Snelting provided valuable comments on earlier revisions of
+this paper.
+Further information on delta debugging is available at
+
+http://www.fmi.uni-passau.de/st/dd/.
+
+
+1
+
+Hiralal Agrawal and Joseph R. Horgan.
+Dynamic program slicing.
+In Proceedings of the ACM SIGPLAN 1990 Conference on Programming
+  Language Design and Implementation (PLDI), volume 25(6) of ACM SIGPLAN
+  Notices, pages 246-256, White Plains, New York, June 1990.
+
+Richard A. DeMillo, Hsin Pan, and Eugene H. Spafford.
+Critical slicing for software fault localization.
+In Steven J. Zeil, editor, Proc. ISSTA 1996 - International
+  Symposium on Software Testing and Analysis, volume 21(3) of ACM
+  Software Engineering Notes, pages 121-134, San Diego, California, USA,
+  January 1996.
+
+Ralf Hildebrandt and Andreas Zeller.
+Simplifying failure-inducing input.
+In Proc. ACM SIGSOFT International Symposium on Software Testing
+  and Analysis (ISSTA), pages 135-145, Portland, Oregon, August 2000.
+
+Bogdan Korel and Janusz Laski.
+Dynamic slicing of computer programs.
+The Journal of Systems and Software, 13(3):187-195, November
+  1990.
+
+Mozilla web site.
+http://www.mozilla.org/.
+
+Glenford J. Myers.
+The Art of Software Testing.
+John Wiley  Sons, Inc., New York, 1979.
+
+Frank Tip.
+A survey of program slicing techniques.
+Journal of Programming Languages, 3(3):121-189, September
+  1995.
+
+Andreas Zeller.
+Yesterday, my program worked. Today, it does not. Why?
+In Oscar Nierstrasz and Michel Lemoine, editors, Proc.
+  ESEC/FSE'99 - 7th European Software Engineering Conference / 7th ACM
+  SIGSOFT Symposium on the Foundations of Software Engineering, volume 1687
+  of Lecture Notes in Computer Science, pages 253-267, Toulouse, France,
+  September 1999. Springer-Verlag.
+
+

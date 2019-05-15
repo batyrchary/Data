@@ -1,0 +1,588 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+theoremTheorem
+lemmaLemma
+remarkRemark
+*Max
+
+
+
+
+thmTheorem[section]
+cor[thm]Corollary
+lem[thm]Lemma
+prop[thm]Proposition
+defnDefinition[section]
+remRemark[section]
+
+
+
+
+Energy Harvesting Two-Hop Communication Networks
+Oner Orhan and Elza Erkip
+
+NYU Polytechnic School of Engineering, Brooklyn, NY
+
+Email: onerorhan@nyu.edu, elza@nyu.edu
+
+
+
+Energy harvesting multi-hop networks allow for perpetual operation of low cost, limited range wireless devices. Compared with their battery operated counterparts, the coupling of energy and data causality constraints with half duplex relay operation makes it challenging to operate such networks. In this paper, a throughput maximization problem for energy harvesting two-hop networks with decode-and-forward half-duplex relays is investigated. For a system with two parallel relays, various combinations of the following four transmission modes are considered: Broadcast from the source, multi-access from the relays, and successive relaying phases I and II. Optimal transmission policies for one and two parallel relays are studied under the assumption of non-causal knowledge of energy arrivals and finite size relay data buffers. The problem is formulated using a convex optimization framework, which allows for efficient numerical solutions and helps identify important properties of optimal policies. Numerical results are presented to provide throughput comparisons and to investigate the impact of multiple relays, size of relay data buffers,  transmission modes, and energy harvesting on the throughput.
+
+
+Introduction
+Energy harvesting presents a new paradigm for continuous operation of communication systems without the need for  battery replacement. Energy harvesting technology reduces the operational cost and allows off-grid deployment of sensor nodes such as the ones used within a human body, in nature, or on various structures. As a result, wireless nodes with energy harvesting capability are able to provide long-term data acquisition and monitoring of biological signals, environment and wildlife. An important issue in realizing energy harvesting networks is  the  stochastic nature of energy arrivals with low energy amounts. Therefore, the main concern in energy harvesting wireless sensor network design is the efficient use and management of the harvested energy.
+
+Energy harvesting wireless sensor networks are typically operated over multiple hops to provide range extension and to lower power consumption which favors multiple short hops as opposed to one long hop. Operation over multiple hops brings in another challenge for efficient use of  harvested energies; now multiple nodes have to be coordinated to allow for energy and data causality over each hop,  necessitating the half-duplex relays to switch from reception to transmission modes as a function of the energy and buffer state of the whole network.  The main goal of this paper is to study this problem in the case of two-hop networks involving one or two parallel relays under the offline optimization framework, which allows for non-causal knowledge of energy arrivals at all the nodes; see and references therein for a detailed overview of offline energy harvesting communications systems. While assuming non-causal knowledge presents a simplified model, it allows us to uncover some of the important properties of optimal transmission policies, which determine when and how to use the relays optimally. The insights gained from our work can be used to move towards more practical solutions involving more hops and non-causal knowledge of energy arrivals as done in.
+
+Contributions
+In this paper we investigate two-hop energy harvesting networks with half-duplex relay nodes that have limited size data buffers. We assume the relays employ decode-and-forward strategy, which is easy to implement in practice. Our goal is to maximize the total throughput delivered to the destination by a deadline. We first study the single relay case as shown in Figure . Under the offline optimization framework, we formulate a convex optimization problem and using the Karush-Kuhn-Tucker (KKT) conditions provide properties of optimal transmission policy that determines source and relay schedules and energy levels.
+
+We next consider a two-hop network with two parallel relays, also known as the diamond relay channel as shown in Figure . The capacity of the diamond relay channel is not known, and the highest achievable rates are based on various combinations of the following four transmission modes,: i) Broadcast mode, in which the source () transmits and relays ( and ) listen; ii) the multi-access mode,  in which  and  transmit and the destination () listens; iii) successive relaying phase I, in which  and  transmit, and  and  listen; iv) successive relaying phase II, in which  and  transmit, and  and  listen. We formulate a convex optimization problem that considers all  four transmission modes jointly. In order to get insights, we investigate some important special cases: i) Successive relaying  phases I and II, also known as multihop with spatial reuse; ii) broadcast and multihop with spatial reuse; iii) multi-access and multihop with spatial reuse. Using the convex optimization framework, we show that optimal transmission policies for the parallel relay case exhibit some characteristics that are different their single relay counterparts. Finally, solving the optimization problems, we illustrate the effect of multiple relays and energy harvesting on the throughput. We also study the impact of the relay data buffer size on performance.
+
+Related Work
+In recent years, there has been a surge of interest in energy harvesting communication systems where a significant effort has been devoted to the offline optimization framework;  see and for a review of the recent developments. Here we summarize the papers that are closely related to our work. Optimal transmission policies for energy harvesting two-hop networks have been studied in-. In two-way relay channels with energy harvesting nodes are considered. Gunduz and Devillers study offline throughput maximization for two-hop communication with a full-duplex relay and with a half-duplex relay for single energy arrival at the source and multiple energy arrivals at the relay in. Similarly, multiple energy arrivals at the source
+and single energy arrival at the half-duplex relay is studied in. Our previous works- also focus on a half-duplex relay, and for two energy arrivals at the source and multiple energy arrivals at the relay, identify necessary properties of an optimal transmission policy using heuristic arguments. In we extend our work in- to include a convex optimization formulation for the case of a single relay and two relays employing multi-hop with spatial reuse. We also provide properties of optimal transmission policies using KKT conditions. The impact of data buffer size for a battery operated relay and a relay with one energy arrival is studied in. In addition, the throughput maximization problem with amplify and forward
+relaying, and relay selection problem are studied in and, respectively, with non-causal and causal channel and energy arrival information. In Huang et. al. study the throughput maximization problem for  the energy harvesting Gaussian relay
+channel and Yuyi et. al. in investigate link-selection problem to minimize the average outage
+probability. Gurakan et. al consider energy harvesting multi-hop communication
+with energy cooperation, where the source can transfer some of its harvested energy to the relay.
+ Along this line of work, the throughput maximization problem for
+two-hop energy harvesting network with energy transfer from the source to the relay, and
+with two-way energy transfer from multiple source nodes are investigated in and,
+respectively.
+
+Compared with our conference publications-, this paper introduces a more comprehensive framework to study the parallel relay case by introducing all four transmission modes and by providing a detailed analysis of the optimal transmission policies. We also incorporate the data buffer size limitation at the relays. Furthermore,  the numerical results are extended to include comparisons of various combination of the transmission modes, and impact of number of relays and relay data buffer size on performance.
+
+
+
+[]
+
+
+
+[]
+
+
+
+ Two-hop communication with (a) one relay, (b) two parallel relays (diamond relay channel). The power gain between nodes  and  is  where  is the complex channel gain,  and .
+
+
+
+Organization of the Paper
+The paper is organized as follows. In the next section, we describe the system model and
+achievable rates for one relay and two relay cases together with some general properties of optimal
+transmission policies. In Section , we provide a convex formulation and investigate optimal
+transmission policies for throughput maximization in the one relay case. We also provide some properties of optimal power
+allocation. We formulate a convex problem for the case of two relays in Section . We
+investigate optimal transmission policies for multi-hop with spatial reuse, broadcast and multihop
+with spatial reuse, and multi-access and multi-hop with spatial reuse in Sections , , , respectively. In Section , numerical results are presented, and Section  concludes the paper.
+
+Preliminaries
+System Model
+We consider two-hop communication with energy harvesting source (), and one () or two parallel ( and ) energy harvesting half-duplex relays as in Figure . We assume that the relays have finite size data buffer with capacity  bits. There is no direct link between the source and the destination, and the relays cannot hear one another as in. Each link is modeled as having independent additive white Gaussian noise with unit variance. The complex channel gain between node  and  is  where , and , and remains constant throughout transmission. The corresponding power gains are . For the two relay case, without loss of generality we assume . We assume that energy arrives at the source and relays with arbitrary and finite amounts at arbitrary times until a given deadline  seconds. For ease of exposition, we combine all energy arrivals at the nodes in a single time series  by allowing zero energy arrivals at some time instants at which only one of the nodes harvests energy.
+We denote harvested energy amounts at time  by , , and  for ,  and , respectively, ( for one relay), . In addition, we assume that each node has separate infinite size battery and harvested energies are stored in the batteries without any energy loss. We also assume that there is no energy loss in retrieving energy from the batteries. The time interval between two consecutive energy arrivals  and  is denoted by , and it is called the 'th epoch.
+
+Our goal is to maximize the total data delivered to the destination by a given deadline  which is referred to as the throughput maximization problem. We consider  offline optimal transmission policies, that is, we identify optimal power allocation for each node and the transmission schedule assuming that all energy amounts and arrival times are known at the nodes before transmission starts. Here, the transmission schedule indicates which node transmits when, and it is necessary to coordinate the operation of the half-duplex relays. We assume that the nodes consume energy only for transmission.  Due to energy arrivals over time, any feasible transmission policy must satisfy energy causality constraints. Energy causality constraints refers to the restriction on the total consumed energy of a node at time  which should be less than or equal to the total harvested energy at that node by that time. In addition, there are data causality and finite data buffer constraints on the feasible transmission policy. The data causality constraint states that data transmitted by any of the relays up to time  should not exceed total data received by that relay up to that time. The finite data buffer constraint suggests that each relay can store at most  bits of data in its buffer. We assume both relays have the same size data buffer for simplicity; our results can easily be extended to the case when each relay buffer is of different size.
+
+
+
+
+[]
+
+
+
+[]
+
+
+
+Transmission modes with (a) one relay, (b) two parallel relays (diamond relay channel).
+
+
+
+Achievable Rates
+In this paper, we consider Shannon capacity as the rate-power function of a given link, i.e.,  where  is the power gain of the link and  is the transmission power.
+
+In the single relay case, when the transmission powers of  and  are  and , respectively, we have the data rates from  to  (first hop in Figure ) and  to  (second hop in Figure )  respectively as
+
+and
+
+
+In the two relay case, there are four transmission modes as shown in Figure . We will assume that  and  do not beamform towards the destination, hence we will only focus on independent information transmission to and from the relays. While beamforming increases achievable rates, it also requires tighter coordination and synchronization among the relays, which may be difficult to achieve for energy harvesting networks typically consisting of small and inexpensive nodes.
+
+Broadcast mode:  broadcasts independent information to  and  resulting in the rate region
+
+where  is the source power used in the broadcast mode and  is the power sharing parameter such that  portion of the power is used to transmit data to . Here,  is the data rate from  to , and  is the data rate from  to .
+
+Operating on the boundary of this rate region, the required transmission power of the source  can be computed as
+
+Note that  is convex function of  and . For notational convenience, we will use   to denote the right hand side of ().
+
+Multi-access mode:  and  jointly send information to  which uses joint decoding. Denoting the transmission powers of  and  in multi-access mode as  and , respectively, we obtain the following rate region for the multi-access mode
+
+where  and  refer to the data rates from  and  to , respectively.
+
+For notational convenience, we define the following concave and non-decreasing functions.
+
+
+Successive relaying phase I: While  transmits to ,  transmits to  with transmission powers  and , respectively. Accordingly, the data rates from  to  and from  to  are given by
+    
+    and
+    
+    respectively.
+
+Successive relaying phase II: While  transmits to ,  transmits to  with transmission powers  and , respectively. Accordingly, the data rates from  to  and from  to  are given by
+    
+    and
+    
+    respectively.
+
+
+The following lemmas establish some properties of the optimal transmission policies.
+
+
+In an epoch, constant power transmission is optimal.
+
+
+The proof follows from the concavity of the rate-power functions and Jensen's inequality. First, we argue this for the point-to-point links. Consider any transmission policy for which the transmission power changes in an epoch. We can find another transmission policy which has constant transmission power such that the new policy consumes the same amount of energy as the previous one. However, due to concavity of the rate-power function, the new policy transmits more data. For the single relay case (()-()) and successive relaying phases I and II (()-()) point-to-point rate-power functions apply and hence optimality of constant power transmission in an epoch is established. For the broadcast mode, the proof follows from the strict convexity of the transmission power
+as a function of the data rates as given in () and for the multi-access mode, it follows from the concavity of the rate region ()-() as a function of the transmission powers  and . As a result, we can conclude that the constant transmission policy is optimal for both single and two relay scenarios.
+
+
+
+Given a feasible transmission policy for which a relay is not on, i.e., not transmitting or receiving data all the time, we can find another feasible transmission policy that ensures the relays are always on without decreasing the throughput.
+
+
+Consider a feasible transmission policy for which one of the relays (or the relay in the case of a single relay) is not always on. We can remove the idle times by increasing transmission duration of another node (source or the other relay) while keeping total transmitted data the same. Due to monotonically increasing property of the rate-power functions ()-(), the new policy delivers the same amount of data to the destination and consumes less energy; hence, it is feasible.
+
+
+
+Lemma  suggests that the transmission powers of the source and the relays remain constant within an epoch. In the following discussion,  refers to the epoch index. Accordingly, for the single relay case we denote the transmission powers of  and  by  and  with corresponding durations  and , respectively. For the case of two relays, we denote the transmission powers of  for the broadcast mode by  with duration . For successive relaying phases I and II the transmission powers of  are denoted by  and  with durations  and , respectively. The transmission powers of  and  in multi-access mode with duration  are denoted by  and , respectively. For successive relaying phases I and II the transmission powers of  and  are denoted by  and , respectively. As argued in Lemma , without loss of generality transmission policies can be restricted to the ones for which the relays  and  are always on. Therefore, we consider that the transmission time between  and , and  and  are the same in successive relaying phase I. Similarly, we consider the same transmission time between  and , and  and  in successive relaying phase II. Accordingly, while evaluating the rates in ()-() during an epoch, the corresponding powers in that epoch will be used along with subscripts  in the rate variables  to indicate the epoch index.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Two-hop Communication with One Relay
+In this section, we investigate the throughput of the single relay case shown in Figure , and consider the achievable rates in () and ().
+Since constant power transmission in each epoch is optimal by Lemma , it is sufficient to consider data causality and buffer size constraints only at energy arrival times.
+
+
+
+
+For the single relay case, in an optimal transmission policy,  and  deplete their batteries and transmit same amount of data until the deadline.
+
+
+Suppose both  and  have non-zero energy in their batteries at time , and the transmitted data by  is more than . First, we show that given any feasible transmission policy for which the battery of  has nonzero energy at the deadline , we can find another policy which delivers as much as data by depleting all the energy in the battery. This follows from the fact that the rate-power function in () is monotonically increasing function of power. Therefore, the relay can use this excess energy to increase its transmission power  in the last epoch while reducing the transmission duration  such that the delivered data remains the same. While keeping the consumed energy the same, increasing transmission duration strictly increases transmitted data. Therefore, the new policy can be replaced by another policy such that the transmission duration of  in the last epoch, , is increased while the last relay transmission is postponed towards to the deadline. Therefore, in the new policy the source delivers more data than the previous policy. We can further increase the total transmitted data by  by depleting all the energy in its battery. As a result, the new policy depletes the batteries of  and  with the source transmitting more data than the initial policy. Now, this policy can be replaced by another one of higher rate obtained by increasing the duration of the last relay transmission while decreasing duration of the preceding source transmission under  data causality and relay buffer size constraints. Combining these, we can find a feasible policy transmitting higher data such that source and relay deplete their batteries and transmit same amount of data until the deadline.
+
+
+Based on the above arguments, the throughput optimization problem can be formulated as follows, where the maximization is over  , , , and , :
+
+
+ 
+max   & _i=1^Kl_r,i(1+_rdp_r,i) 
+ 
+s.t.   & _j=1^il_r,jp_r,j _j=1^iE_r,j,  i, 
+ 
+& _j=1^il_s,jp_s,j_j=1^iE_s,j,   i, 
+ 
+& _j=1^il_r,j(1+_rd p_r,j) _j=1^il_s,j(1+_sr p_s,j),   i,
+ 
+& _j=1^il_s,j(1+_sr p_s,j) _j=1^il_r,j(1+_rd p_r,j) + B_max,   i,
+ 
+& l_r,i+l_s,i _i,    i,
+ 
+& 0p_r,i,   0p_s,i,   0l_r,i,   0l_s,i,   i,
+
+
+where the constraints in (), () are due to energy causality at  and , respectively, and the constraints in () and () are due to data causality and finite data buffer size at . The half-duplex constraint appears in (). Note that since the total amount of data delivered to  is equal to the amount of data transmitted by , the throughput maximization problem corresponds to maximization of the total data transmitted by  as in () which is equal to () evaluated at . The above optimization problem is not convex because of the constraints in ()-(). We rewrite () in terms of , , , and  as follows:
+
+
+max   & _i=1^Kc_r,i 
+
+s.t.   & _j=1^il_r,j_rd(e^c_r,jl_r,j-1) _j=1^iE_r,j,   i, 
+
+& _j=1^il_s,j_sr(e^c_s,jl_s,j-1) _j=1^iE_s,j,   i, 
+ 
+& _j=1^ic_r,j _j=1^ic_s,j,   i,
+ 
+& _j=1^ic_s,j _j=1^ic_r,j + B_max,   i,
+ 
+& l_r,i+l_s,i _i,   i,
+ 
+& 0c_r,i,   0c_s,i,   0l_r,i,   0l_s,i,  i.
+
+
+Note that  is perspective of the convex function , hence it is a convex function of  and . Here, we consider  when . Similarly,  in () is a convex function of  and .  Therefore, the optimization problem in () is convex and can be efficiently solved.
+
+The solution of the optimization problem provides the optimal transmission powers of  and  and their durations for each epoch, but we need to schedule the transmissions to obtain a feasible policy. Within an epoch, moving transmission of source to an earlier time by delaying relay transmission maintains optimality  provided the relay data buffer does not overflow. This is because postponing the transmission of  allows the relay to store more energy and data. Therefore, without loss of optimality, we will consider transmission policies such that in each epoch,  the source transmits until the data buffer of the relay becomes full,  or the source reaches its optimal transmit duration, which is followed by relay transmission until the data buffer of the relay becomes empty, or the relay reaches its optimal transmit duration in that epoch. The source and relay take turns in this fashion until the end of the epoch.
+
+
+Next, we identify properties of the optimal transmission policy using KKT conditions which are both necessary and sufficient due to convexity of the optimization problem in (). These properties provide the optimal structure of the transmission policy and are useful in designing online algorithms; for example see.
+
+The Lagrangian of () is defined as follows:
+
+
+L =& _i=1^Kc_r,i-_i=1^K_1,i (_j=1^il_r,j_rd(e^c_r,jl_r,j-1)-_j=1^iE_r,j)
+
+            & -_i=1^K_2,i (_j=1^il_s,j_sr(e^c_s,jl_s,j-1)-_j=1^iE_s,j) -_i=1^K_3,i (_j=1^ic_r,j-_j=1^ic_s,j ) 
+
+            &-_i=1^K_4,i (_j=1^ic_s,j-_j=1^ic_r,j-B_max ) -_i=1^K_5,i (l_r,i+l_s,i-_i ) 
+
+            &  +_i=1^K_6,i l_r,i +_i=1^K_7,i l_s,i+_i=1^K_8,i  c_r,i +_i=1^K_9,i  c_s,i,
+
+where ,  are KKT multipliers corresponding to ()-().
+
+Differentiating the Lagrangian with respect to  and , we obtain the following:
+
+
+
+Lc_r,i &= 1-e^c_r,il_r,i_rd_j=i^K_1,j-_j=i^K_3,j+_j=i^K_4,j+_8,i =0,
+
+
+Lc_s,i &= -e^c_s,il_s,i_sr_j=i^K_2,j+_j=i^K_3,j-_j=i^K_4,j+_9,i =0.
+
+
+Using () and replacing  with , we can obtain the optimal relay transmission power  as:
+
+where .
+
+Similarly using () and replacing  with , the optimal source transmission power  becomes:
+
+
+
+
+For the single relay case, whenever  strictly increases from epoch  to , either the battery or the data buffer of  must be empty at , and whenever  strictly decreases from epoch  to , the data buffer of  must be full at .
+
+
+We provide a proof using the KKT conditions; alternatively a proof by contradictions as in, is also possible.  From the complementary slackness conditions, we can argue that whenever , the battery of  must be empty at time , and whenever , the data buffer of  must be empty at time . From (), we observe that whenever , either  or  or both, hence proving the lemma. Similarly, from the complementary slackness conditions, we can argue that whenever , the data buffer of  must be full at time . Since  implies , the proof is complete.
+
+
+For the single relay case the optimal transmission power of  is non-decreasing, and whenever  strictly increases from epoch  to , either the battery of  must be empty or the data buffer of  must be full, or both the battery of  and the data buffer of  must be empty at .
+
+
+From the complementary slackness conditions, we can argue that   implies the battery of  must be empty at time ,  implies the data buffer of  must be empty at time , and   implies the data buffer of  must be full at time . Below we investigate different cases for ,  and . Since the data buffer of  cannot be full and empty at the same time, the cases (, , and ) and (, , and ) never happen. Note that  and  were studied in; a simpler proof using () is presented here.
+
+If , , and , .
+For the cases (, , and ), (, , and ), and (, , and ), we have .
+For the cases (, , and ), and (, , and ), we argue by contradiction that . Note that , , and  implies  by (), hence the argument below also suggests that this case never happens.
+
+Suppose . We can then equalize the power levels  and  such that the new transmission durations and power levels are , , and . The new policy has the same total consumed energy but  transmits more data due to the concavity of the rate-power function. Since we assume that , the new transmission duration of  must increase, i.e., . For the equalized powers, we can obtain another feasible transmission policy by increasing total transmission duration of  and decreasing transmission duration of  and equalizing the transmitted data. As a result, this leads to a policy with higher throughput than the original one, which is a contradiction. Hence, .
+
+
+
+Two-hop Communication with Two Parallel Relays
+In this section, we consider the two parallel relay case as shown in Figure . We will formulate an optimization problem which includes all four transmission modes given in Section . Then, to get insights we will investigate special cases by restricting our attention to select few modes.
+
+For ease of exposition, we consider two data buffers,  and  to which data received by  and  are stored, respectively. The amount of data stored in buffer  in epoch  consists of  bits in the broadcast mode and  bits in successive relaying phase I. The amount of data removed from  in epoch  consists of  bits in the multiple access mode and  in successive relaying phase II. Similar arguments for buffer  can also be made. Note that  and  are upper bounded by  bits.
+
+In order to formulate a convex optimization problem for maximizing the throughput we define auxiliary variables  and , where  and . These correspond to the energies allocated by  and , respectively, to the multiple access phase in epoch . Based on the above arguments, the throughput maximization problem for the two relay case can be formulated as follows:
+
+
+
+Here the maximization is over , , , , , , , , , , , , , and . The constraints in ()-() correspond to the rate region of the multi-access mode as in ()-(). The constraints in ()-() are the energy causality constraints at , , and , respectively. The constraints in ()-() are the data causality constraints at data buffers  and , respectively. The finite data buffer size constraints at  and  are given in ()-(), respectively. In addition, due to half-duplex constraints, transmission durations , , , and  must satisfy ().
+
+As discussed in Section ,  is convex function of  and . Therefore,  is the perspective of a convex function. Furthermore, as discussed in Section ,  is the perspective of the convex function . In addition, the functions , , , and their perspective functions are concave. Hence the optimization problem in () is convex, and efficient numerical solutions exist. However, due to the large number of variables involved, it is difficult to get insights from the analytical solutions. Below, we focus some special cases: (i) multi-hop with spatial reuse in which there are two transmission modes, successive relaying phases I and II; (ii) broadcast and multi-hop with spatial reuse in which we have the broadcast mode as well as successive relaying phases I and II. (iii) multi-access and multi-hop with spatial reuse in which we have the multi-access mode in addition to the successive relaying phases.
+
+We first focus on multi-hop with special reuse as it is  known to perform well in a wide range of channel conditions and is capacity achieving in certain cases. Furthermore, it is simple to implement. However, depending on the energy arrival profile and power gains there can be some unused capacity in the first or the second hops. In such cases, we will observe that  adding  the broadcast  or the multiple access modes enables a more efficient use of the harvested energy.
+
+Multi-hop with Spatial Reuse
+Multi-hop with spatial reuse refers to successive uses of phase I and II relaying. Our goal in this subsection is to specialize the general formulation of () to multihop with spatial reuse to identify some of the optimal transmission policy using KKT optimality conditions. Since   initially has no data to transmit in phase I, without loss of generality, we assume it starts transmission by delivering  amount of dummy information. By keeping  small and scheduling phases I and II in succession, we can ensure that there is no further loss in the throughput. Then, omitting  for convenience,  the throughput optimization problem can be formulated by setting , , ,  , , , , and  in () to zero for .
+
+As in the single relay case of Section , forming the Lagrangian and equating its derivatives to zero we obtain:
+
+where , , , , , , and ,  are the Lagrange multipliers for the constraints in ()-(), respectively.
+
+For multihop with spatial reuse whenever the optimal transmission power of a relay  or  strictly increases, either the battery or the data buffer of that relay must be empty, and whenever the power of  a relay strictly decreases, the data buffer of that relay must be full at time .
+
+
+The proof is similar to that of Lemma . We only prove for , similar arguments can be made for  as well. From (), we have , when either  or . Using complementary slackness conditions, we know that   implies all the data in  must be delivered at the end of the epoch , that is, the data buffer of  is empty. Similarly, whenever , the battery of   must be depleted at the end of the epoch . In addition, we have ,  when . From the complementary slackness conditions, we can argue that whenever , the data buffer of  must be full at time . Hence, the lemma must be true.
+
+
+
+For multihop with spatial reuse whenever the optimal transmission power of  in phase I (phase II) strictly increases from one epoch to the next, i.e.  (), either the battery of  must be empty, or the data buffer of  () must be full at , and whenever it decreases, i.e.  (), the data buffer of  () must be empty at .
+
+
+From the complementary slackness conditions, we can argue that whenever , the battery of  is empty at , and whenever , the data buffer of  must be full at time .  In addition, whenever , the data buffer of  is empty at  . From (), we see that  implies  or  and hence the battery of  is empty or the data buffer of  is full. Similarly,  implies  and hence the data buffer of  is empty. The same argument can be made for phase II and  as well.
+
+
+
+Lemma  suggests that the structure of the optimal relay transmission power for the two relay case when multihop with spatial reuse is employed is similar to that of a single relay established in Lemma . However, comparing Lemma  with Lemma , we observe that unlike the single relay case where the source power is non-decreasing, in the two relay scenario, the transmission power of the source may decrease when the data buffer of the respective relay is empty.
+
+For the single relay case, as argued in Lemma  batteries of both  and  are depleted by the deadline. This is accomplished by adjusting transmission durations and powers of  and  to equalize the two-hop rates until both batteries are depleted. However, for the case of multi-hop with spatial reuse, simultaneously adjusting the transmission durations of ,  and   to deplete all the batteries may not be possible. Depending on energy profiles at the nodes, the maximum total rate transmitted from  to  and  can sometimes be more than the total rate  and  can deliver to , resulting in excess energy at  at . Similarly, there may be remaining energy at  and/or at  at . The following lemma discusses this excess energy case.
+
+
+In the optimal transmission policy for multihop with spatial reuse, if  has positive energy in its battery at , then the batteries of both  and  must be empty.
+
+
+The proof is by contradiction. Without loss of generality, assume that in an optimal policy both  and  have positive energy in their batteries at . Then, we can increase the total data delivered from  to  and from  to  by increasing the last transmission powers  and , such that all the energies depleted. This results in a contradiction, hence proving the lemma.
+
+
+As argued above and in Lemma , either , or  and/or  may have positive energy in their batteries at . When there is energy left at either of the relays' batteries, the broadcast mode, used in conjunction with multihop with spatial reuse, helps deliver more data to the relay(s), enabling them to use their excess energy. Similarly, when there is excess energy at  at , the multi-access mode allows an increase in the data rate the relays can deliver, thus creating an opportunity for S to use its remaining energy.
+
+
+Broadcast and Multi-hop with Spatial Reuse
+In this section, we consider the broadcast mode and successive relaying (phases I and II) jointly. In this case,  can either broadcast to the relays, or can transmit messages at different times using successive relaying. Similar to Section , we identify properties of the optimal transmission policies using KKT conditions. The throughput maximization problem can be formulated by setting , , , , and  in () to zero for all .
+
+
+
+
+
+
+
+
+
+
+
+
+
+Formulating the Lagrangian as in Section  with KKT multipliers , , , , , " and  corresponding to the constraints in ()-(), respectively, we obtain the optimal transmission power of  in the successive relaying modes,  and  as in () and (), respectively. Similarly, we obtain the optimal transmission powers of  and  in the successive relaying phase II and I as in () and (), respectively.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+In order to obtain the transmission power of  in the broadcast mode we take the derivative of the Lagrangian with respect to  and , respectively, and set them to zero.
+
+The KKT multipliers  and  are due to non-negativeness of  and , respectively.
+
+Using (), we compute the optimal power of  in the broadcast mode from () and () as
+
+
+
+
+
+
+
+
+Without loss of generality, we can restrict the optimal transmission policy such that the broadcast mode occurs only when  transmits to both relays. This is because if in the broadcast mode the source only transmits to one of the relays, say , then this means  will not be on. Using Lemma , we can replace this with another strategy for which  transmits to the destination while  transmits to , thus adding to the duration of successive relaying phase I. Therefore, we have , where  is the power sharing parameter in the broadcast mode as in ().
+
+
+For broadcast and multihop with spatial reuse, whenever the optimal transmission power of  in broadcast mode strictly increases from one epoch to the next, i.e. , either the battery of  must be empty  or the data buffer of  must be full at ,  and whenever it decreases, the data buffer of  must be empty at .
+
+
+The proof is a simple extension of the proof of  Lemma .
+
+
+
+In the optimal transmission policy for broadcast and multihop with spatial reuse, whenever the data rate from  to  in the broadcast mode increases, i.e., , where  is given in (), either the data buffer of  or battery of  must be empty, or the data buffer of  must be full at . Whenever the data rate from  to  in the broadcast mode decreases, i.e., , either the data buffer of  must be empty or the data buffer of  must be full at .
+
+
+Combining () and (), we obtain
+
+This follows from the fact that  and  when  and  are positive. From complementary slackness conditions, we can argue that when , the battery of  is empty at , when  and , the data buffer  and  are empty at , respectively, and when  and , the data buffer  and  are full at , respectively. Hence  to have   either the data buffer of  or battery of  must be empty, or the data buffer of  must be full. Similarly,  to have , either the data buffer of  must be empty or the data buffer of  must be full.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Multi-access and Multi-hop with Spatial Reuse
+In this section, we consider the multi-access mode and successive relaying phases I and II jointly. The throughput maximization problem can be formulated by setting , ,  to zero for  in ().
+
+Formulating the Lagrangian with KKT multipliers , , corresponding to the constraints in ()-(), respectively, for , we obtain the optimal transmission power of  is as in Section , that is,   and  are equal to () and (), respectively. In addition, the optimal transmission powers of  and  in successive relaying modes, i.e.,  and , are equal to () and (), respectively. Accordingly, the properties given in Lemma  and Lemma  also hold in this case.
+
+Next, we obtain the properties of the power allocation in the multi-access mode. Taking derivative of the Lagrangian corresponding to () with respect to , , , and , and setting them to zero we obtain the following.
+
+Here , , , and  are KKT multipliers due to non-negativeness of , ,  and , respectively.
+
+Similar to Section IV.B, without loss of generality we can restrict our attention to the cases for which  both  and  deliver data to  in the multi-access mode. Then , , , and  in ()-() are equal to zero. Due to the rate region of multi-access mode defined in constraints in ()-(), the constraint () and/or () can be satisfied with equality, that is,  and/or .
+
+    If  and , then from ()-(), we obtain
+    
+     where  and  since  and .
+     If  and , then from ()-(), we obtain
+     
+     where  and  since  and .
+     Otherwise, we have
+   
+        
+
+Using these, we can identify some properties of the optimal transmission powers of  and  in the multi-access mode.
+
+
+In the optimal transmission policy for multi-access and multihop with spatial reuse, the following must be satisfied in the multi-access mode:
+
+If the transmission power of  () strictly increases from epoch  to , i.e.,  (), then either the data buffer or the battery of  () must be depleted, or the data buffer of  () must be full at .
+If the transmission powers of both  and  strictly decrease from epoch  to , then  the data buffers of both  and  must be full at .
+
+
+
+We can argue that whenever , either  or , or  in (), or either  or , or  in (). Similarly we can argue that whenever , either ,  or  in (), or  or  in (). Therefore, we can conclude that if the transmission power of  strictly increases from epoch  to , then either the data buffer of  () or the battery of  () must be depleted, or the data buffer of  () must be full at the end of epoch . Similarly, the proof can be extended for  as well.
+
+Now suppose that the transmission powers of the both  and  strictly decrease from epoch  to , i.e.,  and . Then, from (), we observe that , and from () we see that . Therefore, from complementary slackness conditions, we can conclude that the data buffers of both  and  must be full.
+
+
+
+Illustration of Results
+In this section, we provide numerical results to show the effect of the number of relays, energy harvesting  and relay buffer size on the optimal throughput. We also compare the performances of various transmission modes in the two relay scenario.
+
+
+
+
+Throughput versus , energy allocation among the relays.  has total energy ,  has . , , , and ,  seconds. For the battery-run (BR) system  Joules and  Joules, and for the energy harvesting (EH) system  Joules and  Joules with epoch durations  seconds.
+
+
+First, we study the effect of energy harvesting on the throughput of a system with one and with two relays. We consider infinite size data buffer at the relays. We set the power gains to , , , and , and the deadline to  seconds. We consider ten epochs with durations  seconds.  We compare the throughputs of the following two scenarios: (i) for each terminal there is a single energy arrival at  (battery-run system), (ii) for each terminal there are ten energy arrivals at the beginning of the epochs (energy harvesting system). For the battery-run system, we have  Joules, , and  with ,  Joules, and , . For the energy harvesting system, source energy arrivals are  Joules,  energies are , and  energies are  with  Joules. Note that in both systems  corresponds to the single relay model with  only, and    with  only. Also, the total source and relay energies are same in the battery-run and energy harvesting systems. The throughputs as a function of  for both battery-run and energy harvesting systems are shown in Figure 3. For the case of two relays, we provide the throughputs obtained by optimizing over all four modes, and for multi-hop with spatial reuse only. As expected, the battery-run system with the same total energy performs better than the energy harvesting one. For the channel gains in this particular example, having two relays is always better than having one although this may not be true for arbitrary channel gains due to the energy sharing variable . In addition, for the battery run system,  having only  results in more throughput than having only , which can be seen by comparing  the throughputs of   with . This due to the fact that the available energy of  is less than the available energy of the relays; hence, having  better balances the throughputs in each hop. However, for the energy harvesting system having only  results in lower throughput than having only . This is because most of the relay energy arrives in the later epochs and hence a higher power gain between the relay and destination is beneficial for the earlier epochs. As shown in the figure, both for the battery run and for the energy harvesting systems, the throughputs when all four modes are considered are slightly higher than the throughputs of multi-hop with spatial reuse  and are equal for large . This is consistent with which shows that multi-hop with spatial reuse obtains most of the capacity gains in many scenarios.
+
+
+
+
+ Throughput versus relay data buffer size .  has total energy ,  has , with  optimized in the two relay case.  Joules and  Joules with epoch durations  seconds. , , , and ,  seconds. 
+
+
+We investigate the effect of relay data buffer size on the throughput  in Figure 4.  We consider an energy harvesting system and set the power gains, energy arrivals and epoch durations as  above. We study three cases: (i) Two relays where the throughput is obtained by optimizing over all four transmission modes and energy sharing parameter , (ii)  single relay with   only (), (iii)  single relay with  only (). As shown in the figure, data buffer size is more detrimental for the single relay case with  than with .  For the case of two relays, for low , increasing the data buffer capacity leads to a dramatic increase in the throughput. Unlike the scenario with  only,  the throughput saturates after  bits  when we have two relays since some of the data can be delivered through .
+
+
+
+
+[]
+
+
+
+[]
+
+
+
+Throughput versus relay energy . , ,  Joules where  is in the range . , , , and ,  seconds.
+
+
+Next, we compare performances of broadcast and multi-hop with spatial reuse, and multi-hop with spatial reuse only. We set the power gains to , , , and , and the deadline to  seconds. We consider an energy harvesting system with two energy arrivals at the beginning of the epochs with durations 1 seconds each. The source energies are  Joules,  energies are  Joules, and  energies are  Joules. Figure 5(a) shows the throughput as a function of  which takes values in the range  Joules. Figure 5(b) shows the remaining energy at  at  seconds for multi-hop with spatial reuse. For the above energy and channel profiles the remaining energy at  and  are zero. As shown in the figure, when  Joules, broadcast and multi-hop with spatial reuse performs better than multi-hop with spatial reuse only. This is because for , under multi-hop with spatial reuse protocol,  has energy left in its battery at  seconds. Introducing the broadcast mode allows the source to send more information to , thereby creating an opportunity for  to deplete the remaining energy.
+
+
+
+
+Throughput versus source energy .  where  is in the range , ,  J. , , , and ,  seconds.
+
+
+Finally, we compare performances of multi-access and multi-hop with spatial reuse, and multi-hop with spatial reuse schemes. We set the power gains to , , , and , and the deadline to  seconds. We consider an energy harvesting system with two energy arrivals at the beginning of epochs of duration 1 second each. The source energies are  Joules,  energies are  Joules, and  energies are  Joules.
+In Figure 6, we provide the throughput as a function of  which takes values in the range  Joules. Note that for the above energy and channel profiles the remaining energy at the nodes are zero for both cases. As shown in the figure, multi-access and multi-hop with spatial reuse performs better than multi-hop with spatial reuse only. This is due to the fact that the multi-access mode makes efficient use of the energy of  and  to increase the amount of data delivered to the destination. 
+
+Conclusion
+In this paper, we have studied energy harvesting two hop communication with half-duplex relays. We have considered one and two parallel decode-and-forward relays with finite size data buffers employing four transmission modes. Under the assumption of non-causally  known energy arrivals, we have considered optimal transmission policies to maximize the total data delivered by a deadline, and formulated convex optimization problems to compute the throughput. For the case of two relays we have focused on multi-hop with spatial reuse with and without broadcast or multi-access modes. In all cases we have identified various properties of the optimal policies using KKT conditions of the convex optimization formulation. Finally, we have provided performance comparisons and investigated the impact of multiple relays, relay data buffer size, transmission modes and energy harvesting on the average throughput. Overall, our results suggest that while energy harvesting causes a loss in throughput compared with the battery operated scenario, by proper optimization of the transmission power and schedules, it is possible to obtain significant gains. Furthermore, simple relaying strategies such as multihop with spatial reuse are sufficient to obtain a considerable portion of these gains. Possible future extensions include designing online strategies based on the insights gained from the offline solutions provided here and extensions to larger networks involving more relays and more hops.
+
+1
+
+S. Ulukus, A. Yener, E. Erkip, O. Simeone, M. Zorzi, P. Grover, and K. Huang, "Energy harvesting wireless communications: A review of recent advances", IEEE Journal of Sel. Areas in Comm. vol. 33, no. 3, pp. 360-381, Mar. 2015.
+
+O. Orhan, D. Gunduz, and E. Erkip, "Energy harvesting broadband communication systems with processing energy cost," IEEE Transactions on Wireless Communications, vol. 13, no. 11, pp. 6095-6107,  Nov.  2014.
+
+B. Schein and R. G. Gallager, "The Gaussian parallel relay network," in Proceedings of International Symposium on Information Theory (ISIT), Jun. 2000.
+
+F. Xue and S. Sandhu, "Cooperation in a half-duplex gaussian diamond relay channel," IEEE Transaction on Information Theory, vol. 53, no. 10, pp. 3806-3814, Oct. 2007.
+
+H. Bagheri, A.S. Motahari, and A.K. Khandani, "On the capacity of the half-duplex diamond channel," in Proceedings of International Symposium on Information Theory (ISIT), Jun. 2010.
+
+D. Gunduz, K. Stamatiou, N. Michelusi and M. Zorzi, "Designing intelligent energy harvesting communication systems," IEEE Communications Magazine, vol. 52, no. 1, pp. 210-216, Jan. 2014.
+
+
+
+
+
+K. Tutuncuoglu, B. Varan, and A. Yener, "Optimum transmission policies for energy harvesting two-way relay channels," in Proceddings of IEEE International Conference on Communications Workshops (ICC), 9-13 Jun. 2013.
+
+D. Gunduz and B. Devillers, "Two-hop communication with energy harvesting," Proc. CAMSAP, Dec. 2011.
+
+Y. Luo, J. Zhang, and K. B. Letaief, "Optimal scheduling and power allocation for two-hop energy harvesting communication systems," IEEE Transactions on Wireless Communications, vol. 12, no. 9, pp. 4729-4741, Sep. 2013.
+
+O. Orhan and E. Erkip, "Optimal transmission policies for energy harvesting two-hop networks," Proc. CISS, Princeton, NJ, Mar. 2012.
+
+O. Orhan and E. Erkip, "Energy harvesting two-hop networks: Optimal policies for the multi-energy arrival case," in Proceeding of 2012 IEEE Sarnoff Symposium, NJIT, New Jersey, May 2012.
+
+O. Orhan and E. Erkip, "Throughput maximization for energy harvesting two-hop networks," in Proceedings of International Symposium on Information Theory (ISIT), Jul. 2013.
+
+B. Varan and A. Yener, "Two-hop networks with energy harvesting: The (non-)impact of buffer size," in Proceedings of Global Conference on Signal and Information Processing (GlobalSIP), pp. 399-402, Dec. 2013.
+
+A. Minasian, S. Shahbazpanahi, and R. S. Adve, "Energy harvesting cooperative communication systems," IEEE Transactions on Wireless Communications, vol. 13, no. 11, pp. 6118-6131, Nov. 2014.
+
+Y. Luo, J. Zhang, and K. B. Letaief, "Relay selection for energy harvesting cooperative communication systems," in Proceedings of Global Communications Conference (GLOBECOM), pp. 2514-2519, Dec. 2013.
+
+C. Huang, R. Zhang, and S. Cui, "Throughput maximization for the Gaussian relay channel with energy harvesting constraints," IEEE Journal on Selected Areas in Communications, vol. 31, no. 8, pp. 1469-1479, Aug. 2013.
+
+M. Yuyi, J. Zhang, S. H. Song, and K. B. Letaief, "Joint link selection and relay power allocation for energy harvesting relaying systems," in Proceedings of Global Communications Conference (GLOBECOM),  pp. 2568-2573, Dec. 2014.
+
+B. Gurakan and S. Ulukus, "Energy harvesting diamond channel with energy cooperation," in Proceedings of International Symposium on Information Theory (ISIT),  pp. 986-990, Jul. 2014.
+
+B. Gurakan, O. Ozel, J. Yang, and S. Ulukus, "Energy cooperation in energy harvesting wireless communications," in Proceedings of International Symposium on Information Theory (ISIT),  Cambridge, MA, Jul. 2012.
+
+K. Tutuncuoglu and A. Yener, "Cooperative energy harvesting communications with relaying and energy sharing," in Proceedings of Information Theory Workshop (ITW), pp. 1-5, Sep. 2013.
+
+
+
+R. Mudumbai, D. R. Brown, U. Madhow, and H. V. Poor, "Distributed transmit beamforming: challenges and recent progress," IEEE Communications Magazine, vol. 47, no. 2, pp. 102-110, Feb. 2009.
+
+T. M. Cover and J. Thomas, Elements of information theory. New York: John Wiley and Sons Inc., 2006.
+
+
+
+E. Uysal-Biyikoglu, B. Prabhakar, and A. El Gamal, "Energy-efficient packet transmission over a wireless link," IEEE/ACM Transactions on Networking, vol. 10, no. 4, pp. 487-499, Aug. 2002.
+
+S. Boyd and L. Vandenberghe, Convex Optimization, Cambridge University Press, 2004.
+
+
+
+

@@ -1,0 +1,983 @@
+
+
+
+CISPA
+[C]
+
+main.bib
+
+
+ 
+
+
+
+   
+                        
+ 
+                        
+arrows
+positioning
+
+
+
+
+
+ 
+
+
+ 
+
+
+output-exponent-marker=e
+ 
+
+
+
+
+
+ 
+     
+
+
+definitionDefinition
+
+
+
+
+
+
+
+
+
+  
+
+
+ 
+ 
+
+
+ Inputs from Hell 
+ Generating Uncommon Inputs from Common Samples    
+(Dated )
+
+Esteban Pavese
+
+Ezekiel Soremekun
+
+Nikolas Havrikov
+
+Lars Grunske
+
+Andreas Zeller
+
+ Humboldt-Universität zu Berlin, Berlin, Germany
+
+pavesees, grunske@informatik.hu-berlin.de 
+
+ CISPA / Saarland University, Saarbrucken, Germany
+
+ezekiel.soremekun, nikolas.havrikov, zeller@cispa.saarland
+ 
+Pavese, Soremekun, Havrikov, Grunske, Zeller
+
+
+
+
+theoremTheorem
+
+"#1"
+
+#1
+
+
+
+
+#1 #2
+
+
+#1
+#1
+
+
+G           
+G_p         
+G^global_p^-1   
+
+G_p^-1   
+
+
+JavaScript
+  keywords=typeof, new, true, false, catch, function, return, null, catch, switch, var, if, in, while, do, else, case, break,
+  keywordstyle=,
+  ndkeywords=class, export, boolean, throw, implements, import, this,
+  ndkeywordstyle=,
+  identifierstyle=,
+  sensitive=false,
+  comment=[l]//,
+  morecomment=[s]/**/,
+  commentstyle=,
+  stringstyle=,
+  morestring=[b]',
+  morestring=[b]"
+
+
+
+   language=JavaScript,
+   
+   extendedchars=true,
+   basicstyle=,
+   showstringspaces=false,
+   showspaces=false,
+   
+   numberstyle=,
+   numbersep=9pt,
+   tabsize=2,
+   breaklines=true,
+   showtabs=false,
+   captionpos=b
+
+
+
+
+
+
+
+
+
+
+mystyle
+    
+    commentstyle=,
+    keywordstyle=,
+    numberstyle=codegray,
+    stringstyle=,
+    basicstyle=,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+
+
+style=mystyle
+
+
+[switch]SwitchEndSwitch
+[1]switch #1
+
+Case[1]case #1:
+
+SE[DOWHILE]DodoWhile[1] #1
+
+
+
+"#1"
+
+#1
+/#1/
+
+
+
+#1
+#1
+
+
+
+
+
+
+
+
+
+
+
+
+*
+
+
+
+
+  Montserrat-TOsFCISPA Helmholtz-Zentrum i.G.
+
+
+  
+  
+
+  
+  
+  
+
+
+  
+  
+  
+
+[
+
+
+
+
+
+
+
+
+Generating structured input files to test programs can be performed by techniques that produce them from a grammar that serves as the specification for syntactically correct input files.
+Two interesting scenarios then arise for effective testing.
+In the first scenario, software engineers would like to generate inputs that are as similar as possible to the inputs in common usage of the program, to test the reliability of the program.
+More interesting is the second scenario where inputs should be as dissimilar as possible from normal usage.
+This is useful for robustness testing and exploring yet uncovered behavior.
+To provide test cases for both scenarios, we leverage a context-free grammar to parse a set of sample input files that represent the program's common usage, and determine probabilities for individual grammar production as they occur during parsing the inputs.
+Replicating these probabilities during grammar-based test input generation, we obtain inputs that are close to the samples.
+
+Inverting these probabilities yields inputs that are strongly dissimilar to common inputs, yet still valid with respect to the grammar. 
+Our evaluation on three common input formats (JSON, JavaScript, CSS) shows the effectiveness of these approaches in obtaining instances from both sets of inputs.
+]
+
+
+
+Introduction
+
+During the process of software testing, software engineers typically look at satisfying two goals.
+First, ensuring that the software works well on common inputs, such that the software delivers its promise on the vast majority of cases (and for the vast majority of customers) that will be seen in typical operation.
+This is usually achieved by having a set of tests (manually written or generated) that covers this common behavior.
+Besides these common inputs, though, it is also advisable to test for uncommon inputs.
+The rationale for this is that such inputs would exercise code that is less frequently used in production, possibly less tested, and possibly less well understood .
+
+
+
+The question that then arises is, how can engineers obtain such uncommon inputs?
+In this paper, we focus on the problem of generating uncommon (but otherwise syntactically correct and perfectly legal) inputs that are unlikely to be seen in typical operation.
+To this end, we assume the existence of a context-free grammar that describes the input language to a program, that is, it describes the set of its valid inputs.
+Using such a grammar, we can parse existing common input samples and count how frequently specific elements occur in these samples.
+Armed with these numbers, we can enrich the grammar to become a probabilistic grammar, in which choices present in productions carry different likelihoods.
+Since these probabilities come from the common samples used for the quantification, this grammar describes the distribution of valid, but common inputs.
+The key idea is that now we can invert these probabilities in order to obtain a second probabilistic grammar.
+This inverted grammar, however, describes in turn the distribution of legal, but uncommon inputs. We call them "inputs from hell".
+
+
+
+As an example of such "inputs from hell", consider fig:hell_rhino, listing two JavaScript inputs generated by focusing on uncommon features.
+Both of these snippets are valid JavaScript code, but cause the Mozilla Rhino JavaScript compiler to crash during interpretation.
+They make use of so-called destructuring assignments: in JavaScript, it is allowed to have several variables on the left hand side of an assignment or initialization.
+In such a case, each gets assigned a part of the structure on the right hand side, as in
+[language=JavaScript]
+    var [one, two, three] = [1, 2, 3];
+where the variable one> is assigned a value of 1>, two> a value of 2>, and so on. Such destructuring assignments, although useful in some contexts, are not extensively found across JavaScript samples and tests.This is precisely why the aim of our approach is to generate these "inputs from hell".
+
+
+
+
+
+
+[language=JavaScript]
+    const [c, y, y] = [];
+    var  a:  = 'b'  = ;
+Two inputs from hell that break Rhino 1.7.7.2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+This paper makes the following contributions:
+
+
+We show how to use context-free grammars to determine production probabilities from a given set of input samples.
+
+
+
+
+We show how to use mined probabilities to produce inputs that are similar to a set of given samples.
+This is useful for thoroughly testing commonly used features (regression testing), or to test the surroundings of previously failure-inducing inputs.
+As a result our approach leverages the well-known concept of probabilistic grammars for both mining and test case generation.
+In our evaluation using the JSON, CSS and JavaScript formats, we show that our approach repeatedly covers the same code as the original sample inputs.
+
+We show how to use mined probabilities to produce inputs that are markedly dissimilar to a set of given samples, yet still valid according to the grammar.
+This is useful for robustness testing, as well as for exploring program behavior not triggered by the sample inputs.
+We are not aware of any other technique that achieves this objective.
+In our evaluation using the same subjects, we show that our approach is successful in repeatedly covering code not covered in the original samples.
+
+
+Inputs from Hell in a Nutshell
+
+To demonstrate how we produce both common and uncommon inputs, let us illustrate our approach using a simple example grammar.
+Let us assume we have a program  that processes arithmetic expressions; its inputs follow the standard syntax given by the grammar  below.
+
+	Expr Term  Expr + Term  Expr - Term;
+	Term Factor  Term * Factor 
+         Term / Factor;
+	Factor Int  + Factor
+	     - Factor  ( Expr );
+	Int Digit Int  Digit;
+	Digit 0  1  2  3   9;
+
+Let us further assume we have discovered a bug in : the input  is not evaluated properly.
+We have fixed the bug in , but want to ensure that similar inputs would also be handled in a proper manner.
+
+To obtain inputs similar to , we first use the grammar  to parse  and determine the distribution of the individual choices in productions.
+This makes  a probabilistic grammar  in which the productions' choices are tagged with their probabilities.
+For the input  above, for instance, we obtain the probabilistic rule
+
+
+Digit 00  33.31  33.32
+     33.33  04  05
+     06  07  08  09;
+
+
+which indicates the distribution of digits in .
+Using this rule for production, we would obtain ones, twos, and threes at equal probabilities, but none of the other digits.
+fig:prob-grammar shows the grammar  as extension of  with all probabilities as extracted from the derivation tree of  (fig:expr-derivation).
+In this derivation tree we see, for instance, that the nonterminal Factor occurs 4 times in total.
+75 of the time it produces integers (Int), while in the remaining 25 it produces a parenthesis expression (( Expr )).
+Expressions using unary operators like + Factor and - Factor do not occur.
+
+[!h]
+		
+	level distance=16pt
+	[.Expr
+	[.Expr
+	[.Term
+	[.Factor
+	[.Int
+	[.Digit
+	1
+	]
+	]
+	]
+	]
+	]
+	+
+	[.Term
+	[.Factor
+	(
+	[.Expr
+	[.Term
+	[.Term
+	[.Factor
+	[.Int
+	[.Digit
+	2
+	]
+	]
+	]
+	]
+	*
+	[.Factor
+	[.Int
+	[.Digit
+	3
+	]
+	]
+	]
+	]
+	]
+	)
+	]
+	]
+	]
+		
+	Derivation tree representing 1 + (2 * 3)
+	
+
+If we use  from fig:prob-grammar as a probabilistic production grammar, we obtain inputs according to these probabilities.
+As listed in fig:prob-samples, these inputs uniquely consist of the digits and operators seen in our sample 1 * (2 + 3)>.
+All of these inputs are likely to cover the same code in  as the original sample input, yet with different input structures that trigger the same functionality in  in several new ways.
+
+[!h]
+		
+	Expr 66.7Term  33.3Expr + Term
+	     0Expr - Term;
+	Term 75Factor  25Term * Factor
+	     0Term / Factor;
+	Factor 75Int  0+ Factor
+	     0- Factor  25( Expr );
+	Int 0Digit Int  100Digit;
+	Digit 00  33.31  33.32
+	     33.33  04  05
+	     06  07  08  09;
+		
+	Probabilistic grammar , expanding 
+	
+
+		
+	(2 * 3)
+	2 + 2 + 1 * (1) + 2
+	((3 * 3))
+	3 * (((3 + 3 + 3) * (2 * 3 + 3))) * (3)
+	3 * 3
+	3 * 1 * 3
+	((3) + 2 + 2 * 1) * (1)
+	1
+	((2)) + 3
+		
+	Inputs generated from  in fig:prob-grammar
+	
+Replicating "more of the same" features as found in sample inputs makes most sense if these studied inputs can be associated with errors.
+However if we, as in most cases, only have sample inputs that work just fine, we would typically be interested in inputs that are different from our samples.
+We can easily obtain such inputs by inverting the mined probabilities: if a rule previously had a weight of , we now assign it a weight of , normalized across all production alternatives.
+For our Digit rule, this gives the digits not seen so far a weight of , which is still distributed equally across all seven alternatives, yielding individual probabilities of 
+.
+Proportionally, the weights for the digits already seen in  are infinitely small, yielding a probability of effectively zero.  The thus "inverted" rule reads now:
+
+
+Digit 14.30  01  02  03
+     14.34  14.35  14.36
+     14.37  14.38  14.39;
+
+
+
+
+Applying this inversion to rules with non-terminal symbols is equally straightforward.
+The resulting probabilistic grammar  is given in fig:inv-local-prob-grammar.
+
+
+		
+	Expr 0Term  0Expr + Term
+	     100Expr - Term;
+	Term 0Factor  0Term * Factor
+	     100Term / Factor;
+	Factor 0Int  50+ Factor
+	     50- Factor  0( Expr );
+	Int 100Digit Int  0Digit;
+	Digit 14.30  01  02  03
+	     14.34  14.35  14.36
+	     14.37  14.38  14.39;
+		
+	Grammar  inverted from  in fig:prob-grammar
+	
+This inversion can lead to infinite derivations, for example, the production rule in  for generating Expr is recursive 100 of the time, expanding only to Expr - Term, without chance of hitting the base case.
+As a result, we take special measures to avoid such infinite productions during input generation, which we will detail further on.
+
+If we use  as a production grammar-and avoiding infinite production-we obtain inputs as shown in fig:inv-local-prob-samples.
+These inputs now focus on operators like subtraction or division or unary operators not seen in our input samples.
+Likewise, the newly generated digits cover the complement of those digits previously seen.
+Yet, all inputs are syntactically valid according to the grammar.
+With both the sets of similar and dissimilar inputs, we can expect to have a good set of regression tests as well as a set exploiting less frequently used functionality.
+
+
+		
+	+5 / -5 / 7 - +0 / 6 / 6 - 6 / 8 - 5 - 4
+	-4 / +7 / 5 - 4 / 7 / 4 - 6 / 0 - 5 - 0
+	+5 / ++4 / 4 - 8 / 8 - 4 / 8 / 7 - 8 - 9
+	-6 / 9 / 5 / 8 - +7 / -9 / 6 - 4 - 4 - 6
+	+8 / ++8 / 5 / 4 / 0 - 5 - 4 / 8 - 8 - 8
+	-9 / -5 / 9 / 4 - -9 / 0 / 5 - 8 / 4 - 6
+	++7 / 9 / 5 - +8 / +9 / 7 / 7 - 6 - 8 - 4
+	-+6 / -8 / 9 / 6 - 5 / 0 - 5 - 8 - 0 - 5
+		
+	Inputs generated from  from fig:inv-local-prob-grammar
+	
+
+
+
+
+Approach
+
+In order to explain our approach in detail, we start with introducing basic notions of probabilistic grammars.
+
+Probabilistic Grammars
+
+The probabilistic grammars that we employ in this paper are based on the well-known context-free grammars (CFGs) .
+[Context-free grammar]
+	A context-free grammar is a 4-tuple , where  is the set of non-terminal symbols,  the terminals,  the set of productions, and  the start symbol.
+
+In a non-probabilistic grammar, rules for a non-terminal symbol  provide  alternatives  for expansion:
+
+
+In a probabilistic grammar, each of the alternatives  in eq:nonprob-grammar is augmented with a probability , where  holds:
+
+
+If we are using these grammars for generation of a sentence of the language described by the grammar, each alternative  has a probability of  to be selected when expanding .
+
+By convention, if one or more  are not specified in a rule, we assume that their value is the complement probability, distributed equally over all alternatives with these unspecified probabilities.
+Consider the rule
+
+Letter 40.0a  b  c
+Here, the probabilities for b and c are not specified; we assume that the complement from a, namely 60, is equally distributed over them, yielding effectively
+
+Letter 40.0a  30.0b  30.0c
+Formally, to assign a probability to an unspecified , we use
+
+Again, this causes the invariant  to hold.  If no  is specified for a rule with  alternatives, as in eq:nonprob-grammar, then eq:unspecified-p makes each , as intended.
+
+
+Learning Probabilities
+
+Our aim now is to turn a classical context-free grammar  into a probabilistic grammar  capturing the probabilities from a set of samples.
+That is, to determine the necessary  values as defined in eq:prob-grammar from these samples.
+This is achieved by counting how frequently individual alternatives occur during parsing in each production context, and then to determine appropriate probabilities.
+
+In language theory, the result of parsing a sample input  using  is a derivation tree , representing the structure of a sentence according to .
+As an example, consider fig:expr-derivation, representing the input 1 + (2 * 3) according to the example arithmetic expression grammar in sec:motivation.
+In this derivation tree, we can now count how frequently a particular alternative  was chosen in the grammar  during parsing.
+In fig:expr-derivation, the rule for Expr is invoked three times during parsing.
+This rule expands once (33.3) into Expr + Term (at the root); and twice (66.7) into Term in the subtrees.
+Likewise, the Term symbol expands once (25) into Term * Factor and three times (75) into Factor.
+
+Formally, given a set  of derivation trees from a grammar  applied on sample inputs, we determine the probabilities  for each alternative  of a symbol  as
+
+If a symbol  does not occur in , then eq:learning-p makes  for all alternatives ; in this case, we treat all  for  as unspecified, assigning them a value of  in line with eq:unspecified-p.
+
+In our example, eq:learning-p yields the probabilistic grammar  in fig:prob-grammar, assigning probabilities to all alternatives.
+
+Inverting Probabilities
+
+We turn our attention now to the converse approach; namely producing inputs that deviate from the sample inputs that were used to learn the probabilities described above.
+This "less of the same" approach promises to be useful if we accept that our samples are not able to cover all the possible behavior of the system under test, and if we want to find bugs in behaviors that are either not exercised by our samples, or do so rarely.
+
+The key idea is to invert the probability distributions as learned from the samples, such that the input generation focuses on the complement section of the language (w.r.t. the samples and those inputs generated by the probabilistic grammar).
+If some symbol occurs frequently in the parse trees corresponding to the samples, this approach should generate the symbol less frequently, and vice versa: if the symbol seldom occurs, then the approach should definitely generate it often.
+
+For a moment, let us ignore probabilities and focus on weights instead.
+That is, the absolute (rather than relative) number of occurrences of a symbol in the parse tree of a sample.
+We start by determining the occurrences of a symbol  during a production  found in a derivation tree :
+
+
+
+To obtain inverted weights , a simple way is to make each  based on the reciprocal value of , that is
+
+
+
+If the set of samples is small enough, or focuses only on a section of the language of the grammar, it might be the case that some production or symbol never appears in the parsing trees.
+If this is the case, then the previous equations end up yielding .
+We can compute , assigning the elements not seen an infinite weight.
+Consequently, all symbols  that were indeed seen before (with ) are assigned an infinitesimally small weight, leading to .
+The remaining infinite weight is then distributed over all of the originally "unseen" elements with original weight .
+Recall the arithmetic expression grammar in sec:motivation; such a situation arises when we consider the rule for the symbol Digit: the inverted probabilities for the rule focus exclusively on the complement of the digits seen in the sample.
+
+All that remains in order to obtain actual probabilities is to normalize the weights back into a probability measure, ensuring for each production rule that its invariant  holds:
+
+
+
+Producing Inputs from a Grammar
+
+Given a probabilistic grammar  for some language (irrespective of whether it was obtained by learning from samples, by inverting, or simply written that way in the first place), our next step in the approach is to generate inputs following the specified productions.
+This generation process is actually very simple, since it reduces to produce instances by traversing the grammar, as if it were a Markov chain.
+However, this generation runs the serious risk of probabilistically choosing productions that lead to an excessively large parsing tree.
+Even worse, the risk of generating an unbounded tree is very real, as can be seen in the rule for the symbol Int in the arithmetic expression grammar in sec:motivation.
+The production rule for said symbol triggers, with probability 1.0, a recursion with no base case, and will never terminate.
+
+Our inspiration for constraining the growth of the tree during input generation comes from the PTC2 algorithm .
+The main idea of this algorithm is to allow the expansion of not-yet-expanded productions, but all the while ensuring that the number of productions does not exceed a certain threshold of performed expansions.
+This threshold would be set as parameter of the input generation process.
+Once this threshold is exceeded, the partially generated instance cannot be truncated, as that would result in an illegal input.
+Alternatively, we choose to allow further expansion of the necessary non-terminal symbols.
+However, from this point on, expansions are not chosen probabilistically.
+Rather, the choice is constrained to those expansions that generate the shortest possible expansion tree.
+This ensures both termination of the generation procedure, as well as trying to keep the input size close to the threshold parameter.
+This choice, however, does introduce a bias that may constitute a threat to the validity of our experiments.
+We discuss this issue later in sec:validation.
+
+Implementation
+
+As a prerequisite for carrying out our approach, we only assume we have the context-free grammar of the language available for which we are interested in generating inputs, and a collection (no matter the size) of inputs that we will assume are common inputs.
+Armed with these elements, we perform the workflow detailed in fig:approach_implementation.
+
+*[ht]
+		        -
+	Workflow for the generation of more of the same and less of the same.
+	
+The first step of the approach is to obtain a counting grammar from the original grammar.
+This counting grammar is, from the parsing point of view, completely equivalent to the original grammar.
+However, it is augmented with actions during parsing which perform all necessary counting of symbol occurrences parallel to the parsing phase.
+Finally, it outputs the probabilistic grammar.
+Note that this first phase requires not only the grammar of the target language, but also the grammar of the language in which the grammar itself is written.
+That is, generating the probabilistic grammar not only requires parsing sample inputs, but also the grammar itself.
+In the particular case of our implementation, we make use of the well-known parser generator ANTLR .
+
+Once the probabilistic grammar is obtained, we derive the probabilistically-inverted grammar as described in this section.
+Armed with both probabilistically annotated grammars, we can continue with the input generation procedure.
+
+
+Experimental Evaluation
+
+In this section we evaluate our approach by applying the technique to several case studies.
+In particular, we ask the following research questions:
+
+	[] (RQ1) Can a learned grammar be used to generate inputs that resemble those that were employed during the grammar training? ("more of the same")
+	[] (RQ2) Can a learned grammar be modified so it can generate inputs that, opposed to (RQ1), are in contrast to those employed during the grammar training? ("less of the same")
+
+
+
+
+
+To answer the first two questions, we need to compare inputs in order to decide whether these inputs are "similar" or "contrasting".
+In the scope of this evaluation, we will use the method call frequency as a measure of input similarity.
+We will define this measure later in this section, and we will discuss its usefulness, as well as alternatives to it, when we discuss the threats to the validity of our validation approach.
+
+Evaluation Setup
+Generated Inputs
+
+Once a probabilistic grammar is learned from the training instances, we generate several inputs that are fed to each subject. Our evaluation involves the generation of two types of test suites:
+
+[label=*)]
+
+	Probabilistic - choice between productions is governed by the distribution specified by the learned probabilities in the grammar.
+	Inverse - choice is governed by the distribution obtained as a result of the inversion process described in Section .
+
+
+
+
+Expansion size control is carried out in order to avoid unbounded expansion as described in sec:approach.
+
+Research Protocol
+In our evaluation, we generate test suites and measure the frequency of method calls they induce in our subject programs.
+We use the HPROF  profiler to accurately monitor the number of method calls for each input, since all subjects are implemented in Java.
+For each input language, the experimental protocol proceeds as follows:
+[label=*)]
+We randomly select five files from a pool of thousands of sample files crawled from GitHub code repositories, and through our approach produce a probabilistic grammar out of them.
+We feed the sampled input files into the subject program and record the frequency of method calls using HPROF .
+Using the probabilistic grammar, we generate test suites, each one containing 100 input files.
+We generate a total of 1000 test suites, in order to control for variance in the input files.
+Overall, each experiment contains 100,000 input files (100 files x 1,000 runs).
+
+We perform this step for both probabilistic and inverse generations.
+
+Hence, the total number of inputs generated for each grammar is 200,000 (1,000 suites of 100 inputs each, a set of suites for each experiment). 
+
+We test each subject program, by feeding the input files into the subject program and recording the frequency of method calls using HPROF .
+All experiments were conducted on a shared server with 64 cores and 126 GB of RAM; more specifically an Intel(R) Xeon(R) CPU E5-2683 v4 @ 2.10GHz with 64 virtual cores (Intel Hyperthreading), running Debian 9.5 Linux.
+
+
+
+
+Subject Programs
+In order to validate our approach, we evaluated the technique by generating inputs and feeding them to a variety of Java applications.
+All these applications are open source programs using three different input formats, namely JSON, JavaScript and CSS3.
+tbl:validation_subjects summarizes the subjects to be analyzed, their input format and the number of methods in each implementation.
+
+
+
+Subjects and input language for approach validation.
+
+The initial, unquantified grammars for the input subjects were adapted from those in the repository of the well-known parser generator ANTLR (The original grammars can be found at https://github.com/antlr/grammars-v4. ).
+Training samples were obtained by scraping GitHub repositories for the required format files.
+The probabilistic grammars developed from the original ones, as well as the obtained training samples can be found in the artefact package submitted along this paper.
+
+Measuring (dis)similarity
+
+Questions (RQ1) and (RQ2) refer to a notion of similarity between inputs.
+Although white-box approaches exist that aim to measure test-case (dis)similarity , applying them to complex grammar-based inputs is not straightforward.
+However, in this paper, since we are dealing with evaluating the behavior of a certain piece of software, it makes sense to aim for a notion of semantic similarity.
+In this sense, two inputs are semantically similar if they incite similar behaviors in the software that processes them.
+In order to achieve this, we define a measure of input similarity in terms of their method call frequency.
+We will say two inputs are similar if they trigger a similar distribution in the frequency with which the methods of the piece of software under analysis are called.
+Of course, such a notion allows for a great variance drift if we were to compare only two inputs.
+Therefore, we perform this comparison on test suites as a whole to dampen the effect of this variance.
+
+Using this proxy measure of method call frequency, we will aim at answering (RQ1) and (RQ2).
+The first question will be answered satisfactorily if the distribution of call frequencies when running the subjects on probabilistically generated suites is similar to the frequency when running the software on the training samples.
+Likewise, the second question will be answered positively if the call frequency distributions for suites generated with the inverse approach are markedly different.
+
+
+Experimental results
+
+In the figures below ranging from fig:json_results_gson to fig:css_results_cssvalidator, we show a representative selection of our results(The full range of charts is omitted for space reasons. However, all charts, as well as the raw data, are available as part of the artifact package. Moreover, the charts shown here have been selected so that they are representative of the whole set; that is, the omitted charts do not deviate significantly.).
+In this section, we describe the data depicted in these charts and offer our interpretations.
+
+For each subject, two charts are constructed.
+In both charts, the horizontal axis (which is otherwise unlabelled) represents the set of methods in the subject, ordered by the frequency of calls in the experiment on probabilistic inputs.
+The chart at the top represents the accumulated call frequency for each strategy (calls in the samples, in probabilistic inputs and inverse probabilistic inputs), as we consider more and more methods.
+The chart at the bottom represents the absolute call frequency for each method.
+In each chart, the data series corresponding to the sample runs is depicted in  blue, the series corresponding to the probabilistic runs in  green, and the series for the inverse probabilistic runs in  orange.
+
+Research Question 1
+
+
+In order to argue for a positive answer for (RQ1), we need to compare the statistical distributions resulting from our strategies.  Such a comparison is a notoriously difficult problem, with the common advice being to run a visual test .  We need to be able to see a pattern in frequency calls such that the accumulated curves for the sample runs and the probabilistic runs roughly match.(Note that in every chart the curve for the  probabilistic runs is always smooth. This is a result of the sorting being done on the frequency of calls on this variant.)  It can be seen that this match does hold in all JSON examples very closely, and to a further extent also by the Rhino JS interpreter and CSSValidator.
+
+We also perform a statistical analysis on the distributions to increase the confidence in our conclusion.
+To this end we aim at performing a distribution fitness test (KS - Kolmogorov-Smirnov) on the sample vs. the probabilistic call distribution; and on the sample vs. the inverse probabilistic distribution.
+It must be noted that the KS test aims at determining whether the distributions are exactly the same, whereas we want to ascertain if they are similar or dissimilar.
+KS tests are very sensitive to small variations in data, which makes it, in principle, inadequate for this objective.
+In this work, we employ the approach used in -we first estimate the kernel density functions of the data distributions, which smoothens the estimated distribution.
+Then, we bootstrap and resample new data on the kernel density estimates, and perform the KS test on the bootstrapped data.
+Results are shown in tbl:distrcomparison, column (C). Results range from strong (in blue) to inconclusive (in orange and red) on relating the sample to the probabilistic data(In the case of the Jackson exemplars, frequencies for the sample calls are all close to zero, which makes the data inadequate for the KS test.).
+
+
+In almost subjects, the "more of the same" method call frequency distribution matches the distribution in the sample.
+In the other cases, results are mostly inconclusive.
+
+In the cases of most discrepancy, they can be explained looking at the absolute frequencies, looking for the spikes that cause the curves to mismatch.
+In the case of the Rhino JS interpreter, two spikes distinguish themselves clearly, with frequencies hovering around  and  of all calls-that is, they account for more than half of the total method calls on the sample.
+In looking at the data, it turns out that these spikes correspond to methods org.mozilla.javascript.TokenStream.getChar> 
+and org.mozilla.javascript.TokenStream.<init>>.
+This is explained by the fact that the samples have real-world properties, such as sensibly-named (and therefore longer) variables and methods, whereas our approach tends to generate much shorter names.
+In the case of the CSSValidator subject, the situation is similar.
+The frequency chart shows three distinct spikes which correspond to methods util.Utf8Properties.continueLine> (8), util.U
+tf8Properties.loadConversion> (19) and util.Ut
+f8Properties.removeWhiteSpaces> (23), which deal with utf-8 conversions.
+Again, the load on those methods is larger, as names are longer in real-world samples.
+
+
+
+
+
+
+				Call frequency analysis for #1
+	        -
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Gsonfig:json_results_gson
+JSONJavafig:json_results_jsonjava
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MinimalJsonfig:json_results_minimaljson
+
+
+
+
+
+
+
+
+
+
+
+
+
+json-simplefig:json_results_jsonsimple
+Rhinofig:js_results_rhino
+CSSValidatorfig:css_results_cssvalidator
+
+
+	
+		
+	(A): number of methods called by the inverse approach that are never called by the samples - (B): percentage increase of (A) w.r.t. sample - (C, D): smoothed bootstrapped Kolmogorov-Smirnov tests for distributions (C): sample vs. probabilistic; (D): sample vs. inverse (test statistic, p-value).
+	
+Research Question 2
+
+In this case, we want to check if we see a markedly different accumulated frequency between the samples and the inputs generated by the inverse probabilistic approach.
+Again, it can easily be seen that in almost all charts this is the case, except for the CSSValidator subject.
+
+
+With the exception of CSSValidator, the method call frequency distribution of "less of the same" is markedly different from the distribution in the sample.
+
+Most intriguing for this subject is the fact that the curves for the probabilistic and inverse-probabilistic generations fit each other almost perfectly.
+An in-depth analysis of the learned probabilistic grammar, however, revealed that the probabilistic grammar is almost uniform, which explains why the inverted probabilistic grammar would look very much alike.
+The results for (RQ1) and (RQ2) on this subject suggest that the approach does not work very well when the samples induce an almost-uniform grammar; and that, apparently, the original CSS grammar and real world samples are such that they don't allow for much variety, therefore resulting in such an almost-uniform grammar.
+
+
+A "less of the same" strategy works best if the element distributions in the sample input is non-uniform.
+
+Further evidence on the power of the "less of the same" approach is shown in tbl:distrcomparison.
+Column (A) shows the absolute number of methods that were frequently called in the "less of the same" inputs that were not called at all in the samples.
+Column (B) shows this data as a percentage of the methods not covered in the sample.
+In column (D) we perform the distribution fitting test between the sample call distribution and the inverse probabilistic one.
+All results show the distributions are markedly different with strong statistical evidence.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Threats to Validity
+Internal validity
+The main threat to internal validity is the correctness of our implementation.
+Namely, whether our implementation does indeed learn a probabilistic grammar corresponding to the distribution of the real world samples used as training set.
+Unfortunately, this problem is not a simple one to resolve.
+The probabilistic grammar can be seen as a Markov chain, and the aforementioned problem is equivalent to verifying that its equilibrium distribution corresponds to the posterior distribution of the real world samples.
+The problem is two-fold: first, the number of samples necessary in order to ascertain the posterior distribution is inordinate.
+Second, even if we had a chance to process such a number of inputs, or if the posterior distribution were otherwise known, it might well be the case that the probabilistic grammar actually has no equilibrium distribution(A Markov chain with multiple bottom (isolated) connected components will have no equilibrium distributions. It can be easily the case that a grammar has such a multiplicity of connected components.).
+However, our tests on smaller and simpler grammars suggest that this is not an issue.
+
+A second internal validity threat is present in the technique we use for controlling the size of the generated samples.
+As described before, a sample's size is defined in terms of the number of expansions in its parsing tree.
+In order to control the size, we keep track of the number of expansions generated.
+Once this number crosses a certain threshold (if it actually crosses it at all), all open derivations are closed via their shortest path.
+This does introduce a bias in the generation that does not exactly correspond to the distribution described by the probabilistic grammar.
+The effects of such a bias are difficult to determine, and merit further and deeper study.
+However, not performing this termination procedure would render useless any approach based on probabilistic grammars.
+
+
+External validity
+Threats to external validity relate to the generalizability of the experimental results.
+In our case, this is specifically related to the subjects used in the experiments.
+We acknowledge that we have only experimented with a limited number of input grammars.
+However, we have selected the subjects with the intention to test our approach on practically relevant input grammars with different complexities, from small to medium size grammars like JSON; and rather complex grammars like JavaScript and CSS.
+As a result, we are confident that our approach will also work on inputs that can be characterized by context-free grammars with a wide range of complexity.
+However, we do have evidence that the approach does not seem to be generalizable to combinations of grammars and samples such that they induce the learning of an almost-uniform probabilistic grammar.
+
+
+Construct validity
+The main threat to construct validity is the metric we use to evaluate the similarity between test suites, namely method call frequency.
+While the uses of coverage metrics as adequacy criteria is extensively discussed by the community, their binary nature (that is, we can either report covered or not covered) makes them too shallow to differentiate for behavior.
+The variance intrinsic to the probabilistic generation makes it very likely that at least one sample will cover parts of the code unrelated to those covered by the rest of the suite.
+Indeed, we carried out coverage-based experiments on our probabilistically and inverse-probabilistically generated suites, and this metric turned out to be inadequate, as we did not find significant differences when looking at binary notions of coverage.
+
+Related Work
+
+Software Test Generation.  The aim of software test generation is to find a sample of inputs that induce executions that sufficiently cover the possible behaviors of the program-including undesired behavior.
+Modern software test generation relies, as surveyed by Anand et al.  on symbolic code analysis to solve the path conditions leading to uncovered code , search-based approaches to systematically evolve a population of inputs towards the desired goal , random inputs to programs and functions  or a combination of these techniques .
+Additionally, machine learning techniques can also be applied to create test sequences .
+All these approaches have in common that they do not require an additional model or annotations to constrain the set of generated inputs; this makes them very versatile, but brings the risk of producing false alarms-failing executions that cannot be obtained through legal inputs.
+
+Grammar-Based Test Generation.  The usage of grammars as producers was introduced in 1970 by Hanford in his syntax machine .
+Such producers are mainly used for testing compilers and interpreters: CSmith  produces syntactically correct C programs, and LANGFUZZ  uses a JavaScript grammar to parse, recombine, and mutate existing inputs while maintaining most of the syntactic validity.
+GENA  uses standard symbolic grammars to produce test cases and only applies stochastic annotation during the derivation process to distribute the test cases and to limit recursions and derivation depth.
+Grammar-based white-box fuzzing  combines grammar-based fuzzing with symbolic testing and is now available as a service from Microsoft.
+As these techniques operate with system inputs, any failure reported is a true failure-there are no false alarms.
+None of the above approaches use probabilistic grammars, though.
+
+Probabilistic Grammars.  The foundations of probabilistic grammars date back to the earliest works of Chomsky .
+The concept has seen several interactions and generalizations with physics and statistics; we recommend the very nice article by Geman and Johnson  as an introduction.
+Probabilistic grammars are frequently used to analyze ambiguous data sequences-in computational linguistics  to analyze natural language, and in biochemistry  to model and parse macromolecules such as DNA, RNA, or protein sequences.
+Probabilistic grammars  have been used also to model and produce input data for specific domains, such as 3D scenes  or processor instructions .
+
+The usage of probabilistic grammars for test generation seems rather straightforward, but is still uncommon.
+The Geno test generator for .NET programs by Lammel and Schulte  allowed users to specify probabilities for individual production rules.
+This approach, in contrast to the one we present in this paper, does not use existing samples to learn or estimate probabilities.
+The test case generation  and failure reproduction  approaches by Kifetew et al. combine probabilistic grammars with a search-based testing approach.
+The results  show that the combination produces a large percentage of correct inputs and, based on the fitness function, produces a high-branch coverage.
+However, due to the search-based nature of the approach, a large number of system evaluations to determine the fitness of the generated test cases are required.
+The approach by Poulding et al.  uses a stochastic context-free grammar for statistical testing.
+The goal of this work is thus to correctly imitate the operational profile and consequently the generated test cases are similar to what one would expect during normal operation of the system.
+
+Mining Probabilities.  Related to our work are approaches that mine grammar rules and probabilities from existing samples.
+Patra and Pradel  use a given parser to mine probabilities for subsequent fuzz testing and to reduce tree-based inputs for debugging .
+Their aim, however, is not to produce inputs that would be similar or dissimilar to existing inputs, but rather to produce inputs that have a higher likelihood to be syntactically correct.
+This aim is also shared by two grammar mining approaches: GLADE  and LearnFuzz , which
+learn producers from large sets of input samples even without a given grammar.
+
+All these approaches, however, share the problem of producing only "more of the same"-they can only focus on common features rather than uncommon features, creating a general "tension between conflicting learning and fuzzing goals" .
+In contrast, our work can specifically focus on uncommon inputs-that is, the complement of what has been learned.
+
+Like us, the Skyfire approach  aims at also leveraging uncommon inputs for probabilistic fuzzing.
+Their idea is to learn a probabilistic distribution from a set of samples and use this distribution to generate seeds for a standard fuzzing tool, namely AFL .
+Here, favoring low probability rules is one of many heuristics applied besides low frequency, low complexity, or production limits.
+The tool requires, however, the specification of a context-dependent grammar.
+Although the tool has shown good results for XML-like languages, results for other, general grammar formats such as JavaScript are marked as "preliminary" only, though.
+
+Mining Grammars.  Our approach requires a grammar that can be used both for parsing and producing inputs.
+While engineering such a grammar may well pay off in terms of better testing, it is still a significant investment in the case of specific domain inputs where such a grammar might not be immediately available.
+Mining input structures , as exemplified using the above GLADE  and LearnFuzz  approaches, may assist in this task.
+The AUTOGRAM approach by Hoschele and Zeller  mines human-readable input grammars exploiting structure and identifiers of a program processing the input, which makes it particularly promising.
+
+Conclusions and Future Work
+
+In this paper we have presented an approach that allows engineers, using a grammar and a set of input samples, to generate instances that are either similar or dissimilar to these samples.
+Similar samples are useful, for instance, when learning from failure-inducing inputs; while dissimilar samples could be used to leverage the testing approach to explore previously uncovered code.
+Our approach provides a simple, general, and cost-effective means to generate test cases that can then be targeted to the commonly used portions of the software, or to the rarely used features.
+
+Despite their usefulness for test case generation, grammars-including probabilistic grammars-still have a lot of potential to explore in research, and a lot of ground to cover in practice.
+Our future work will focus on the following topics:
+
+
+Deep models.  At this point, our approach captures probabilistic distributions only at the level of individual rules.
+However, probabilistic distributions could also capture the occurrence of elements in particular contexts, and differentiate between them.
+For instance, if a + symbol rarely occurs within parentheses, yet frequently outside of them, this difference would, depending on how the grammar is structured, not be caught by our approach.
+The domain of computational linguistics  has introduced a number of models that take context into account.
+In our future work, we shall experiment with deeper context models, and determining their effect on capturing common and uncommon input features.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Grammar learning.  The big cost of our approach is the necessity of a formal grammar for both parsing and producing-a cost that can boil down to 1-2 programmer days if a formal grammar is already part of the system (say, as an input file for parser generators), but also extend to weeks if it is not.
+In the future, we will be experimenting with approaches that mine grammars from input samples and programs  with the goal of extending the resulting grammars with probabilities for probabilistic fuzzing.
+
+Debugging.  Mined probabilistic grammars could be used to characterize the features of failure-inducing inputs, separating them from those of passing inputs.
+Statistical fault localization techniques , for instance, could then identify input elements most likely associated with a failure.
+Generating "more of the same"  inputs, as in this paper, and testing whether they cause failures, could further strengthen correlations between input patterns and failures, as well as narrow down the circumstances under which the failure occurs.
+
+We are committed to making our research accessible for replication and extension.
+The source code of our parsers and production tools, the raw input samples, as well as all raw obtained data and processed charts is available as a replication package:
+
+
+        https://tinyurl.com/inputs-from-hell
+
+

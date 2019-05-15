@@ -1,0 +1,267 @@
+
+Bib    TEEnergy Efficiency Optimization of Generalized Spatial Modulation with Sub-Connected Hybrid Precoding
+
+Kai Chen2, Jing Yang2, Xiaohu Ge21, Yonghui Li3, Lin Tian4,
+Jinglin Shi45
+2School of Electronic Information and Communications, Huazhong University of Science and Technology, Wuhan, Hubei,
+ China
+3School of Electrical and Information Engineering, University of Sydney, Sydney, Australia
+4Beijing Key Laboratory of Mobile Computing and Pervasive Devices, Institute of Computing Technology, Chinese
+
+ Academy of Sciences, China
+5University of Chinese Academy of Sciences, China
+
+e-mail: xhge@mail.hust.edu.cn
+
+
+
+Energy efficiency (EE) optimization of millimeter wave (mm-Wave) massive multiple-input multiple-output (MIMO) systems is emerging as an important challenge for the fifth generation (5G) mobile communication systems. However, the power of radio frequency (RF) chains increases sharply due to the high carrier frequency in mm-Wave massive MIMO systems. To overcome this issue, a new energy efficiency optimization solution is proposed based on the structure of the generalized spatial modulation (GSM) and sub-connected hybrid precoding (HP). Moreover, the computation power of mm-Wave massive MIMO systems is considered for optimizing the EE. Simulation results indicate that the EE of the GSM-HP scheme outperforms the full digital precoding (FDP) scheme in the mm-Wave massive MIMO scene, and 88 computation power can be saved by the proposed GSM-HP scheme.
+
+
+energy efficiency, generalized spatial modulation, millimeter wave, massive MIMO
+
+Introduction
+Millimeter wave (mm-Wave) communication and massive multiple-input multiple-output (MIMO) are two key technologies in the fifth generation (5G) mobile communication systems. Despite the fact that the mm-Wave technology can enable high-rate communication, fast attenuation and short communication distance will limit the performance of mm-Wave communication systems. Fortunately, massive MIMO technology can provide high beamforming gain, which can concentrate the transmission energy in a certain direction and overcome the attenuation problem of mm-Wave transmission.
+
+Although the 5G mm-Wave massive MIMO systems can increase the spectrum efficiency, the large number of RF chains in the massive MIMO systems will consume huge energy and restrict the improvement of the EE. To reduce the energy consumption of RF chains, hybrid precoding (HP) technology is proposed to lessen the number of RF chains in the massive MIMO systems.There are two typical hybrid precoding structures currently, i.e. the sub-connected structure and the fully-connected structure. The sub-connected array adopts the structure that each RF chain is merely connected to part of the antennas through a phase shifter. In this way, system complexity is reduced at the cost of the antenna gain, which is more valuable for improving the EE.
+
+Generalized spatial modulation (GSM) is another technology that has shown promise in reducing the number of RF chains. By utilizing the additional spatial dimension, GSM can improve the EE of massive MIMO system while guaranteeing the spectral efficiency. The input data streams in GSM are divided into two parts, one part is the amplitude-phase modulation (APM) domain data streams for the traditional N-order symbol modulation, and the other part is the space-domain data stream for the antenna selection. GSM takes the index of activated antennas as spatial symbols that exploit degree of spatial freedom without introducing any RF chains. Therefore, combining GSM with mm-Wave massive MIMO system can effectively reduce the power consumption and hardware complexity.
+
+Most of the studies regarding the EE of cellular networks ignore the computation power of the base station or simply set it to a constant value. But points out that the computation power of the massive MIMO system will consume more than 50 energy at the base station, and the optimization of computation power plays a major role in the improvement of the EE for 5G cellular networks. In this paper, we study the EE of the system combining GSM with HP technology in the mm-Wave scene, and the computation power is considered in the analysis. The EE is analyzed with respect to the number of active users, RF chains, and antennas per group via simulations. Note that the GSM-HP system was first proposed in, in which spectral efficiency was studied. To the best of our knowledge, this paper is the first to research the EE of the GSM-HP system in the mm-Wave massive MIMO scene.
+
+The remainder of this paper is organized as follows. The system model of the GSM with sub-connected HP scheme is described in Section II. Section III analyzes the EE of the system. In Section IV, simulation results are provided, and Section V concludes this paper.
+
+System Model
+In this paper, we analyze the EE of the GSM with sub-connected HP scheme. The block diagram is given in Fig. , where a mm-Wave massive MIMO system with  transmit antennas and  single-antenna users is considered.
+
+
+
+System model of the GSM with sub-array HP scheme.
+
+The input of the system includes  space-domain data stream and  APM-domain data streams. The  APM-domain data streams are then transmitted to the baseband precoder to generate  RF-domain symbols. Since the sub-connected hybrid precoding structure is adopted, we divide the  transmit antennas into  antenna groups, and each group consists of  antennas, which satisfies . According to the principle of GSM, it is required that . Therefore, the space-domain date stream can control the switches to distribute the output signals of RF chains to  out of the  antenna groups, while the remaining  antenna groups will not be activated during the signal transmission period.
+
+The number of available spatial modulation schemes is symbolized by . Each spatial modulation scheme is determined by the space-domain data stream,  can thus be expressed as:
+
+
+where  denotes the binomial coefficient and  denotes the floor operation. We let  represent the -th spatial modulation matrix with . Due to the space limitation, the explanation for the spatial modulation matrix is omitted here, and more technical details can be found in. Finally, the received signal vector  is given as follows when the -th spatial modulation scheme is selected:
+
+
+where  represents the RF precoding matrix, and  represents the baseband precoding matrix when the -th spatial modulation matrix is selected. Limited by the total transmitting power  of the base station, the precoding matrix is required to satisfy:
+
+
+where  denotes the Frobenius norm of the matrix.
+
+We let  symbolize the  APM-domain data streams, where  obeys a complex Gaussian distribution with 0-mean and 1-variance, and  symbolize the additive white Gaussian noise (AWGN), where  obeys a complex Gaussian distribution with 0-mean and -variance.  denotes the transposition.
+
+ is the mm-Wave massive MIMO channel matrix, and  represents the channel matrix of the -th user. Obviously, , where  denotes the conjugate transposition. Due to the high-path-loss propagation characteristic in free space, the spatial selection and scattering of mm-Wave are limited. Meanwhile, the large-scale antenna array structure of the mm-Wave transceiver leads to high correlation of the antenna, and the number of propagation paths of mm-Wave is much smaller than that of transmission antennas. Therefore, it is not accurate to model the mm-Wave channel with the statistical fading distribution that used in conventional MIMO analysis in a sparse scattering environment. In this paper, we adopt the geometric channel model with a finite scattering and multipath to characterize the mm-Wave MIMO channel. The channel matrix of the -th user is given as:
+
+
+where  represents the number of multipath between users and the base station, and  represents the number of transmission antennas.  is the large-scale fading coefficient between the base station and the -th user, where  obeys a lognormal distribution with 0-mean and 9.2 dB-variance and  represents the distance between the -th user and the base station.  is the path loss factor and is set as 4.6 in this paper.  is the complex gain of the -th user on the -th multipath, which is considered as the small-scale fading coefficient. Furthermore,  is an independent and identically-distributed random variable for each  and .  and  represent the azimuth and elevation angle of the -th multipath between users and the base station from the antenna array of the base station, respectively. Compared with other antenna structures, the two-dimensional planar antenna array is smaller in size and less complex to make the most of the angle information of the signal, which is more suitable for a mm-Wave massive MIMO system. Therefore, we employ the planar antenna array structure in this paper. The array response  corresponding to azimuth angle  and elevation angle  is formulated as follows:
+
+
+where  represents the carrier wavelength and  represents the inter-element spacing. Besides,  and  are the row and column of antenna array, and the size of the antenna array is .
+
+Energy Efficiency Optimization
+
+In this paper, the energy efficiency  of mm-Wave massive MIMO systems is expressed as
+
+where  is the wireless channel capacity of mm-Wave massive MIMO systems, and  is the total power of mm-Wave massive MIMO systems.
+
+
+Wireless Channel Capacity
+According to the system model in Section II, the received signal of the  -th user is given as
+
+
+
+The spectral efficiency  of single-user GSM is calculated by the mutual information between ,  and , i.e.
+
+
+Since  is a discrete channel input, the mutual information above cannot be expressed in a closed form, which brings great inconvenience to the performance analysis. In, an approximate closed-form expression of spectral efficiency is provided:
+
+
+where  symbolizes the conditional covariance matrix of  when the -th spatial modulation matrix is chosen.  is given as follows:
+
+
+
+Based on the spectrum efficiency of the  -th user, the total channel capacity can be expressed as
+
+
+where  represents the bandwidth.
+
+
+A reasonable hybrid precoding algorithm can achieve the same system performance as the optimal full-digital precoding (FDP).Therefore, to simplify the analysis, we assume the performance of HP consistent with full-digital zero-forcing precoding when calculating the channel capacity.
+
+Power Consumption
+
+
+As mentioned in Section I, the computation power cannot be ignored or set to a constant in the mm-Wave massive MIMO scene. Similar to, we divide the total power of the base station into three parts, including transmission power, computation power and the fixed power:
+
+
+The detailed power consumption is modeled below based on the system introduced in Section II.
+
+Transmission Power
+Transmission power consists of power consumed by amplifiers, radio frequency and switches.
+
+The amplifier power  is expressed as
+
+where  stands for the efficiency of the amplifier.
+
+The RF power includes the power of RF chains and phase shifters in the RF precoding. Considering that there are only  out of  antenna groups chosen to work in the GSM system, hence the number of working antennas is , which is equal to that of phase shifters. With  symbolizing the power of each RF chain and  symbolizing the power of each phase shifter, the RF power is formulated as:
+
+
+
+Switches are required to select the antenna groups in the spatial modulation structure, the switch power can thus be expressed as
+
+
+According to (13) (14) (15), we then obtain the transmission power:
+
+
+
+Computation Power
+Computation power is composed of all the power consumed by the base station for calculation, including channel estimation, channel coding, and linear processing.
+
+The channel estimation is processed within a stable coherent block, therefore, the channel estimation power is expressed as the product of the number of coherent blocks unit time  and the energy consumption per channel estimation , i.e.
+
+
+where  is calculated by the coherence time  and the coherence bandwidth , i.e.
+
+
+
+ in (17) is given as
+
+where  represents the floating-point operations needed per channel estimation and  represents computation efficiency (in Gigaflops/Watt) of the base station. Assuming that the pilot-based channel estimation method is adopted, then  pilot sequences will be received at the base station. The length of each pilot sequence is , where  denotes the factor that enables the pilots to be orthogonal. The base station estimates the channel according to the product of the pilot and pilot sequences with the length of ,  can thus be formulated as
+
+
+
+According to (18) (19) (20), we obtain channel estimation power:
+
+
+Channel coding power is proportional to the information rate, which is written as
+
+
+where  represents the efficiency of channel coding (in Watt per bit/s).
+
+In this paper, linear processing includes baseband precoding and solution of the precoding matrix. The power of baseband precoding is expressed as:
+
+
+where  represents the floating-point operations per baseband precoding. The product of the baseband precoding matrix () and the data stream matrix () requires  floating-point operations. Considering that the baseband signal is in the complex domain, we modify the floating-point operations as
+
+
+
+According to (23) (24), the power of baseband precoding is given by
+
+
+
+The solution of the precoding matrix is carried out evert time channel estimation is processed, the power consumed by the solution of the precoding matrix can thus be expressed as the product of the number of coherent blocks unit time  and the energy consumption per solution operation :
+
+where  can be expressed as the ratio of floating-point operations required to perform a solution of the precoding matrix to the computation efficiency of the base station, i.e.
+
+
+The power consumed by the solution operation of the precoding matrix can then be concluded as:
+
+
+According to (25) (28), we obtain the linear processing power:
+
+
+Moreover, according to (21)(22)(29), the computation power can be expressed as:
+
+
+
+Fixed Power
+Other power, such as cooling, voltage conversion loss, etc., is set to the fixed power .
+
+Finally, by submitting (16) and (30) into (12), the total power of the base station is given as follows:
+
+
+
+Simulation Results
+In this section, we present the simulation results characterizing the EE of the considered GSM-HP system compared with traditional full-digital zero-forcing precoding system. In particular, the computation power is taken into account when calculating EE. The simulation parameters are given in Table I.
+
+
+Simulation Paraneters
+
+
+
+
+
+Energy efficiency VS. number of users of different schemes.
+
+In Fig. , we plot the EE of GSM-HP system and FDP system with respect to the number of users. It can be observed that the EE of FDP goes down as the number of users increases. Huge energy consumption, especially computation power is required by more users, while the FDP system cannot provide the corresponding capacity gain in the mm-Wave scene. The EE of GSM-HP is positively correlated with the number of users at the first beginning, and vanishes as more users are added, but is still superior to FDP. Spatial modulation technology utilizes spatial freedom to increase channel capacity without bringing in extra power consumption. Therefore, when there are not too many users, the capacity gain provided by spatial modulation can compensate for the decline in energy efficiency of the system. But the gain is finite, the EE decreases as users increases furthermore.
+
+
+
+Energy efficiency VS. number of RF chains of different schemes.
+
+The EE against the number of RF chains is investigated in Fig. . In this part of simulation, RF chains of the FDP scheme are required to be equal to the number of antennas, therefore, the EE of FDP is a constant value. While the EE of GSM-HP declines as the number of RF chains increases, indicating that the increasing RF chains bring in more energy consumption.
+
+
+
+Energy efficiency VS. number of antennas per group of different schemes.
+
+Fig.  depicts the relationship between the EE and the number of antennas per group. Note that FDP does not group the antennas, curves of the FDP scheme show the results of the same number of total antennas as the corresponding GSM scheme. In Fig. , the EE of GSM-HP increases with the increase in the number of antennas per group, while FDP decreases. According to the EE analysis in Section III, more antennas per group only introduces the energy consumption of channel estimation, solution of precoding matrices, and analog phase shifters in GSM-HP. While the times of mm-Wave channel estimation is small, resulting in the energy consumption of channel estimation and solution of precoding matrices being very low. Besides, the energy consumption of analog phase shifters can be ignored compared with the computation power. As a result, the increase in the number of antennas per group does not call for excessive energy consumption, but improves the capacity significantly, which contributes to higher EE.
+
+
+
+Computation power VS. number of users of different schemes
+(,,)=(14,16,8).
+
+Furthermore, to have a deeper view of what effect the proposed GSM-HP scheme will have on the computation power, we illustrate computation power versus the number of users in Fig. . As shown in Fig. , the computation power increases sharply  for both schemes along with more users. But the GSM-HP scheme can economize 88 power consumption compared with the FDP scheme, which shows great promise in improving the EE of 5G cellular networks.
+
+Conclusion
+In this paper, we investigate the EE of the GSM with sub-array HP scheme in the mm-Wave multi-user massive MIMO scene. The EE, considering the computation power, is modeled according to the GSM-HP system. Moreover, the relationships between the EE and the number of users, RF chains and antennas are analyzed. Simulation results show that, combining both GSM and HP technologies can lower the computation power by reducing the number of RF chains. The GSM-HP scheme can improve the EE compared with the traditional full-digital zero-forcing precoding scheme.
+
+Acknowledgment
+The authors would like to acknowledge the support from National Key RD Program of China (2016YFE0133000): EU-China study on IoT and 5G (EXICITING-723227)
+
+00
+
+X. Ge, H. Cheng, M. Guizani, and T. Han, "5G wireless backhaul networks: challenges and research advances," IEEE Network, vol. 28, no. 6, pp. 6-11, 2014.
+
+	
+F. Khan, Z. Y. Pi, and S. Rajagopal, "Millimeter-wave Mobile Broadband with Large Scale Spatial Processing for 5G Mobile Communication," 2012 50th Annual Allerton Conference on Communication, Control, and Computing, pp. 1517-1523, 2012.
+
+K. Taeyoung, P. Jeongho, S. Ji-Yun, J. Suryong, C. Jaeweon, and R. Wonil, "Tens of Gbps support with mmWave beamforming systems for next generation communications," in 2013 IEEE Global Communications Conference, 2013, pp. 3685-3690.
+
+X. Ge, K. Huang, C. Wang, X. Hong, and X. Yang, "Capacity Analysis of a Multi-Cell Multi-Antenna Cooperative Cellular Network with Co-Channel Interference," IEEE Transactions on Wireless Communications, vol. 10, no. 10, pp. 3298-3309, 2011.
+
+X. Y. Gao, L. L. Dai, S. F. Han, C. L. I, and R. W. Heath, "Energy-Efficient Hybrid Analog and Digital Precoding for MmWave MIMO Systems With Large Antenna Arrays," Ieee Journal on Selected Areas in Communications, vol. 34, no. 4, pp. 998-1009, Apr 2016.
+
+R. Zi, X. H. Ge, J. Thompson, C. X. Wang, H. C. Wang, and T. Han, "Energy Efficiency Optimization of 5G Radio Frequency Chain Systems," Ieee Journal on Selected Areas in Communications, vol. 34, no. 4, pp. 758-771, Apr 2016.
+
+J. A. Zhang, X. Huang, V. Dyadyuk, and Y. J. Guo, "Massive hybrid antenna array for millimeter-wave cellular communications," IEEE Wireless Communications, vol. 22, no. 1, pp. 79-87, 2015.
+
+A. Alkhateeb, O. E. Ayach, G. Leus, and R. W. Heath, "Channel Estimation and Hybrid Precoding for Millimeter Wave Cellular Systems," IEEE Journal of Selected Topics in Signal Processing, vol. 8, no. 5, pp. 831-846, 2014.
+
+M. Di Renzo, H. Haas, A. Ghrayeb, S. Sugiura, and L. Hanzo, "Spatial Modulation for Generalized MIMO: Challenges, Opportunities, and Implementation," Proceedings of the IEEE, vol. 102, no. 1, pp. 56-103, 2014.
+
+A. Younis, N. Serafimovski, R. Mesleh, and H. Haas, "Generalised spatial modulation," in 2010 Conference Record of the Forty Fourth Asilomar Conference on Signals, Systems and Computers, 2010, pp. 1498-1502.
+
+T. Lakshmi Narasimhan and A. Chockalingam, "On the Capacity and Performance of Generalized Spatial Modulation," IEEE Communications Letters, vol. 20, no. 2, pp. 252-255, 2016.
+
+X. Ge, S. Tu, G. Mao, C. Wang, and T. Han, "5G Ultra-Dense Cellular Networks," IEEE Wireless Communications, vol. 23, no. 1, pp. 72-79, 2016.
+
+I. Humar, X. Ge, L. Xiang, M. Jo, M. Chen, and J. Zhang, "Rethinking energy efficiency models of cellular networks with embodied energy," IEEE Network, vol. 25, no. 2, pp. 40-49, 2011.
+
+X. Ge et al., "Energy-Efficiency Optimization for MIMO-OFDM Mobile Multimedia Communication Systems With QoS Constraints," IEEE Transactions on Vehicular Technology, vol. 63, no. 5, pp. 2127-2138, 2014.
+
+X. Ge, S. Tu, T. Han, Q. Li, and G. Mao, "Energy efficiency of small cell backhaul networks based on Gauss¨CMarkov mobile models," IET Networks, vol. 4, no. 2, pp. 158-167, 2015.
+
+X. Ge, J. Yang, H. Gharavi, and Y. Sun, "Energy Efficiency Challenges of 5G Small Cell Networks," IEEE Commun Mag, vol. 55, no. 5, pp. 184-191, May 2017.
+
+L. Z. He, J. T. Wang, and J. Song, "On Generalized Spatial Modulation Aided Millimeter Wave MIMO: Spectral Efficiency Analysis and Hybrid Precoder Design," Ieee Transactions on Wireless Communications, vol. 16, no. 11, pp. 7658-7671, Nov 2017.
+
+O. E. Ayach, S. Rajagopal, S. Abu-Surra, Z. Pi, and R. W. Heath, "Spatially Sparse Precoding in Millimeter Wave MIMO Systems," IEEE Transactions on Wireless Communications, vol. 13, no. 3, pp. 1499-1513, 2014.
+
+X. Ge, B. Yang, J. Ye, G. Mao, C. Wang, and T. Han, "Spatial Spectrum and Energy Efficiency of Random Cellular Networks," IEEE Transactions on Communications, vol. 63, no. 3, pp. 1019-1030, 2015.
+
+L. Xiang, X. Ge, C. Wang, F. Y. Li, and F. Reichert, "Energy Efficiency Evaluation of Cellular Networks Based on Spatial Distributions of Traffic Load and Power Consumption," IEEE Transactions on Wireless Communications, vol. 12, no. 3, pp. 961-973, 2013.
+
+Y. H. Guo, L. X. Li, X. C. Wen, W. Chen, and Z. Han, "Sub-array Based Hybrid Precoding Design for Downlink Millimeter-Wave Multi-User Massive MIMO Systems," 2017 9th International Conference on Wireless Communications and Signal Processing, 2017.
+
+E. Bjornson, L. Sanguinetti, J. Hoydis, and M. Debbah, "Optimal Design of Energy-Efficient Multi-User MIMO Systems: Is Massive MIMO the Answer?," IEEE Transactions on Wireless Communications, vol. 14, no. 6, pp. 3059-3075, 2015.
+
+S. K. Mohammed, "Impact of Transceiver Power Consumption on the Energy Efficiency of Zero-Forcing Detector in Massive MIMO Systems," IEEE Transactions on Communications, vol. 62, no. 11, pp. 3874-3890, 2014.
+
+R. Hunger, "Floating Point Operations in Matrix-Vector Calculus," Munich University of Technology, Inst. for Circuit Theory and Signal Processing Munich2005.
+
+

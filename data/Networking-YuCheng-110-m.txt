@@ -1,0 +1,307 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*
+
+op-tical net-works semi-conduc-tor IEEEtran
+
+theoremTheorem
+lemmaLemma
+remarkRemark
+problemProblem
+
+
+
+Energy Efficient Spectrum Sensing for State Estimation over A Wireless Channel
+Xianghui Cao1,
+Xiangwei Zhou2 and Yu Cheng1
+
+1Department of ECE, Illinois Institute of Technology, Chicago, IL 60616.
+Email: xcao10,cheng@iit.edu
+
+2Department of ECE, Southern Illinois University Carbondale, Carbondale, IL 62901.
+Email: xzhou@engr.siu.edu
+
+
+
+
+The performance of remote estimation over wireless channel is strongly affected by sensor data losses due to interference. Although the impact of interference can be alleviated by performing spectrum sensing and then transmitting only when the channel is clear, the introduction of spectrum sensing also incurs extra energy expenditure. In this paper, we investigate the problem of energy efficient spectrum sensing for state estimation of a general linear dynamic system, and formulate an optimization problem which minimizes the total sensor energy consumption while guaranteeing a desired level of estimation performance. The optimal solution is evaluated through both analytical and simulation results.
+
+
+
+Energy efficiency; Kalman filter; packet loss; spectrum sensing; state estimation
+
+
+
+Introduction
+Estimating the state of dynamic processes is a fundamental task in many real-time applications such as environment monitoring, health-care, smart grid, industrial automation and wireless network operations.
+Consider remotely estimating the state of a general linear dynamic system, where sensor data are transmitted over a wireless channel to a remote estimator. Due to interference from other users on the same channel, the sensor data may randomly get lost, which can significantly affect the estimation performance.
+
+To alleviate the impact of interference, a sensor can adopt the "listen before talk" strategy, i.e., it can sense the channel first and only transmit data when the channel is clear. With spectrum sensing, the problem of estimation stability has been studied in, and the questions of whether and to what extent the state estimation performance can be improved have been addressed in. However, since both data transmission and spectrum sensing are energy consuming, the system energy efficiency becomes an important while challenging issue, which has not been studied in the literature yet.
+
+In this paper, we investigate the problem of energy efficient spectrum sensing for state estimation over a wireless channel. Specifically, we consider when and how long to perform spectrum sensing in order to minimize the sensor's total energy consumption while guaranteeing a certain level of estimation performance. The problem is modeled as a mixed integer nonlinear programming (MINLP) which jointly optimizes the spectrum sensing frequency and sensing time, subjecting to an estimation performance constraint. The joint optimization in fact achieves a balance between spectrum sensing and transmission energy consumption. We derive a condition under which the estimation error covariance is stable in mean sense. Since the mean estimation error covariance is usually a random value and may vary slightly but not converge along time, we resort to a close approximation of the constraint which results in an approximated optimization problem whose solution suffices the original problem. Finally, we provide both analytical and simulation results of the solution to the optimization problem. The remainder of the paper is organized as follows. Section  presents system model and optimization problem. The approximation problem is then introduced and analyzed in Section . Section  presents some simulation results, and Section  concludes this paper.
+
+
+System Model and Problem Setup 
+We consider estimating the state of a general linear discrete-time dynamic process as follows.
+
+
+.
+
+where  is the dynamic process state (e.g., environment variable) which changes along time. A wireless sensor is deployed to measure the process state and report the measurement to a remote estimator, where the sensor's measurement about  is . In the above,  and  are dimensions of  and , respectively. Note that the estimator only has noisy information of both process model and sensor measurements. The noises are denoted as  and  with ,  and , where  denotes the transpose of a matrix or vector.  and  are constant matrices. Assume that  has full column rank and that  is controllable.
+
+The sensor data are transmitted to a remote estimator where the transmissions are augmented by the spectrum sensing technique. The estimator applies a modified Kalman Filter to estimate the system state  recursively. Given the system model as shown in (), define  and  as the prediction and estimate of the system state at step , respectively. Define  and  as the covariance of the prediction and estimation errors, respectively. According to, the estimation process can be given as follows.
+
+with a given initial value , where  is an identity matrix of compatible dimension. In the above,  represents whether the measurement packet is dropped or not in step , i.e.,  if successfully received and  otherwise.  characterizes the packet loss rate.
+
+Let  and  represent the idle and busy periods of the channel, respectively. We assume that
+*
+    _I(t) &= 1-e^-t and  _B(t) = 1-e^-t.
+
+Thus, ,  and the idle and busy probabilities are  and , respectively. Define  as the probability that the channel will keep idle for at least  period of time conditioned on that it is currently idle. We have
+*
+&1p_I^0_- P[an idle period begins][1-_I(t_x-t)]dt
+
+&= 1p_I^_0 11+1[1-_I(t_x+t)] dt
+
+&= ^_0 e^-(t_x+t) dt= e^-t_x.
+
+
+We assume that the sensing time  is bounded within  and is much smaller than both  and . Therefore, the channel state does not change during spectrum sensing (almost surely), and henceforth we can treat the sensing period as a point in time. The sampling period , so that the packet drop rate in the current sampling period is irrelevant with that in previous steps. Based on this, the measurement packet drop rate, i.e., , also can be deemed time-independent.
+
+Before transmitting a packet, the sensor must check the channel state and transmit packet only when the channel is available (in idle state). We adopt the energy detection as our spectrum sensing method. Let  be the sensing outcome and define following two probabilities(In energy detection, whether the channel is idle is judged based on whether the detected energy is below a threshold , referring to for more details. Here, for simplicity, when the channel is idle, we assume  where  is the channel noise power; otherwise, we assume  with  as the received signal power.).
+
+p_d = &P[s_c='idle'  channel is idle]
+
+         =& Q((1-_d)W), 
+
+p_f = &P[s_c='idle'  channel is busy]
+
+         =& Q((1-_f)W), 
+
+where ,  is the channel bandwidth, and . In the following,  and  are called the correct and false detection probabilities, respectively.
+
+After sensing, the sensor will transmit packet only if the sensing result indicates an idle channel (we call this event a successful sensing). Thus, the transmission probability is
+
+     p_tx &= p_Ip_d + p_Bp_f = 1+(p_d + p_f).
+
+
+Define a sequence of variables  as
+
+
+Let , which is called the spectrum sensing schedule. In this paper, we restrict our attention to strict periodical spectrum sensing, i.e., , where  represents the reciprocal of the sensing frequency.
+
+
+Problem Formulation
+Let  and  denote the amounts of energy consumed by the sensor for conducting spectrum sensing in a unit time and transmitting a measurement packet (assume all packets are of the same length), respectively. If , the average amount of energy consumed by the sensor in th step is . Therefore, under schedule , the average energy consumption in a single step is
+
+     = 1n _s= 1n(e_s + p_txe_tx).
+
+
+
+The estimation performance can be characterizes by the error covariance . For ease of exposition, hereafter, we let . Based on the estimation process above, we can see that  is a function of the random variable ; hence it is both random and time-varying and may not converge along an infinite horizon. Therefore, we consider the long-time average of the expected , i.e., , where  is a sufficiently large number. We aim to bound this average value below a user defined threshold . With this constraint, our optimization problem can be formulated as follows.
+
+Find the optimal schedule  and spectrum sensing time  to
+
+
+
+As can be seen, Problem  is a mixed integer nonlinear programming. Note that, through the joint optimization, the sensing energy and transmission energy are balanced.
+
+
+Main Results
+
+Estimation Stability
+To satisfy the constraints in (), the sequence  must be stable, i.e., . For any , if , based on the estimation process above, we have
+
+P_k=&AP_k-1A^T+Q 
+
+& -_kAP_k-1C^T(CP_k-1C^T+R)^-1CP_k-1A^T 
+
+=& (1-_k)AP_k-1A^T+Q
+
+&+_kA(P^-1_k-1+C^TR^-1C)^-1A^T
+
+                =& (1-_k)AP_k-1A^T+Q + _kA_k-1A^T,
+
+where  is upper-bounded by  (notice that  has full column rank).
+
+Otherwise, , which is similar to the case that the measurement packet gets lost. Then, . Consider the schedule . We have
+
+P_k_i-1=& AP_k_i-2A^T+Q = 
+
+                =& A^n-1P_k_i-1(A^T)^n-1+^n-2_t=0A^tQ(A^T)^t.
+
+Substituting the above equation into () yields
+
+P_k_i=&(1-_k_i)A^nP_k_i-1(A^T)^n+(1-_k_i)^n-1_t=1A^tQ(A^T)^t
+
+                    &+Q + _k_iA_k_i-1A^T, 
+
+E[P_k_i]=&(1-)A^nE[P_k_i-1](A^T)^n+(1-)^n-1_t=1A^tQ(A^T)^t
+
+                        & +Q + AE[_k_i-1]A^T, 
+
+where  is the successful packet reception rate under , which can be calculated by
+
+&=P[_k=1_k=1,s_c,k='idle']
+
+            &=p_Ip_d = + p_d e^-t_x,
+
+where  is the spectrum sensing result. Since  is a finite constant, the stability of  is equivalent to that of the original sequence . Moreover, since  is bounded by a constant, the stability of  is further equivalent to that of . Therefore, it is easy to obtain the following condition which is both necessary and sufficient for the stability of .
+
+
+    ,  is stable if and only if
+    
+          (1-)_^2n(A) < 1,
+    
+    where  is the maximum eigenvalue of a square matrix.
+
+
+Since , () indicates that . Therefore, an upper bound of  can be obtained based on () as follows.
+
+
+Problem Approximation
+As shown in (), since  appears in the inverse term of ,  will depend on all possible values of the sequence . Moreover,  may not necessarily converge. As a result, it is mathematically difficult to obtain the long-term average of . Therefore, we resort to an upper bound of  to sufficiently satisfy the constraint in Problem . Based on Theorem 4 in, we have
+
+E[P_k]=&E[-_kAP_k-1C^T(CP_k-1C^T+R)^-1CP_k-1A^T]
+
+&+E[AP_k-1A^T+Q]
+
+&-AE[P_k-1]C^T(CE[P_k-1]C^T+R)^-1CE[P_k-1]A^T
+
+                        &+ AE[P_k-1]A^T+Q.
+
+
+Define a sequence  with
+
+Y_k =& AY_k-1A^T+Q 
+
+        &-_kAY_k-1C^T(CY_k-1C^T+R)^-1CY_k-1A^T.
+
+Then,  if we let . Lemma  characterizes the sequence ; its proof is omitted due to limited space.
+
+    If () holds,  such that
+    
+     is monotonically decreasing as either  increases or  decreases. Furthermore, for a sufficiently large ,
+    
+       1L^L_k=1E[P_k] 1L^L_k=1Y_k Y.
+    
+
+
+Based on Lemma , the constraint in Problem  can be approximated as . Due to the monotonicity of  in , it is equivalent to say that  where  is the unique solution of  to . On the other hand, since , the inequality  yields another upper bound on :
+
+
+Therefore, we get an approximation of Problem  as below.
+
+Find the optimal schedule  and spectrum sensing time  to
+
+
+.
+
+
+
+Optimal Solution Analysis
+Given any , Problem  reduces to a subproblem with  as the only decision variable. Since , the optimal  and  can be obtained by solving  such subproblems. In the following, we analyze the optimal solution  under any given . Let . We focus on that , while the case that  can be analyzed in the same way. For ease of analysis, we assume  is continuous. Given , the subproblem has following properties.
+
+         
+        =& (1-p_1)W22(_d-1)e^-(1-_d)^22W
+
+         
+           
+     =& 1n(e_s + e_txW2(1+)2f(_d,_f,))
+            
+
+f(_d,_f,) & (_d-1)e^-(1-_d)^22W
+
+      & - (1-_f)e^-(1-_f)^22W.
+
+
+Depending on the values of  and  (note that ), the shapes of the  and  curves are described as follows.
+
+1) If either  and  or  and , it is easy to see that  and , which means that both  and  are increasing as  increases. This corresponds to case 1 as shown in Fig. .
+
+2) If  and , since ,  varies from positive infinite to a negative value and finally converges to 0. Depending on the parameters such as  and , the shape of  will be in the form of either case 1 or case 2 as shown in Fig. .
+
+3) If , one can verify that ; hence,  increases from negative infinite to a positive value. Therefore, as shown in Fig. ,  is a convex function.
+
+4) Otherwise, . Then,  either. Consequently,  and . As shown in Fig. , the objective function is convex.
+
+[!ht]
+
+
+        [Case 1]
+            
+            
+        
+        
+        [Case 2]
+            
+            
+        
+        
+        [Case 3]
+            
+            
+        
+        
+        [Case 4]
+            
+            
+        
+
+Illustrations of the optimal  under different  and . 
+
+
+As shown in the figure, in case 1, the optimal  is the smaller one between  and the point where . In the other cases, let  and  be the solution points for  and , respectively. In case 2,  is among . In the other cases, .
+
+
+Simulation Results
+In our simulations, we consider a linear system () with , ,  and , where  is the 2-by-2 identity matrix. The sensor samples the system every  second and the transmission time of each measurement packet is . The wireless channel has bandwidth , noise power  and signal-to-noise ratio . The default average busy and idle rates for the channel are  and , respectively. Other parameters are: , , . The estimation performance requirement is set as , where  is defined in Lemma .
+
+The optimal solutions of Problem  are depicted in Fig. . In the left figure, we vary the channel idle probability  by gradually increasing . The results show that, under a certain , the optimal sensing time  drops quickly as the idle probability increases, which in turn results in the decrease of the average energy consumption . In fact, as the channel quality becomes better, less sensor energy will be wasted for conduction unsuccessful sensing  and collided transmissions. Meanwhile, when  increases from 0.3 to 1, the optimal  increases piecewise, which means that the sensor conducts spectrum sensing and packet transmission less frequently. Therefore, generally speaking, the energy consumption decreases as  increases.
+
+The right figure demonstrate the optimal solutions under varying . As  increases, i.e., the transmission energy becomes to dominate the total energy , the sensor's best strategy becomes to transmit data less frequently but more reliably in order to avoid collision and save energy. Therefore, it will use a larger  and spend more sensing time to increase the sensing accuracy, which are clearly shown in Fig. .
+
+[!ht]
+
+
+        []
+              
+            
+        
+        
+        []
+            
+            
+        
+
+Optimal solutions under varying  and . 
+
+
+
+
+Conclusion
+We have studied the energy efficient spectrum sensing problem for remote state estimation and formulated it as a mixed integer nonlinear programming problem. Both analytical and simulation results of the optimal solutions of the spectrum sensing time  and period  have been provided. We showed that, as  increases,  increases piecewise and the resulted energy consumption decreases. On the other hand, both  and  increase piecewise as  increases. Our future directions include extending the idea to multiple channel and multiple sensor scenarios.
+
+
+IEEEtran
+
+
+
+

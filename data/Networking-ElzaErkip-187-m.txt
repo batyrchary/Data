@@ -1,0 +1,335 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+24cm
+theoremTheorem
+lemma[theorem]Lemma
+remark[theorem]Remark
+*Max
+
+[1].1in.1in
+
+
+
+
+definecolor
+
+
+
+thmTheorem[section]
+cor[thm]Corollary
+lem[thm]Lemma
+prop[thm]Proposition
+defnDefinition[section]
+remRemark[section]
+
+
+
+
+Optimal Transmission Policies for Energy Harvesting Two-hop Networks
+Oner Orhan and Elza Erkip
+
+Dept. of ECE, Polytechnic Institute of New York University
+
+oorhan01@students.poly.edu, elza@poly.edu
+
+
+
+In this paper, a two-hop communication system with energy harvesting nodes is considered. Unlike battery powered wireless nodes, both the source and the relay are able to harvest energy from environment during communication, therefore, both data and energy causality over the two hops need to be considered. Assuming both nodes know the harvested energies in advance, properties of optimal transmission policies to maximize the delivered data by a given deadline are identified. Using these properties, optimal power allocation and transmission schedule for the case in which both nodes harvest two energy packets is developed.
+
+
+Introduction
+Recent advances in energy harvesting devices allow wireless sensor networks to operate in a self-powered fashion for extended periods of time. However, due to size of sensors and low ambient energy sources, harvested energy from environment is low. Hence, efficient utilization of available energy is essential to increase lifetime of sensor networks as well as to obtain maximum amount of information from sensors. Optimal transmission polices for energy harvesting nodes have recently attracted significant interest-. Sharma et al.  and Castiglione et al.  investigate optimal policies for stochastic energy arrivals. While gives optimal policies under data queue constraints, generalizes the framework to study power allocation for both source acquisition and transmission under distortion constraints. Other line of work, such as- studies off-line transmission policies, where the harvested energies are known in a non-causal fashion at the transmitters. The scenarios investigated include single link, single link with varying channel SNR, single link fading channel, multiple access channel, broadcast channel, orthogonal half-duplex relay channel, and two-hop networks. Similarly, single energy harvesting link under battery imperfections is investigated in and. The non-causal knowledge of the energy harvesting process may be applicable for predictable energy models (such as), or more generally allows one to obtain upper bounds of performance.
+
+In this paper, we focus on a two-hop energy harvesting wireless network with a half-duplex relay. Since one of the main sources of energy consumption of a node is the power amplifier, we assume that harvested energies are only used for transmission purposes. We also assume that both the source and the relay know the harvested energies in advance, and that energies arrive with arbitrary amounts at arbitrary times. Moreover, both the source and the relay have infinite size battery and data buffer. Our goal is to find an optimal transmission policy (which includes scheduling and power allocation), subject to energy causality constraints at the source and the relay and data causality constraint at the relay, that maximizes total transmitted data from the source to the destination until a given deadline T. Note that also studies two-hop communication with a half duplex relay; however only single energy arrival at the source is considered, significantly simplifying the problem. Our framework is more general, in that, we identify properties of the optimal transmission policy for the multi-energy arrival case both at the source and the relay. Then, using these properties, we provide the optimal policy for two energy arrival case. Optimal transmission policy for the multi-arrival case builds upon the two-arrival solution will be discussed in future work.
+
+In the next section, we describe the general system model. In Section , we describe some properties of the optimal transmission policy. In Section IV, we provide the solution for two energy arrivals to the source and the relay. In Section V, simulation results are presented. We conclude in Section VI.
+
+System Model
+
+We consider a two-hop communication system with energy harvesting source and relay as shown in Figure . The relay is half-duplex. Communication takes place until the deadline T. The source and the relay harvest energies with amounts  and  at times  and , respectively. We set  and . Inter-arrival times of energy packets are denoted as  and  for all  for the source and the relay, respectively. We assume that the energy arrival profiles are known to all nodes in the network prior to transmission. In addition, it is assumed that each node has an infinite size, ideal battery (instantly chargeable and no leakage) and they consume harvested energies only for transmission purposes. Furthermore, relay has unlimited data buffer.
+[!t]
+
+ 
+Two-hop system with energy harvesting source and relay
+
+
+
+We consider a non-negative, strictly concave and monotonically increasing power-rate function for each terminal, R=g(p), where  is the instantaneous power. These properties are satisfied in many widely used power-rate models, for example, Shannon capacity  for complex additive white Gaussian noise channel with channel gain  and unit noise variance. We assume that the source and the relay are allowed to change their data rate instantaneously by changing their power, p(t). The source-relay and the relay-destination channel gains  and  are in general different. However, since the amplitude of the channel gain can be normalized by scaling the harvested energy, without loss of generality, we assume that each link has unity gain and therefore characterized by the same power-rate function.
+
+The transmission schedule indicates which node is transmitting at a given time. Recall that half-duplex constraint suggests the source and the relay cannot transmit simultaneously. Epoch  of the source denotes the transmission period of the source when it is continuously scheduled for the 'th time. Duration of the epoch  is denoted by . Similarly,  denotes the duration of 'th epoch of the relay. The power allocation functions of the source and the relay depend on harvested energies and are represented by  and , respectively. Due to half-duplex constraint  and the transmission schedule can be inferred from the power allocation functions  and . The total transmitted data by the source and the relay up to time  can be expressed as  and , while the consumed energies are  and . A transmission policy refers to the pair of power allocation functions .
+
+A transmission policy should satisfy energy and data causality constraints in order to be feasible. The feasible set of transmission policies can be represented as
+
+
+Our goal is to maximize the throughput as in, which is equivalent to maximizing the total transmitted data from the source to the destination until the deadline T. The corresponding optimization problem can be formulated as
+
+
+In the next section, we will provide some basic properties of the optimal transmission policy which will then be used in Section  to derive an optimal policy for .
+
+Properties of Optimal Transmission Policy
+
+
+
+In a single epoch, constant power transmission is optimal between energy harvests.
+
+
+This follows from concavity of  and by Jensen's inequality; an explicit proof is given in for single link system.
+
+
+
+
+Lemma 1 suggests that without loss of generality we can consider power allocation functions  and  that consist of a sequence of nonzero constant power levels  and , , , respectively. We assume that the power level   has duration  .
+
+
+
+
+It is optimal to deplete all batteries by the deadline T.
+
+
+This is proved in for a single energy harvesting link with finite capacity battery. The proof can be simply extended to our model.
+
+
+The following remarks will be useful in proving the subsequent lemmas.
+
+
+
+Given any feasible transmission policy, delaying an epoch of the relay does not violate feasibility (provided half-duplex constraint is still satisfied) because postponing the relay transmission allows it to store more energy. Similarly, moving an epoch of the source to an earlier time (subject to half-duplex and source energy causality constraints) does not violate data causality. Moreover, the above argument still holds if an epoch of the relay is delayed to switch with a later epoch of the source.
+
+
+
+
+Consider an optimal transmission policy. We can obtain another feasible policy by moving all source epochs to earlier time instants (possibly by delaying relay epochs) provided energy causality of the source is maintained. Using Remark  we can argue that the new transmission policy maintains optimality. Hence, we will restrict attention to policies for which the source transmits whenever it has energy.
+
+
+
+
+Given any feasible transmission policy for which  for some , we can find another feasible policy such that it transmits at least as much data by fully utilizing channel, that is never turning off both the source and the relay.
+
+
+This is argued in for a single link using properties of . To extend it to the two-hop case we define an idle time as a period for which . For any feasible transmission policy, if we have an idle time right after an epoch of the source, we can invoke arguments similar to to extend the epoch of the source and ensure that there is no idle time. Note that this strategy continues to satisfy energy and data causality constraints. On the other hand, if an idle time occurs after an epoch of the relay preceded by a source epoch, the relay epoch can de delayed without violating feasibility (see Remark ), and the previous argument can be used to extend the source epoch to result in no idle time. For the case of multiple consecutive relay epochs this argument can be applied repeatedly to each epoch.
+
+
+
+
+In an optimal transmission policy, the following properties are satisfied:
+
+Epoches that belong to same node are not adjacent, that is, each epoch of the source is followed by an epoch of the relay.
+Source and relay batteries cannot be empty simultaneously for any .
+A new epoch of the source starts immediately after the data buffer of the relay becomes empty.
+
+
+
+
+
+In an optimal transmission policy, source and relay power levels form a non-decreasing sequence in time that is  and .
+
+
+First, we consider source power levels within an epoch. For any transmission policy, keeping the consumed energy and duration of each source epoch the same, the source-relay communication in that epoch can be thought of as a single energy harvesting link. Using where transmission time minimization problem is considered, we can argue that by having monotonically increasing power levels in that epoch, the duration of the epoch can be decreased while the amount of data transmitted and total energy consumed in that epoch remains the same. This, however, leads to an idle time, which can be removed by Lemma . The same argument is valid for the relay as well.
+
+Next, we consider source power levels in successive epochs. Consider power levels  and  in two successive epochs of the source (recall that zero power levels are not considered in ). Assume . Then, by keeping  and  the same and equalizing power levels, the source transmits strictly more total data due to strict concavity of . However, the transmitted data in the first epoch decreases due to decrease in . Therefore, the new policy may violate data causality in the following relay epoch. By delaying the relay epoch (Remark ), we can find another transmission policy which does not violate data causality. Similarly, for two successive relay epochs assuming , the relay transmits strictly more data by equalizing power levels. Unlike source, decrement of transmitted data in the first epoch is always feasible. However, increase in the total transmitted data by the relay may violate data causality in the following epochs. In that case, the new policy can be further replaced by another one which is obtained by increasing duration of preceding source epoch while keeping consumed energy the same and decreasing duration of the first relay epoch while keeping power levels equal. Clearly, the new policy transmits strictly more data. Finally note that after equalizing power levels of successive epochs, if necessary, power levels in each epoch can be further arranged to ensure that power does not decrease.
+
+
+
+
+Any feasible transmission policy can be replaced with one that satisfies the following property without decreasing the data rate: Within an epoch of source (relay), whenever the source (relay) power changes, total consumed source (relay) energy up to that point becomes equal to total harvested energy.
+
+
+Suppose for a feasible transmission policy, the statement of the lemma does not hold for a particular source epoch. Then by, the policy can be replaced by another one which transmits the same amount of data consuming the same energy but in a shorter epoch duration. Note that by this new policy satisfies the property specified in the Lemma. Then by Lemma , this policy can be further replaced by another one which transmits at least the same amount of data and leaves no idle time. The same argument is valid for the relay as well.
+
+
+
+
+Any feasible transmission policy can be replaced with one that satisfies the following property without decreasing the data rate: There is a relay epoch between source power levels  provided there is nonzero energy in relay battery just before the time that source power level changes.
+
+
+Without loss of generality, consider an epoch of the source in which the statement of the Lemma does not hold. Also assume this epoch has two power levels  such that total consumed source energy up to the time that the power level changes equal to total harvested source energy (Lemma ). By keeping consumed energy for the duration of each power level ( and ) the same, the policy can be replaced by another one which has power levels ,  of durations ,  with  and relay transmitting for  duration in between these power levels provided it has energy. Relay transmission is obtained by moving  portion of the following relay epoch earlier. Since relay has nonzero data in its data buffer, the new policy remains feasible. In the new policy, difference between the first and second power levels  and  decreases without changing total transmission duration of the nodes, hence, the source transmits more data due to strict concavity of .
+
+
+
+
+In an optimal transmission policy, whenever the relay power levels change in two successive epochs, either the data or the energy buffer of the relay is empty at the end of the first epoch.
+
+
+The proof is given by contradiction. Suppose the lemma is not satisfied. Consider power levels  in two successive epochs of relay (see Lemma ). Then, by keeping  and  the same we can increase  and decrease  unless battery or data buffer of the relay is empty at the end of the first epoch. As a result, the relay transmits strictly more data due to strict concavity of the . This operation can be done until battery or data buffer depletes, or power levels equalize. However, due to increase in the total delivered data by the relay, the new transmission policy may violate data causality in the subsequent epochs. In that case, as in the proof of Lemma  this policy can be further replaced by another one which is obtained by decreasing duration of the first relay epoch, and increasing duration of the preceding source epoch until data causality is satisfied. Clearly, in the new transmission policy, the total transmitted data by the relay is increased compared to the initial policy. This results in a contradiction, hence the lemma must be true.
+
+
+
+
+In an optimal transmission policy, source and relay transmit same amount of data until the deadline.
+
+
+Consider a feasible transmission policy such that the source transmits more data than the relay until the deadline, i.e., , hence total delivered data to the destination is . While keeping the consumed energy in each epoch the same, increasing duration of an epoch strictly increases transmitted data in that epoch. Therefore, the initial policy can be replaced by another one of higher rate obtained by increasing duration of relay epochs while decreasing duration of the following source epochs under data causality constraint. However, if the first epoch of the source transmits more data than total transmitted data in the following relay epochs, we need to decrease the duration of the first source epoch while increasing duration of the first relay epoch. Note that increasing duration of the first relay epoch is always feasible due to . Combining these, we can find another feasible policy transmitting higher data such that source and relay transmit same amount of data until the deadline, i.e., .
+
+
+
+Optimal Policy for Two Energy Arrival at the Source and the relay
+
+In this section, using the properties developed in Section , we describe the optimal transmission policy for the two energy arrival case, . We use the cumulative curve model as in. We will refer to cumulative energy arrival curve as the harvested energy curve. Similarly, the transmitted energy curve refers to  or . By Remark  we express  by sequence of constant source power levels including zero power using the power vector  with the corresponding duration vector . Similarly,  and  can be defined. Note that () constitutes a transmission policy.
+
+The solution of the optimization problem () depends on the location of the corner points  and  of the harvested energy curves of the source and the relay, respectively, in the energy-time region. Here,  and  are the source and relay energy arrival instants,  and  are initial battery energies and the energy-time region of the source and the relay refer to the rectangles defined by the points  and , respectively. We first identify two sub-regions  and  of the energy-time region of the source as shown in Figure . Boundaries of these regions are specified by dashed lines, and will be described subsequently. Then, based on the location of  with respect to these sub-regions we identify regions on the energy-time region of the relay. If , there is a single relay region which is the complete relay energy-time region. If  we specify four sub-regions  for the relay corner point as illustrated in Figure . These sub-regions depend on the harvested energy curve of the source as well as . Boundaries of each region along with the respective optimal transmission policy will be described when the corresponding region is discussed.
+
+In the solutions described, it can be argued that obtained optimal power vectors  and  are unique. The proof of uniqueness will be omitted due to space constraints.
+
+
+[]
+
+
+
+
+[]
+
+
+
+
+(a) Source energy-time region and sub-regions for the corner point . (b) Relay energy-time region and sub-regions for the corner point . Cumulative harvested energy is represented by solid lines and boundaries of the regions are represented by dashed lines.
+
+
+
+
+Source Region 
+Source region  is defined such that the source will be able to transmit with constant power in a single epoch without violating energy constraints (Lemma , Remark ), and the relay will transmit in the remaining time (Lemma ). Thus, the problem reduces to single energy arrival for the source and two energy arrival for the relay, i.e., , . This problem is solved in which gives a unique optimal source epoch length . Clearly, the source transmitted energy curve given by the line starting from origin with slope  provides the boundary of  because the source can deplete all harvested energy in a single epoch if and only if the corner point  is above this line (Lemma ). Therefore the condition  defines region , and the algorithm in provides an optimal transmission policy.
+
+Source Region 
+Whenever , the corner point  will be in region .
+In this region, the source has two epochs (Lemma ), hence, the relay has two epochs (Lemma , Remark ). Also, the source has constant power levels  and  with lengths  and , respectively, in these epochs. The optimal transmission policy further depends on the region relay's corner point  lies in and will be specified below.
+
+Relay Region 
+In this sub-region, relay's harvested energy does not restrict its transmitted energy curve. Therefore we argue that total transmitted data is equal to the case that the relay harvests all its total energy  at . Using Lemma  and Lemma , both the source and the relay have a single power level in each epoch. We first find an optimal transmission policy by assuming that the source harvests all its energy  at . Since this corresponds to largest transmitted data, if we can find a feasible policy transmitting this amount of data, it needs to be optimal. Solving
+
+for  gives the optimal division of total time  between the source and the relay when all energies are harvested at . Equality in () is due to Lemma  (). To obtain a transmission policy we set  where t is the solution to (2) and use power levels as in the solution of (). The transmitted data in the first epoch of the source and the relay are then  and , respectively (Remark ). If , the transmission policy is feasible. Then, the optimal transmission policy is , , , , where  is the solution of ().
+
+If above transmission policy violates data causality constraint, i.e., , invoking Lemma , the optimization problem in () can instead be written as
+
+
+where , ,  and . The equality in () is due to empty data buffer at the end of the first relay epoch. Then, the optimal transmission policy is , , , , where ,  are the solutions to () subject to ().
+
+Clearly, the relay transmitted energy curve given by the optimal transmission policy () above provides the boundary between  and the other relay regions because if  is above this curve, the policy () is feasible.
+
+Relay Region 
+In this sub-region, energy causality is violated in the first epoch of the relay if the transmission policy in  is used. Therefore, using Remark , Lemma  and Lemma , the relay power level changes at  resulting in two power levels  and  in the first epoch of the relay, and a third power level  in the second relay epoch. Note that  and  are different only if the relay data buffer is empty at the end of the first epoch (Lemma ). In the optimal policy whether the data buffer is empty or not is not known in advance; therefore we provide two different solutions based on the state of the relay data buffer. When , we maximize () subject to
+
+
+where , . Note that,  are considered together as  because , and . The optimal policy is , , ,   where ,  are the solutions to ()-().
+
+If the above transmission policy violates data causality, i.e.,  in the above policy, we maximize () subject to
+
+
+where ,  and  with  corresponding to the consumed energy by the relay in the interval . The first constraint in () is due to empty data buffer at the end of the first relay epoch, and the second constraint in () is due to Lemma . The resulting optimal transmission policy is , , ,  where ,  and  are the solutions to () subject to ()-(). The boundary between  and  is specified as the vertical line at  (Remark ).
+
+Relay Region 
+We define this sub-region as the region in which the relay optimal transmission policy only uses the first harvested energy  in its first epoch and the second harvested energy  in the second epoch (Remark , Lemma ). Therefore, the relay has power levels  and  with durations  and  in the first and the second epoch of the relay, respectively. As discussed in Lemma , these power levels are different since all energy  is used in the first epoch. In the following lemma we prove that relay still has data in its buffer at the end of the first epoch.
+
+
+In an optimal transmission policy, relay has nonzero data at the end of the first epoch if .
+
+
+First consider a policy of the form described above in which the relay consumes  and has empty data buffer at the end of its first epoch. Let's denote corresponding optimal epoch durations of the source as . Now, consider the optimal policy in . Clearly, in that policy consumed energy in the first epoch of the relay is larger than . Let's denote corresponding epoch durations of the source as . Clearly,  and  due to concavity of . Then, in order to make the second policy consume  in the first epoch of the relay, we can increase first epoch duration  and decrease second epoch duration  of the source. We denote modified epoch durations of the second policy as . Then, we have two feasible policies both consuming  in the first relay epoch; one has source epoch durations  such that data buffer of the relay is empty at the end of the first relay epoch, the other one has source epoch durations . Consider the policy with epoch durations  that are convex combinations of  and . This policy satisfies energy causality and transmits strictly more data due to strict concavity of the objective function in (). Since , it is also feasible, and the relay has nonzero data at the end of its first epoch.
+
+
+Using Lemma , we maximize () subject to
+
+
+where , . The constraint in () is due to definition of . The optimal policy is , , ,  where ,  are the solutions to () subject to ()-().
+Relay Region 
+In this sub-region, energy causality is violated in the second epoch of the relay if the transmission policy in  is used. Therefore, the relay power level changes at  as argued in Lemma . Hence there is a single power level  in the first relay epoch and there are two power levels  and  in the second epoch. Note that  and  are different only if the relay data buffer is empty at the end of the first epoch (Lemma ). However, whether the data buffer is empty or not is not known in advance. Hence we first solve the case that relay data buffer is not empty. Solving
+
+
+for  gives the optimal total transmission duration of the source. We further have  because , and  (due to definition of ). The resulting optimal policy is , , ,  where  is the solution of ().
+
+If the above transmission policy is infeasible, i.e., , then we maximize () subject to
+
+
+where ,  and  with  corresponding to the consumed relay energy in interval . The resulting optimal policy is , , ,  where ,  and  are the solutions to () subject to ()-().
+
+There is no closed form expression for the boundary between  and , therefore to decide which relay region a corner point  lies in, we check the following conditions:
+
+If , the corner point  is in . This follows from constraint (), that is, if , the total transmitted data in the second epoch of source would be more than the total transmitted data in the second epoch of relay violating ().
+If , maximizing () subject to ()-() cannot give a feasible policy because ()-() require empty data buffer at  and . In this case we first solve (). If the resulting policy is not feasible, i.e. , then we conclude that . It can be argued that when , the solution of () never results in a feasible policy.
+
+
+
+Numerical and Simulation Results
+
+In this section, we provide simulation results to illustrate average performance improvement provided by the optimal transmission policy developed in Section  compared with a simple transmission policy. We set . We assume that for both source and relay, harvested energies are independently chosen from the exponential distribution with parameter  and  and  are uniformly distributed in the interval [0,1). Once harvested energies and harvest instances are randomly chosen, they are revealed to source and the relay, which can then carry out the corresponding transmission policies. We consider the Shannon power-rate function . The simple transmission policy operates in a time slotted fashion with slot durations . In the first slot, the source transmits and in the second slot the relay transmits. In each slot, the transmission powers are chosen to maximize the amount of data per hop using, and the total transmitted data is the minimum of transmitted data in each hop. Figure  shows the average throughput as a function of . This figure illustrates that significant throughput improvement is possible by employing the optimal transmission policy.
+
+We next fix , ,  for . Figure  shows the optimal throughput (total data transmitted/T) and the corresponding regions for the source/relay corner points as a function of . We observe that all parameters affect the location of the corner points and the resulting throughput.
+
+
+Conclusions
+In this paper we studied energy harvesting two-hop networks to maximize data delivered to the destination by a given deadline under non-causal knowledge of the harvested energy profiles. We first identified properties of an optimal transmission policy subject to energy and data causality constraints. Then, we provided the optimal policy for two energy arrival at the source and the relay. Numerical and simulation results clearly illustrate the benefits of employing an optimal policy. Details of the optimal policy for the multi-energy arrival case as well as online policies will be discussed in subsequent work.
+
+
+
+
+
+Performance comparison of the optimal transmission  policy with a simple one that operates in a time-slotted fashion.
+
+
+
+
+
+
+
+Optimal throughput and source and relay corner point regions as a function of  for , , .
+
+
+
+
+
+1
+
+W. K. G. Seah, Z. A. Eu, and H.-P. Tan, "Wireless sensor networks powered by ambient energy harvesting (WSN-HEAP) - survey and challenges," Wireless VITAE, pp. 1-5, 2009.
+
+V. Sharma, U. Mukherji, V. Joseph, and S. Gupta, "Optimal energy management policies for energy harvesting sensor nodes," IEEE Transactions on Wireless Communications, vol. 9, no. 4, pp. 1326-1336, Apr. 2010.
+
+P. Castiglione, O. Simeone, E. Erkip, and T. Zemen, "Energy-neutral source-channel coding in energy-harvesting wireless sensors," Proc. WiOpt, pp. 183-188, May 2011.
+
+J. Yang and S. Ulukus, "Transmission completion time minimization in an energy harvesting system," Proc. CISS, Mar. 2010.
+
+C. K. Ho and R. Zhang, "Optimal energy allocation for wireless communications with energy harvesting constraints," Arxiv preprint arXiv:1103.5290, Mar. 2011.
+
+O. Ozel, K. Tutuncuoglu, J. Yang, S., Ulukus, and A. Yener, "Transmission with energy harvesting nodes in fading wireless channels: Optimal policies," IEEE JSAC, vol. 29, no. 8, pp.1732-1743, Sep. 2011.
+
+J. Yang and S. Ulukus, "Optimal packet scheduling in a multiple access channel with rechargeable nodes,"  Proc. ICC, pp. 1-5, Jun. 2011.
+
+J. Yang, O. Ozel, and S. Ulukus, "Optimal packet scheduling in a broadcast channel with an energy harvesting transmitter," Proc. ICC, pp. 1-5, Jun. 2011.
+
+C. Huang, R. Zhang, and S. Cui, "Throughput maximization for the gaussian relay channel with energy harvesting constraints," Arxiv preprint arXiv:1109.0724, Sep. 2011.
+
+D. Gunduz and B. Devillers, "Two-hop communication with energy harvesting," Proc. CAMSAP, Dec. 2011.
+
+K. Tutuncuoglu and A. Yener, "Optimum transmission policies for battery limited energy harvesting nodes," Arxiv preprint arXiv:1010.6280, Sep. 2010.
+
+B. Devillers and D. Gunduz, "A general framework for the optimization of energy harvesting communication systems with battery imperfections," Arxiv preprint arXiv:1109.5490, 2011.
+
+M. Gorlatova, A. Wallwater, and G. Zussman, "Networking low-power energy harvesting devices : measurements and algorithms," Proc. IEEE INFOCOM, Apr. 2011.
+
+A. Ephremides, "Energy concerns in wireless networks," IEEE Wireless Communications, vol. 9, no. 4, pp. 48-59 Aug. 2002.
+
+E. Uysal-Biyikoglu, B. Prabhakar, and A. El Gamal, "Energy-efficient packet transmission over a wireless link," IEEE/ACM Transactions on Networking, vol. 10, no. 4, pp. 487-499, Aug. 2002.
+
+T. M. Cover and J. Thomas, Elements of information theory. New York: John Wiley and Sons Inc., 2006.
+
+M. A. Zafer and E. Modiano, "A calculus approach to energy-efficient data transmission with quality-of-service constraints," IEEE/ACM Transactions on Networking, vol. 17, no. 3, pp. 898-911, Jun. 2009.
+
+
+
+

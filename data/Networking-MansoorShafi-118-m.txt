@@ -1,0 +1,301 @@
+
+
+
+
+
+
+
+     
+  ../pdf/../jpeg/
+  
+  
+  .pdf,.jpeg,.png
+  
+  
+  
+    
+  ../eps/
+  
+  
+   .eps
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+op-tical net-works semi-conduc-tor
+#1
+
+
+
+
+Coordinated Two-Tier Heterogeneous Cellular Networks with Leakage Based Beamforming
+
+
+Harsh Tataria, Mansoor Shafi, Peter J. Smith and Pawel A. Dmochowski
+School of Engineering and Computer Science, Victoria University of Wellington, Wellington, New Zealand.
+Spark New Zealand, Wellington, New Zealand.
+ Department of Electrical and Computer Engineering, University of Canterbury, Christchurch, New Zealand.email:Harsh.Tataria, Pawel.Dmochowski@ecs.vuw.ac.nz, Mansoor.Shafi@spark.co.nz, Peter.Smith@canterbury.ac.nz
+
+
+
+In this paper we demonstrate the rate gains achieved by two-tier heterogeneous cellular networks (HetNets) with varying degrees of coordination between macrocell and microcell base stations (BSs). We show that without the presence of coordination, network densification does not provide any gain in the sum rate and rapidly decreases the mean per-user signal-to-interference-plus-noise-ratio (SINR). Our results show that coordination reduces the rate of SINR decay with increasing numbers of microcell BSs in the system. Validity of the analytically approximated mean per-user SINR over a wide range of signal-to-noise-ratio (SNR) is demonstrated via comparison with the simulated results.
+ 
+
+
+
+
+
+
+
+
+
+
+Introduction
+Due to the growing demand in data traffic, large improvements in the spectral efficiency are required. Network densification has been identified as a possible way to achieve the desired spectral efficiency gains. This approach consists of deploying a large number of low powered base stations (BSs) known as small cells. With the addition of small cell BSs, the overall system is known as a heterogeneous cellular network (HetNet). Co-channel deployment of small cell BSs results in high intercell interference if their operation is not coordinated.
+
+Interference coordination techniques such as intercell interference coordination (ICIC) has been extensively studied for multi-tier HetNet scenarios. ICIC relies on orthogonalizing time and frequency resources allocated to the macrocell and the small cell users. Orthogonalization in time is achieved by switching off the relevant subframes belonging to the macrocell thereby reducing inter-tier interference to the small cell BSs. Orthogonalization in frequency can be achieved with fractional frequency reuse where the users in the inner part of the cells are scheduled on the same frequency resources in contrast to the users at the cell edge whom are scheduled on available orthogonal resources. Distributed and joint power control strategies for dominant interference supression in HetNets is discussed in. The performance of multiple antenna (i.e., MIMO) HetNets using the above mentioned techniques is analyzed in and. The effects of random orthogonal beamforming with maximum rate scheduling for MIMO HetNets is studied in. The effects of imperfect channel state information (CSI) with limited feedback MIMO is investigated in for a two-tier HetNet.
+
+In addition to orthogonalization, interference coordination can also be achieved by means of transmit beamforming at the BSs. However, there seems to be limited literature on transmit beamforming techniques to coordinate interference in HetNets. Transmit beamforming techniques have been well explored in the multiuser (MU) MIMO literature to mitigate or reduce the effects of intracell interference. Performance superiority at low signal-to-noise-ratio (SNR) of the leakage based beamforming technique compared to zero-forcing beamforming (ZFBF) is shown in. With ZFBF, complete MU intracell interference cancellation takes place if perfect CSI is present at the BS and the number of transmit antennas exceeds the total number of receive antennas. However, leakage based beamforming focuses on maximizing the desired signal-to-leakage-noise-ratio (SLNR) without any restrictions on the number of transmit antennas. The focus of this paper is on the performance gains of a two-tier HetNet with active interference coordination. Intracell and intercell interference is coordinated by deploying leakage based beamformers at the macrocell and microcell BSs. We summarize the contributions of this paper as follows:
+
+We evaluate the performance gains of full coordination and macro-only coordination techniques relative to no coordination for two-tier HetNets. The impact of imperfect CSI on the performance of these coordination techniques is also investigated.
+We demonstrate the effect of network densification with varying degrees of BS coordination on the mean per-user signal-to-interference-plus-noise-ratio (SINR) and compare the simulated mean per-user SINR results with the analytical approximations over a wide range of SNR. The mean per-user SINR decreases with an increasing microcell count. However, we show that coordination substantially reduces the rate of SINR decrease.
+We show that in the absence of coordination, network densification does not provide any gain in the sum rate, whereas with coordination, a linear increase in the sum rate is observed.
+Notation: We use the symbols  and  to denote a matrix and a vector, respectively. , , , denote the conjugate transpose, the inverse and the trace of the matrix , respectively.  and  stand for the vector and scalar norms, respectively.  denotes the statistical expectation.
+
+
+System Model
+[!t]
+Illustration of a two-tier HetNet with desired and interfering links to mobile user  in the macrocell coverage area.
+
+
+System Description and Signal Model
+We consider downlink transmission in a two-tier HetNet comprising of a single macrocell BS and multiple microcell BSs, as shown in Fig. . We consider a typical scenario where the mobile users in the coverage area of a particular cell are served by the corresponding BS.  We assume that lossless and delayless backhaul links are present between each BS to exchange CSI, if desired.  We denote the total number of cells (including the macrocell and all microcells) as . We denote  the number of transmit antennas on BS  as  and the total number of single antenna users in cell  as . The received signal at mobile user  in cell  is given by 
+
+&y_n,k =
+
+&h_n,kw_n,ks_n,k_desired signal+ _i=1
+ik^k_nh_n,kw_n,is_n,i_intracell interference+_j=1
+jn^Ng_j,k_q=1^k_jw_j,qs_j,q_intercell interference+v_k_noise.Here,  denotes the  complex Gaussian independent and identically distributed (i.i.d.) channel vector from the BS  to user . That is, , where  denotes the received power from BS  to user .  is the  normalized beamforming vector from BS  to user .  is the desired transmitted data symbol by BS  to user . The transmitted data symbols are normalized such that .  denotes the  complex Gaussian i.i.d. intercell interfering channel vector from BS  to user  located in cell . That is, .(Note that  and  are used to denote the desired and intercell interfering channels, respectively,  regardless of the originating BS type; i.e.,  can represent the intercell interfering link from the macrocell BS for a particular user placed in a microcell.)(We drop the index  from  to simplify the notation.)  is the additive white Gaussian noise at receiver  having an independent complex Gaussian distribution with variance . Finally,  is defined as 
+Here,  refers to the total effective radiated transmit power (ERP) from BS . Naturally, the ERP of the macrocell BS is higher than the microcell BSs.  is a reference distance of  meter (m) for far field transmit antennas,  is the distance to mobile user  from the BS ,  is the pathloss exponent for urban macro (UMa) or urban micro (UMi) depending on the transmitting BS and  is the correlated shadow fading value with a standard deviation , obtained from the Gudmundson model with a decorrelation distance of  m. SNR with respect to BS  and user  is defined as , where  is the receiver noise variance at user . 
+
+SINR Analysis with Leakage Based Beamforming
+From (), the SINR at user  being served by BS  can be expressed as 
+
+The leakage based technique to generate beamforming vectors is as described in, where the main idea is to maximize the desired signal power relative to the noise and total interference powers caused to other users (leakage power). The SLNR for user  served by the BS  is defined as 
+
+For single-stream transmission (where each user is equipped with a single receive antenna), the leakage based beamforming vector desired for user  being served by BS  is given by the normalized version of the 
+
+such that . The structure of () remains unchanged regardless of the coordination strategy. However, the composition of  depends on the coordination strategy considered, as described in Section III. For the simple case of no coordination 
+
+is the concatenated channel of all users being served by BS  apart from user . Assuming the distribution of intracell and intercell interference terms in () is identical to the distribution of noise, the mean sum rate for cell  can be expressed as 
+
+The mean sum rate over  cells can then be expressed as 
+
+From (), the mean per-user SINR can be expressed as . Exact evaluation of  is extremely cumbersome. Instead, we consider an approximation motivated by the work in, which allows us to express the mean per-user SINR as 
+
+&E[_n,k]
+ 
+&E[h_n,kw_n,k^2]_k^2+E[_i=1
+ik^k_nh_n,kw_n,i^2]+E[_j=1
+jn^N_q=1^k_jg_j,kw_j,q^2].
+The statistical expectations in both the numerator and the denominator of () can be evaluated further. An approach to derive the closed-form approximation of () is presented in the Appendix. On the other hand, () can be rewritten in its equivalent trace form as 
+
+&E[_n,k]
+
+&E[trw_n,k^*Aw_n,k]_k^2+_i=1
+ik^k_nE[trw_n,i^*Aw_n,i]+_j=1
+jn^N_q=1^k_jE
+[trw_j,q^*Bw_j,q],
+where  and . The expression in () is used to approximate the mean per-cell sum rate over a wide range of SNR and the mean per-user SINR over a large number of channel realizations as specified in Section IV.
+
+Imperfect CSI Model
+It is idealistic to assume perfect CSI at all times to generate the leakage based beamforming vectors. Thus, we consider channel imperfections via channel estimation errors as mentioned in. The imperfect channel at BS  of user  after introducing channel estimation errors is given by 
+
+&h_n,k=h_n,k+1-^2_n,k.
+Here,  controls the level of CSI imperfection.  results in perfect CSI and  models complete uncertainty.  is a  complex Gaussian error vector with a statistically identical structure to . It is shown in that  can be used to determine the impact of several factors on imperfect CSI and can be a function of the length of the estimation pilot sequence, Doppler frequency and SNR. The concatenated channel and the leakage based beamforming vector for user  in cell  can be expressed as () and () when replacing  with  and  with , respectively. The SINR with imperfect CSI can be expressed as in () when replacing  with ,  with  and  with , respectively. As the leakage based beamforming vectors are designed with imperfect CSI, the SINR expressed in () will contain channel estimation errors.
+
+
+
+Two-tier Coordination Strategies 
+[!t]
+BS Coordination Strategies and the Associated 
+
+
+​
+In this section, we describe the BS coordination strategies considered.
+
+No Coordination - In this case, each BS coordinates the desired and intracell interfering links locally. That is, the BSs only consider maximizing the SLNR of users belonging to its own coverage area. The concatenated channel used to compute the leakage based beamforming vector weights for user  in cell  is given in (). We treat this strategy as the baseline case.
+Full Coordination - In this case, we assume that each BS has knowledge of its own users desired channels and all intracell and intercell interfering channels. The channel information may be exchanged by exploiting the intercell orthogonal reference signals via the backhaul interface. With the use of the fully acquired CSI for each desired and interfering link, downlink leakage based beamformers can be designed to minimize the leakage power within the cell as well as to the other cells. The concatenated channel used to compute the leakage based beamforming vector weights for user  in cell  can be expressed as 
+
+H_n,k=[h_n,1,,h_n,k-1,h_n,k+1,,h_n,k_n,
+G_n,1,,G_n,N].
+Here  denotes the concatenated intercell interfering channels transmitted from BS  to all users in cell , given by 
+
+G_n,m=[g_m,1,g_m,2,g_m,3,g_m,k_m].
+
+Macro-Only Coordination -  In this case, we assume that the macrocell BS has knowledge of the intercell interfering channels from itself to all microcell users. The macrocell BS uses this information to coordinate transmission to its own users, as well as to the users located in each microcell, respectively. The concatenated channel used to compute the leakage based beamforming weight vectors for user  in cell  can be expressed as () and () if  is the macrocell and microcell BS, respectively.
+No Inter-tier Interference - This is an ideal case, where we assume that no cross-tier interference exists. This means that users in a particular tier only experience intra-tier interference. Coordination is however present within each cell regardless of the tier. In computing the leakage based beamforming weight vector for user  in cell , the concatenated channel will be given by () if BS  is the macrocell BS. Otherwise, for a microcell BS it is given as 
+
+H_n,k=[h_n,1,,h_n,k-1,h_n,k+1,,h_n,k_n,
+G_n,1,,G_n,N-1], 
+ 
+where  refer to microcell BS indices. 
+Table  summarizes the different BS coordination strategies with the respective structures for . 
+
+
+Simulation Results
+We consider a two-tier HetNet system comprising of a single macrocell and two microcells (unless otherwise stated). We carry out Monte-Carlo simulations to evaluate the system performance over  channel realizations. The location of the macrocell BS was fixed at the origin of the circular coverage area with radius . The locations of the microcell BSs inside the macrocell coverage area were uniformly generated subject to a spacing constraint. The minimum distance between two microcells was fixed to twice the radius of the microcell, i.e., , such that there is no overlap between successive microcells. In Table , we specify the remainder of the simulation parameters and their corresponding values.
+[!t]
+Simulation Parameters and Values
+
+​
+
+[!t]
+
+No coordination (baseline case) mean per-cell sum rate [b/s/Hz] from () vs. macrocell SNR [dB] for perfect and imperfect CSI where . The squares denote the approximated mean per-cell sum rates computed with ().
+
+
+
+Full coordination mean per-cell sum rate [b/s/Hz] from () vs. macrocell SNR [dB] for perfect and imperfect CSI where . The squares denote the approximated  mean per-cell sum rates computed with ().
+
+
+
+Macro-only coordinated network mean per-cell sum rate [b/s/Hz] from () vs. macrocell SNR [dB] for perfect and imperfect CSI where . The squares denote the approximated mean per-cell sum rates computed with ().
+
+
+
+No inter-tier interference mean per-cell sum rate [b/s/Hz] from () vs. macrocell SNR [dB] for perfect and imperfect CSI where . The squares denote the approximated  mean per-cell sum rates computed with ().
+
+
+
+Mean per-user SINR [dB] performance vs. number of microcells at SNR=10 dB with perfect CSI for full, no and macro only coordination strategies. The approximated mean per-user SINRs are computed with ().
+
+
+
+
+Microcell sum rate [b/s/Hz] performance from () vs. number of microcells at SNR=10 dB with perfect CSI for full, no and macro only coordination strategies.
+
+
+
+Mean microcell sum rate [b/s/Hz] per macrocell from () vs. number of microcells at SNR=10 dB with perfect CSI for full, no and macro only coordination strategies. 
+
+
+No Coordination - Baseline Case
+Fig.  shows the mean per-cell sum rate performance given by () vs. macrocell SNR with no coordination in the HetNet. We consider perfect and imperfect CSI at the BSs. In the high SNR regime, inter-tier interference causes the mean sum rates to saturate for macrocell and microcells, respectively. The dominant factor contributing to the poor mean sum rate performance of microcell users is the large inter-tier interference from the macro BS resulting from its high transmit power. This behaviour is a result of the uncoordinated nature of the HetNet. With imperfect CSI, we again consider the mean sum rate performance with , where further degradation in the macrocell and microcell rates can be observed. The approximated mean per-cell sum rates based on () are shown to closely match the simulated responses. The variation between the simulated and analytical SINR responses can be justified from the fact that the approximation in () becomes less tight with increasing SNR.
+
+Full Coordination
+The uncoordinated network performance can be compared to the case where the HetNet is fully coordinated. Fig.  demonstrates the mean per-cell sum rate performance given by () vs. macrocell SNR for perfect and imperfect CSI. Two major trends can be observed from the result.  First is the near  increase in the microcell rates over the entire SNR range relative to the baseline case (Fig. ). Secondly, microcell to microcell interference has a marginal impact on the macrocell user rates due to their low transmit powers. This is demonstrated by comparing Fig.  to Fig. .
+
+Macro-Only Coordination
+As the macrocell BS is the dominant source of interference to the microcell users, we consider the case where coordination takes place at the macrocell BS only. Fig.  demonstrates the mean per-cell sum rate given by () vs. macrocell SNR performance of the macro only coordination strategy. Both the macro and microcell rates are found to be approximately equivalent to the full coordination case, observed by comparing Fig.  and Fig. . This suggests that if we can coordinate the transmission to minimize the most dominant source of interference, we are able to achieve near full coordination performance. Moreover, this strategy significantly reduces the backhaul overheads by eliminating the need to equip the microcell BSs with out-of-cell CSI. 
+
+No Inter-tier Interference
+Fig.  depicts the mean per-cell sum rate performance given by () vs. macrocell SNR of the no inter-tier interference coordination strategy. Due to zero cross-tier interference, this strategy results in superior mean per-cell sum rate performance in comparison with the other coordination strategies. It is worth comparing Fig.  to Fig. , and noting that the mean sum rate performance of full coordination approaches the performance of no inter-tier interference. This demonstrates the value of BS coordination in a HetNet. 
+
+
+Network Densification
+The effect of increasing the microcell density is shown in Fig. , where we plot the mean per-user SINR as a function of the number of microcells. We observe that the mean per-user SINR decreases linearly with increasing number of microcells. When the number of microcells is less than 5, there is a marginal difference between macro only coordination and full coordination mean per-user SINR. This suggests that at low microcell density, it is advantageous to avoid paying the high price of backhaul overheads for full coordination performance. When there are more than 5 microcells, the gap between full coordination and macro-only coordination techniques starts to increase. Approximately, a  dB difference in the mean per-user SINR is seen with  microcells in the system. The difference in the slopes of the various strategies demonstrates the impact of BS coordination in a HetNet with network densification. Thus, coordination arrests the rate of decay of the mean per-user SINR in a HetNet. In addition to the above, the result demonstrates the validity of the approximated mean per-user SINR in (). These are shown to closely match the simulated mean per-user SINR performance for all the coordination techniques. Fig.  shows the microcell sum rate performance as defined in () at the mean, th and th percentiles with respect to number of microcells at a SNR of  dB. With full coordination, the microcell sum rate increases linearly with the number of microcells, as majority of the interference is being suppressed by the leakage based beamformers. A similar trend can be observed for the macro only coordination case, however the microcell sum rate performance gains are lower compared to the full coordination case as the number of microcells increases. The no coordination case suffers from strong macro and other microcell interference resulting in a saturated sum rate at higher number of microcells.
+
+
+Impact of Multiple Macrocells
+We now study the effect of deploying multiple macrocell BSs on the microcell sum rate performance. For comparison purposes, we consider scenarios with both single and three overlapping macrocells with inter-site distances of  km. In both cases, a maximum of  microcell BSs are randomly dropped at the edge of the macrocell at a radius of 10, such that the minimum distance between successive microcell BSs is . Fig.  shows the mean microcell sum rate as a function of the number of microcells for both the single and three macrocell BSs cases at a SNR of 10dB. It is seen that the sum rate of the single macrocell BS case is significantly higher than the three overlapping macrocell BS case. This is due to higher aggregate intercell interference resulting from other macrocells and microcells located within these macrocells. Compared to Fig.  where the microcells are randomly placed anywhere within the macrocell coverage area, the no coordination performance benefits the most from the microcells being deployed at the edge of the macrocell. This can be seen from the mean sum rate, as it shows a linear growth up to 7 microcells in comparison with 3 microcells. We also observe that the improvement in mean sum rate with cell edge deployment of microcells is higher for the no coordination strategy. At 10 microcells, the increase in the mean sum rate for the full coordination strategy is approximately 3.6 bps/Hz, while the increase with no coordination is about 10 bps/Hz. 
+
+
+
+Conclusion
+In this paper, we demonstrate the rate gains provided by BS coordination in HetNets. With BS coordination, the sum rate is seen to increase linearly  and the mean per-user SINR decreases linearly with the number of microcells. However, the rate of mean per-user SINR degradation is reduced significantly with increased degrees coordination at the BSs in the HetNet. At a low density of microcells, macro-only coordination performs close to full coordination. However, this is not the case with a higher density of microcells where increasing amounts of interference from the microcells is being added. In addition to the above, the impact of multiple macrocells is also investigated. Here, degradation in the mean microcell sum rate is observed for all the respective coordination strategies in comparison to the case where only one macrocell is present.
+
+
+The numerator of () can be further evaluated as shown below. Substituting the definition of  gives
+
+&E[h_n,kw_n,k^2]=E[h_n,k(H_n,k^*H_n,k+_k^2I)^-1h_n,k^*^2].
+Using an eigenvalue decomposition, () can be rewritten as 
+
+&E[h_n,kw_n,k^2]=E[h_n,k(XX^*+_k^2I)^-1h_n,k^*^2]
+
+&=E[_n,k(+_k^2I)^-1_n,k^*^2],
+where  has the same statistics as  as  is a unitary matrix. Hence, 
+
+where  is the th element of . Since  is a zero mean complex Gaussian random variable with variance , it follows that  is an exponential random variable with mean . Using the standard properties of the exponential random variable, app3 can be expressed as 
+
+A similar approach can be taken to evaluate the mean per-user intracell and intercell interference powers. Further averaging over the eigenvalues,  in () is possible as the density of eigenvalues is known. However, due to space limitations we leave this approach for future work.
+
+
+
+
+1
+Cisco, "Cisco Visual Networking Index: Global Mobile Data Traffic Forcast Update, 2011-2016", White Paper, Feb. 2012. 
+A. Ghosh, N. Mangalvedhe, R. Ratasuk, B. Mondal, M. Cudak, E. Vistosky, T.A. Thomas, J.G.  Andrews, P. Xia, H.S. Jo, H.S. Dhillon and T.D. Novlan, "Heterogeneous Cellular Networks: From Theory to Practice", IEEE Commun. Mag., vol. 50, no. 6, pp. 54-64, Jun. 2012. 
+A. Alexiou, "Wireless World 2020", IEEE Veh. Technol. Mag., vol. 9, no. 1, pp. 46-53, Mar. 2014.
+C. Kosta, B. Hunt, A.U. Quddus and R. Tafazolli, "On Interference Avoidance Through Inter-Cell Interference Coordination (ICIC) Based on OFDMA Mobile Systems", IEEE Commun. Surveys Tuts., vol. 15, no. 3, pp. 973-995, Aug. 2012. 
+D. Lopez-Perez, I. Guvenc, G.D.L. Roche, M. Kountouris, T. Quek and J. Zhang, "Enhanced Intercell Interference Coordination Challenges in Heterogeneous Networks", IEEE Commun. Mag., vol. 18, no. 3, pp. 22-30, Jun. 2011. 
+G. Boudreau, J. Panicker, N. Guo, R. Chang, N. Wang and S. Vrzic, "Interference Coordination and Cancellation for 4G Networks", IEEE Commun. Mag., vol. 47, no. 4, pp. 74-81, Apr. 2009.  
+E. Hossain, M. Rasti, H. Tabassum and A. Abdelnasser, "Evolution Toward 5G Multi-Tier Cellular Wireless Networks: An Interference Management Perspective", IEEE Wireless Commun., vol. 21, no. 3, pp. 118-127, Jun. 2014. 
+H.S. Dhillon, M. Kountouris and J.G. Andrews, "Downlink MIMO HetNets: Modelling, Ordering Results and Performance Analysis", IEEE Trans. Wireless Commun., vol. 12, no. 10, pp. 5208-5222, Oct. 2013. 
+H.S. Dhillon, M. Kountouris and J.G. Andrews, "Downlink Coverage Probability in MIMO HetNets", in Proc. IEEE 46th Conference on Signals, Systems and Computers (ASILOMAR), pp. 683-687, Nov. 2012.
+S. Park, W. Seo, Y. Kim, S. Lim and D. Hong, "Beam Subset Selection Strategy for Interference Reduction in Two-Tier Femtocell Networks", IEEE Trans. Wireless Commun., vol. 9, no. 11, pp. 3440-3449, Oct. 2010. 
+S. Akoum, M. Kountouris and R.W. Heath, "On Imperfect CSI for the Downlink of a Two-Tier Network", IEEE Intern. Symp. on Info. Theory (ISIT), pp. 553-337, July 2011. 
+W. Liu, S. Han and C. Yang, "Hybrid Cooperative Transmission in Heterogeneous Networks", in Proc. IEEE 23rd Conference on Personal, Indoor and Mobile Radio Communications (PIMRC), pp. 921-925, Sep. 2012.
+M. Hong, R-Y. Sun, H. Baligh and Z-Q. Luo, "Joint Base Station Clustering and Beamformer Design for Partial Coordinated Transmission in Heterogeneous Networks", submitted to IEEE J. on Sel. Areas Commun., Nov. 2012. Available online: arxiv.org/pdf/1203.6390.
+T. Yoo and A. Goldsmith, "On the Optimality of Multiantenna Broadcast Scheduling using Zero-Forcing Beamforming", IEEE J. Sel. Areas in Commun., vol. 24, no. 3, pp. 528-541, Mar. 2006. 
+C.B. Peel, B.M Hochwald and A.L. Swindlehurst, "A Vector Perturbation Technique for Near Capacity Multiantenna Multiuser Communication - Part I: Channel Inversion and Regularization", IEEE Trans. Commun., vol. 53, no.1, pp. 195-202, Jan. 2005.
+M. Sadek, A. Tarighat and A. Sayed, "A Leakage-Based Precoding Scheme for Downlink Multi-User MIMO channels", IEEE Trans. Wireless Commun., vol. 6, no. 5, pp. 1711-1721, May 2007.
+M. Gudmundson, "Correlation Model for Shadow Fading in Mobile Radio Systems", Electronics Letters, vol. 27, no. 23, pp. 2145-2146, Nov. 1991. 
+L. Yu, W. Liu and R. Langley, "SINR Analysis of the Subtraction-Based SMI Beamformer", IEEE Trans. Signal Process., vol.58, no.11, pp. 5926-5932, Nov. 2010.
+H. Suraweera, P.J. Smith and M. Shafi, "Capacity Limits and Performance Analysis of Cognitive Radio With Imperfect Channel Knowledge", IEEE Trans. Veh. Technol., vol. 59, no. 4, pp. 1811-1822, May 2010. 
+A. Ahn, R.W. Heath, "Performance Analysis of Maximum Ratio Combining with Imperfect Channel Estimation in Presence of Cochannel Interferences", IEEE Trans. Wireless Commun., vol. 8, no. 3, pp. 1080-1085, Mar. 2009. 
+N. Lee and W. Shin, "Adaptive Feedback Scheme on K-Cell MISO Interfering Broadcast Channel with Limited Feedback", IEEE Trans. Wireless. Commun., vol. 10, no. 2, pp. 401-406, Feb. 2011. 

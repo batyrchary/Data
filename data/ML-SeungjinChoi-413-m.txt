@@ -1,0 +1,710 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[algorithm]font=small
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+BHC with Exponential Family: Small-Variance Asymptotics and Reducibility
+Lee, Choi
+
+[
+
+Bayesian Hierarchical Clustering with Exponential Family: 
+
+Small-Variance Asymptotics and Reducibility
+
+ Juho Lee Seungjin Choi 
+
+ Department of Computer Science and Engineering 
+
+Pohang University of Science and Technology 
+
+77 Cheongam-ro, Nam-gu, Pohang 790-784, Korea 
+
+stonecold,seungjin@postech.ac.kr
+ ]
+
+
+
+
+
+
+Bayesian hierarchical clustering (BHC) is an agglomerative clustering method, where a probabilistic model is defined
+and its marginal likelihoods are evaluated to decide which clusters to merge.
+While BHC provides a few advantages over traditional distance-based agglomerative clustering algorithms,
+successive evaluation of marginal likelihoods and careful hyperparameter tuning are cumbersome and limit the scalability.
+In this paper we relax BHC into a non-probabilistic formulation, exploring small-variance asymptotics in
+conjugate-exponential models.
+We develop a novel clustering algorithm, referred to as relaxed BHC (RBHC),  
+from the asymptotic limit of the BHC model that exhibits the scalability of 
+distance-based agglomerative clustering algorithms as well as the flexibility of Bayesian nonparametric models.
+We also investigate the reducibility of the dissimilarity measure emerged from the asymptotic limit of the BHC model,
+allowing us to use scalable algorithms such as the nearest neighbor chain algorithm.
+Numerical experiments on both synthetic and real-world datasets demonstrate the validity and high performance of our method.
+
+
+
+
+
+INTRODUCTION
+
+Agglomerative hierarchical clustering, which is one of the most popular algorithms in cluster analysis,
+builds a binary tree representing the cluster structure of a dataset DudaRO2001book. 
+Given a dataset and a dissimilarity measure between clusters, 
+agglomerative hierarchical clustering starts from leaf nodes corresponding to individual data points
+and successively merges pairs of nodes with smallest dissimilarities to complete a binary tree.
+
+Bayesian hierarchical clustering (BHC) is a probabilistic alternative of agglomerative 
+hierarchical clustering. BHC defines a generative model on binary trees and compute the probability that 
+nodes are merged under that generative model to evaluate the (dis)similarity between the nodes.
+Since this (dis)similarity is written as a probability, one can naturally decide a level, where to stop
+merging according to this probability. Hence, unlike traditional agglomerative clustering algorithms,
+BHC has a flexibility to infer a proper number of clusters for given data. The source of this
+flexibility is Dirichlet process mixtures (DPM) used to define the generative model of binary trees. 
+BHC was shown to provide a tight lower bound on the marginal likelihood of DPM HellerKA2005icml,WallachHM2010aistats
+and to be an alternative posterior inference algorithm for DPM. 
+However, when evaluating the dissimilarity between nodes, one has to repeatedly compute the marginal likelihood
+of clusters and careful tuning of hyperparameters are required.
+
+In this paper, we study BHC when the underlying distributions are conjugate exponential families.
+Our contributions is twofold. 
+First, we derive a non-probabilistic relaxation of BHC, referred to as RBHC,
+by performing small variance asymptotics, i.e., letting the variance of the underlying distribution in the model go to zero.
+To this end, we use the technique inspired by the recent work, 
+where the Gibbs sampling algorithm for DPM with conjugate exponential family was shown to approach 
+a -means-like hard clustering algorithm in the small variance limit.
+The dissimilarity measure in RBHC is of a simpler form, compared to the one in the original BHC.
+It does not require careful tuning of  hyperparameters, and yet has the flexibility of the original BHC to infer
+a proper number of the clusters in data. 
+It turns out to be equivalent to the dissimilarity proposed in, 
+which was derived in different perspective, minimizing a cost function involving Bregman information BanerjeeA2005jmlr.
+Second, we study the reducibility BruynoogheM78 of the dissimilarity measure in RBHC.
+If the dissimilarity is reducible, one can use nearest-neighbor chain algorithm BruynoogheM78 to 
+build a binary tree with much smaller complexities, compared to the greedy algorithm.
+The nearest neighbor chain algorithm builds a binary tree of  data points in  time and  space,
+while the greedy algorithm does in  time and  space. 
+We argue is that even though we cannot guarantee that the dissimilarity in RBHC is always reducible, 
+it satisfies the reducibility in many cases, so it is fine to use the nearest-neighbor chain algorithm in practice to speed up 
+building a binary tree using the RBHC.
+We also present the conditions where the dissimilarity in RBHC is more likely to be reducible.
+
+
+
+
+BACKGROUND
+
+We briefly review agglomerative hierarchical clustering, Bayesian hierarchical clustering, and Bregman clustering,
+on which we base the development of our clustering algorithm RBHC.
+Let  be a set of  data points. 
+Denote by  a set of indices.
+A partition  of  is  a set of disjoint nonempty subsets of  whose union is .
+The set of all possible partitions of  is denoted by 
+For instance, in the case of , an exemplary random partition that consists of three clusters is 
+; its members are indexed by .
+Data points in cluster  is denoted by  for .
+Dissimilarity between  and  is given by .
+
+
+Agglomerative Hierarchical Clustering
+
+Given  and , a common approach to building a binary tree for agglomerative hierarchical clustering 
+is the greedy algorithm, where pairs of nodes are merged as one moves up the hierarchy, starting in its leaf nodes
+(Algorithm ).
+A naive implementation of the greedy algorithm requires  in time since each iteration needs  
+to find the pair of closest nodes and the algorithm runs over  iterations.
+It requires  in space to store pairwise dissimilarities. 
+The time complexity can be reduced to 
+with priority queue, and can be reduced further for some special cases; for example,
+in single linkage clustering where 
+(c_0,c_1) = _ic_0, jc_1 (i,j),
+the time complexity is  since building a binary tree is equivalent to finding the minimum spanning tree in the dissimilarity graph. 
+Also, in case of the centroid linkage clustering where the distance between clusters are defined as the Euclidean distance between
+the centers of the clusters, one can reduce the time complexity to  where  DayWHE84joc.
+
+
+
+
+[htp]
+Greedy algorithm for agglomerative hierarchical clustering
+[1]
+, .
+Binary tree.
+Assign data points to leaves.
+Compute  for all .
+the number of nodes  1
+Find a pair  with minimum .
+Merge  and compute  for all .
+
+
+[htp]
+Nearest neighbor chain algorithm
+[1]
+, reducible .
+Binary tree.
+the number of nodes  1
+Pick any .
+Build a chain ,
+where .
+Extend the chain until  and .
+Merge .
+If , go to line 3 and extend the chain from . Otherwise, go to line 2.
+
+
+
+
+Reducibility
+
+Two nodes  and  are reciprocal nearest neighbors (RNNs) if the dissimilarity 
+is minimal among all dissimilarities from  to elements in  and also minimal among all dissimilarities from .
+Dissimilarity  is reducible BruynoogheM78, if for any  ,
+&(c_0,c_1) (c_0,c_2),(c_1,c_2)& (c_0,c_2),(c_1,c_2) (c_0c_1, c_2).
+The reducibility ensures that if  and  are reciprocal nearest neighbors (RNNs),
+then this pair of nodes are the closest pair that the greedy algorithm will eventually find by searching on an entire space.
+Thus, the reducibility saves the effort of finding a pair of nodes with minimal distance.
+Assume that  are RNNs. Merging  become problematic only if, for other RNNs , 
+merging  changes the nearest neighbor of  (or ) to . 
+However this does not happen since
+&(c_2,c_3) (c_2,c_0),(c_3,c_0) 
+
+&(c_2,c_0),(c_3,c_0) (c_2c_3,c_0)
+
+&(c_0,c_1) (c_2c_3,c_0).
+The nearest neighbor chain algorithm enjoys this property and 
+find pairs of nodes to merge by following paths in the nearest neighbor graph of the nodes until the paths terminate 
+in pairs of mutual nearest neighbors (Algorithm ).
+The time and space complexity of the nearest neighbor chain algorithm are  and , respectively.
+The reducible dissimilarity includes those of  single linkage and Ward's method WardJH63jasa.
+
+ 
+
+
+Agglomerative Bregman Clustering
+
+Agglomerative clustering with Bregman divergence as a dissimilarity measure was recently developed in
+TelgarskyM2012icml, where the clustering was formulated as the minimization of the sum of cost based on
+the Bregman divergence between the elements in a cluster and center of the cluster. 
+This cost is closely related with the Bregman Information used for Bregman hard clustering BanerjeeA2005jmlr).
+In, the dissimilarity between two clusters  is defined as the change of cost function 
+when they are merged. As will be shown in this paper, this dissimilarity turns out to be identical to the one we derive
+from the asymptotic limit of BHC. 
+Agglomerative clustering with Bregman divergence showed better accuracies than traditional agglomerative hierarchical 
+clustering algorithms on various real datasets TelgarskyM2012icml.
+
+
+
+
+Bayesian Hierarchical Clustering
+
+Denote by  a tree whose leaves are  for .
+A binary tree constructed by BHC explains the generation of 
+with two hypotheses compared in considering each merge: 
+(1) the first hypothesis  where all elements in  were generated from a single cluster ;
+(2) the alternative hypothesis where  has two sub-clusters 
+and , each of which is associated with subtrees  and , respectively.
+Thus, the probability of  in tree  is written as:
+p(_c_c) = p(_c)p(_c_c) &+& 1-p(_c) p(_c_0_c_0)p(_c_1_c_1),
+where the prior  is recursively defined as
+&_i ,_c (c)+_c_0_c_1, 
+
+&p(_c) (c)/_c,
+and the likelihood of  under  is given by 
+eq:bhc_single
+p(_c_c) _ic p(_i) p(d).
+Now, the posterior probability of , which is the probability of merging , is computed by Bayes rule:
+p(_c_c,_c) = p(_c)p(_c_c)p(_c_c).
+In, an alternative formulation for the generative probability was proposed, which writes
+the generative process via the unnormalized probabilities (potential functions):
+&(_c_c) (c)p(_c_c),
+
+&(_c_c)_c p(_c_c).
+With these definitions, eq:bhc_recursive is written as
+(_c_c)= (_c_c) + (_c_0_c_0)(_c_1_c_1),
+and the posterior probability of  is written as
+p(_c_c,_c) = 1 + (_c_0_c_0)(_c_1_c_1)(_c_c)^-1.
+One can see that the ratio inside behaves as the dissimilarity between  and :
+eq:bhc_dis_1
+(c_0,c_1)(_c_0_c_0)(_c_1_c_1)(_c_c).
+Now, building a binary tree follows Algorithm  with the distance in (). 
+Beside this, BHC has a scheme to determine the number of clusters. 
+It was suggested in that the tree can be cut at points .
+It is equivalent to say that the we stop the algorithm if the minimum over  is greater than 1.
+Note that once the tree is cut, the result contains forests, each of which involves a cluster.
+
+BHC is closely related to the marginal likelihood of DPM; actually, the prior  comes from
+the predictive distribution of DP prior. Moreover, it was shown that computing  to build a tree naturally
+induces a lower bound on the marginal likelihood of DPM,  HellerKA2005icml:
+()(+n)(_c_c)(_c).
+Hence, in the perspective of the posterior inference algorithm for DPM, building tree in BHC is equivalent to computing the approximate
+marginal likelihood. Also, cutting the tree at the level where  corresponds finding the MAP clustering of .
+
+In, the time complexity was claimed to be . 
+However, this does not count the complexity required to find a pair with the smallest dissimilarity via sorting. 
+For instance, with a sorting algorithm using priority queues, BHC requires  in time.
+
+The dissimilarity is very sensitive to tuning the hyperparameters involving the distribution over parametes 
+required to compute .
+An EM-like iterative algorithm was proposed in to tune the hyperparameters, but the repeated
+execution of the algorithm is infeasible for large-scale data.
+
+
+
+
+Bregman Diverences and Exponential Families
+
+
+(Bregman67) Let  be a strictly convex differentiable function defined on a convex set. 
+Then, the Bregman divergence, , is defined as
+_(,) = ()-() - 
+Various divergences belong to the Bregman divergence.
+For instance, Euclidean distance or KL divergence is Bregman divergence, when 
+ or , respectively.
+
+The exponential family distribution over  with 
+natural parameter  is of the form:
+p() =  t(), - () - h() ,
+where  is sufficient statistics,  is a log-partition function, 
+and  is a base distribution. 
+We assume that  is regular ( is open) and  is minimal ( s.t. ).
+Let  be the convex conjugate of :
+() = _ ,-() .
+Then, the Bregman divergence and the exponential family has the following relationship:
+
+
+
+BanerjeeA2005jmlr
+Let  be the conjugate function of .
+Let  be the natural parameter and  be the corresponding expectation parameter, i.e., 
+.
+Then  is uniquely expressed as
+p() & = & -_(t(),)  
+
+& & (t())-h() .
+
+The conjugate prior for  has the form:
+p(,) =  , - () - (,) .
+ can also be expressed with the Bregman divergence:
+p(,) = -_(/,) && (/)-(,).
+Scaled Exponential Families
+
+Let , and .
+The scaled exponential family with scale  is defined as follows JiangK2012nips:
+p() &=&  t(),-()-h_() &=& t(),-()-h_() .
+For this scaled distribution, the mean  remains the same, and the covariance  becomes 
+  JiangK2012nips.
+Hence, the distribution is more concentrated around its mean. The scaled distribution in the Bregman divergence form is
+p() & = & -_(t(),)  
+
+& & (t())-h_() .
+According to ,  is defined with , .
+Actually, this yields the same prior as non-scaled distribution.
+p(,) &=& 
+,-
+()-_(,)&=&  ,-()-(,) .
+MAIN RESULTS
+
+We present the main contribution of this paper.
+From now on, we assume that the likelihood and prior in Eq. eq:bhc_single 
+are scaled exponential families defined in Section .
+
+
+
+
+Small-Variance Asymptotics for BHC
+
+The dissimilarity in BHC can be rewritten as follows:
+(c_0,c_1) &=& (_c_0_c_0)(_c_1_c_1)(_c  _c)&=& (c_0)(c_1)p(_c_0_c_0)p(_c_1_c_1)(c)p(_c_c)& &  1 + (c_00,c_01)  1+(c_10,c_11) ,
+where  and . 
+We first analyze the term , as in.
+p(_c_c) = _ic p(_i) p(,)d&=&^d , + _ic t(_i)- (+c)()& & -_ic h_(_i) - (,) d&=&^d (+c)(_c)-_ic h_(_i) - (,)& & -(+c)_(_c,)d,
+where
+_c +_ic t(_i)+c.
+Note that  is a function of . The term inside the integral of Eq. eq:integral has a local minimum
+at , and thus can be approximated by Laplace's method:
+&= ^d  (+c)(_c) - _ic h_(_i) - (,)&  (2+c)^d2^2_(_c,)^-12_1+O(^-1).
+It follows from this result that, as ,  
+the asymptotic limit of dissimilarity  in eq:bhc_dis_2 is given by
+_(c_0)(c_1)p(_c_0_c_0)p(_c_1_c_1)(c)p(_c_c)
+
+&&  _^d2 (c_0(_c_0) 
++ c_1(_c_1) - c(_c)) ,
+
+Let , then we have
+= _(c_0(_c_0) + c_1(_c_1) - c(_c) - ) .
+As , the term inside the exponent converges to
+c_0(t_c_0) + c_1(t_c_1) - c(t_c)-,
+where
+t_c 1c _ic t(_i),
+and this is the average of sufficient statistics for cluster . 
+With this result, we define a new dissimilarity  as
+_(c_0,c_1)  & &   c_0(t_c_0) + c_1(t_c_1) - c(t_c)  &=&  c_0(t_c_0) + c_1(t_c_1) & - &  (c_0+c_1)(c_0t_c_0+c_1t_c_1c_0+c_1).
+Note that  is always positive since  is convex. 
+If , the limit Eq. eq:lim diverges to ,
+and converges to zero otherwise. When , Eq. eq:lim is the same as the limit of the dissimilarity , 
+and thus the dissimilarity diverges when  and converges otherwise. When , assume that the dissimilarities of 
+children  and  converges to zero. From Eq. eq:bhc_dis_2, we can easily see that
+ converges only if . In summary, 
+eq:bhc_asymp_thres
+_ (c_0,c_1) =  .
+In similar way, we can also prove the following:
+eq:bhc_asymp_compare
+_ (c_0,c_1)(c_2,c_3) =  ,
+which means that comparing two dissimilarities in original BHC is equivalent to comparing the new dissimilarities ,
+and we can choose the next pair to merge by comparing  instead of .
+
+With Eqs. eq:bhc_asymp_thres and eq:bhc_asymp_compare, 
+we conclude that when , BHC reduces to Algorithm 
+with dissimilarity measure  and threshold , 
+where the algorithm terminates when the minimum  exceeds .
+
+On the other hand, a simple calculation yields
+_(c_0,c_1) = c_0 _(t_c_0, t_c) + c_1_(t_c_1,t_c),
+which is exactly same as the dissimilarity proposed in.
+Due to the close relationship between exponential family and the Bregman divergence,
+the dissimilarities derived from two different perspective has the same form.
+
+As an example, assume that  and . We have  and
+eq:ward
+_(c_0,c_1) = c_0c_1_c_0-_c_1^22^2(c_0+c_1),
+which is same as the Ward's merge cost WardJH63jasa, except for the constant . Other examples
+can be found in.
+
+Note that  does not need hyperparameter tunings, since
+the effect of prior  is ignored as . This provides a great advantage
+over BHC which is sensitive to the hyperparameter settings.
+
+Smoothing: In some particular choice of , the singleton clusters may have degenerate values TelgarskyM2012icml. 
+For example, when , the function  has degenerate values
+when . To handle this, we use the smoothing strategy proposed in; instead of the
+original function , we use the smoothed functions  and  defined as follows:
+&_0() ((1-)+ ), 
+
+&_1() (+ ),
+where  be arbitrary constant and  must in the relative interior of the domain of .
+In general, we use  as a smoothed function, but we can also use  when the domain of  is a convex cone.
+
+Heuristics for choosing : As in, we choose the threshold value .
+Fortunately, we found that the clustering accuracy was not extremely sensitive to the choice of ; merely
+selecting the scale of  could result in reasonable accuracy. There can be many simple heuristics,
+and the one we found effective is to use the -means clustering. With the very rough guess on the desired number
+of clusters , we first run the -means clustering (with Euclidean distance) with  (we fixed
+ for all experiments). Then,  was set to the average value of dissimilarities 
+between the all pair of  centers.
+
+
+
+
+Reducibility of 
+
+The relaxed BHC with small-variance asymptotics still has the same complexities to BHC.
+ If we can show that  is reducible, we can reduce the complexities by adapting the nearest neighbor chain algorithm.
+Unfortunately,  is not reducible in general (one can easily find counter-examples for some distributions). 
+However, we argue that  is reducible in many cases,
+and thus applying the nearest neighbor chain algorithm as if  is reducible
+does not degrades the clustering accuracy. In this section, we show the reason by analyzing  .
+
+At first, we investigate a term inside the dissimilarity:
+f(t_c) c(t_c).
+The second-order Taylor expansion of this function around the mean  yields:
+&f(t_c) = c() + c ^(1)()(t_c-)&  + _(t_c,) + _(t_c,),
+where  is the th order derivative of , and
+_(t_c) c2(t_c-)^(2)()(t_c-), 
+
+_(t_c) c_=3 ^ ()!(t_c-)^.
+Here,  is the multi-index notation, and  for some . The term  plays an important role in analyzing the
+reducibility of . To bound the error term ,
+we assume that (This assumption holds for the most of distributions we will discuss (if properly smoothed), but not holds in general.). As earlier, assume that  is a average of  observations generated from the same
+scaled-exponential family distribution:
+_1,, _n  p( ,),t_c = 1c_ic t(_i).
+By the property of the log-partition function of the exponential family distribution, we get the following results:
+eq:expected_error
+[_(t_c)] = 1^2 c_=3 ^()^ ()!.
+One can see that the expected error converges to zero as . Also, it can be shown that
+the expectation of the ratio of two terms converges to zero as :
+_ [_(t_c)_(t_c)] = 0,
+which means that  asymptotically dominates  (detailed derivations are given in the supplementary material).
+Hence, we can safely approximate  up to second order term.
+
+Now, let  and  be clusters belong to the same super-cluster (i.e.  and  were
+generated from the same mean vector ). We don't need to investigate the case where the pair belong to a different cluster,
+since then they will not be merged anyway  in our algorithm. By the independence, . Applying the approximation eq:taylor, we have
+_(c_0,c_1) _(t_c_0) + _(t_c_1) - _(t_c_0c_1)  & = c_0c_12(c_0+c_1)(t_c_0-t_c_1)^(2)() (t_c_0-t_c_1).
+This approximation, which we will denote as , is a generalization of the Ward's cost eq:ward from Euclidean distance to Mahalanobis distance with matrix  (note that this approximation is exact for the spherical Gaussian case). 
+More importantly,  is reducible.
+
+
+
+&_(c_0,c_1) _(c_0,c_2),_(c_1,c_2) & _(c_0,c_2),_(c_1,c_2)  _(c_0c_1, c_2).
+
+For the Ward's cost, the following Lance-Williams update formula LanceGN67tcj holds for :
+_(c_0c_1,c_2)=(c_0+c_2)_(c_0,c_2)c_0+c_1+c_2& &  + (c_1+c_2)_(c_1,c_2)-c_2_(c_0,c_1)c_0+c_1+c_2.
+Hence, by the assumption, we get
+_(c_0c_1,c_2) _(c_0,c_2),_(c_1,c_2) .
+
+[t!]
+Nearest neighbor chain algorithm for BHC with small-variance asymptotics
+[1]
+, , .
+A clustering .
+Set  and .
+
+Pick any .
+Build a chain ,
+where .
+Extend the chain until  and .
+Remove  and  from .
+
+Add  to .
+If , go to line 3 and extend the chain from . Otherwise, go to line 2.
+Add  and  to .
+ 
+
+
+As a result, the dissimilarity  is reducible provided that the Taylor's approximation eq:taylor is accurate.
+In such a case, one can apply the nearest-neighbor chain algorithm with ,
+treating 
+as if it is reducible to build a binary tree in  time and  space. Unlike
+Algorithm , we have a threshold  to determine the number of clusters, 
+and we present a slightly revised algorithm (Algorithm ). Note again
+that the revised algorithm generates forests instead of trees.
+
+
+			Average value of the exact dissimilarity , approximate dissimilarity 
+	and relative error, and number of not-reducible case among 100,000 trials.
+	 
+	
+*
+				Average relative error vs maximum cluster size and scale factor .
+	
+*
+			Average adjusted Rand index values for randomly generated datasets. Best ones are marked as bold face.
+	 
+	
+
+
+
+EXPERIMENTS
+
+Experiments on Synthetic Data
+
+Testing the reducibility of : 
+We tested the reducibility of  empirically. 
+We repeatedly generated the three clusters  and  from
+the exponential family distributions, and counted the number of cases where the dissimilarities between those
+clusters are not reducible. We also measured the average value of the relative error to support our arguments 
+in Section . 
+We tested three distributions; Poisson, multinomial and Gaussian.
+At each iteration, we first sampled the size of the clusters ,  and 
+from . Then we sampled the three clusters from one of the three distributions, 
+and computed  and . We then first checked
+whether these three values satisfy the reducibility condition eq:reducibility (for example,
+if  is the smallest, we checked if 
+). Then, for , we computed the approximate value 
+and measured the relative error
+2 _(c_0,c_1)-_(c_0,c_1) _(c_0,c_1)+_(c_0,c_1).
+We repeated this process for  times for the three distributions and measured the average values.
+For Poisson distribution, we sampled the mean  and sampled the
+data from . We smoothed the function  as 
+to prevent degenerate function values. For multinomial distribution, we tested the case where the dimension  is 
+and the number of trials  is 5. We sampled the parameter  where 
+is -dimensional one vector, and sampled the data from . We smoothed the function  as . For Gaussian, we
+tested with , and sampled the mean and covariance  ( where  was sampled from unit Gaussian). We smoothed
+the function  as .
+
+The result is summarized in Table . the generated dissimilarities were reducible in most case, as expected. 
+The relative error was small, which supports our arguments of the reason why  is reducible with high probability. 
+We also measured the change of average relative error by controlling two factors; the maximum cluster size  
+and variance scale factor . We plotted the average relative error of Gaussian distribution by changing those two factors, 
+and the relative error decreased as predicted (Figure ).
+
+Clustering synthetic data: We evaluated the clustering accuracies of original BHC (BHC),
+BHC in small-variance limit with greedy algorithm (RBHC-greedy), BHC in small-variance limit with nearest neighbor chain
+method (RBHC-nnca), single linkage, complete linkage, and Ward's method. We generated the datasets from Poisson, 
+multinomial and Gaussian distribution. We tested two types of data; 1,000 elements with 6 clusters and 2,000 elements with 12 clusters.
+For Poisson distribution, each mixture component was generated from  with  
+for both datasets. For multinomial distribution, we set  and 
+for 1,000 elements dataset, and set  and  for 2,000 elements datasets. For both dataset, we sampled
+the parameter . For Gaussian case, we set  for 1,000 elements dataset
+and set  for 2,000 elements dataset. We sampled the parameters from  
+for 1,000 elements, and from  for 2,000 elements. For each distribution
+and type (1,000 or 2,000), we generated 10 datasets for each type and measured the average clustering accuracies.
+
+We evaluated the clustering accuracy using the adjusted Rand index HubertL85joc. For traditional
+agglomerative clustering algorithms, we assumed that we know the true number of clusters  and cut the tree at corresponding level. 
+For RBHC-greedy and RBHC-nnca, we selected the threshold  with the heuristics described in Section .  
+For original BHC, we have to carefully tune the hyperparemters, and the accuracy was very sensitive to this setting. 
+In the case of Poisson distribution where , we have to tune two 
+hyperparameters . For multinomial case where , we set
+ and tuned . 
+For Gaussian case where , 
+we have four hyperparameters . We set  to be the empirical mean of  
+and fixed  and . We set  where  is the empirical covariance of  
+and controlled  according to the dimension and the size of the data. The result is summarized in Table .
+
+The accuracies of RBHC-greedy and RBHC-nnca were best for most of the cases, and the accuracies of the two methods
+were almost identical expect for the multinomial distribution. BHC was best for the multinomial case
+where the hyperparameter tuning was relatively easy, but showed poor performance in Poisson case (we failed
+to find the best hyperparameter setting in that case). Hence, it would be a good choice to use
+RBHC-greedy or RBHC-nnca which do not need careful hyperparameter tuning, and RBHC-nnca may be the best
+choice considering its space and time complexity compared to RBHC-greedy.
+
+
+
+
+Experiments on Real Data
+
+We tested the agglomerative clustering algorithms on two types of real-world data. The first one
+was a subset of MNIST digit database LeCunY98procieee. We scaled down the original 
+to  and vectorized each image to be  vector. Then we sampled 3,000 images
+from the classes  and . We clustered this dataset with Gaussian asssumption.
+The second one was visual-word data extracted from Caltech101 database FeiFeiL2004cvprw.
+We sampled 2,033 images from "Airplane", "Mortorbikes" and "Faces-easy" classes, and extracted
+SIFT features for image patches. Then we quantized those features into 1,000 visual words. We clustered
+the data with multinomial assumption. Table  shows the ARI values of agglomerative
+clustering algorithms. As in the synthetic experiments, the accuracy RBHC-greedy and RBHC-nnca were identical,
+and outperformed the traditional agglomerative clustering algorithms. BHC was best for Caltech101, where
+the multinomial distribution with easy hyperparameter tuning was assumed. However, BHC was even worse
+than Ward's method for MNIST case, where we failed to tune  matrix .
+
+
+[ht!]
+			Average adjusted Rand index values for MNIST and Caltech101 datasets. Best ones are marked as bold face.
+	 
+	
+
+
+
+CONCLUSIONS
+
+In this paper we have presented a non-probabilistic counterpart of BHC, referred to as RBHC, using a small variance relaxation
+when underlying likelihoods are assumed to be conjugate exponential families.
+In contrast to the original BHC, RBHC does not requires careful tuning of hyperparameters.
+We have also shown that the dissimilarity measure emerged in RBHC is
+reducible with high probability, so that the nearest neighbor chain algorithm was used to
+speed up the RBHC and to reduce the space complexity, leading to RBHC-nnca.
+Experiments on both synthetic and real-world datasets demonstrated the validity of RBHC.
+
+
+
+
+
+Acknowledgements: 
+This work was supported by National Research Foundation (NRF) of Korea (NRF-2013R1A2A2A01067464)
+and  the IT RD Program of MSIP/IITP (14-824-09-014, Machine Learning Center).
+
+
+
+
+
+abbrvnat
+
+
+
+
+
+Detailed Derivation in Section 
+
+For , we have
+p(t_c,) =  ct_c, - c ()
+- _ic h_(_i).
+For notational simplicity, we let  from now.
+By the normalization property, 
+c() =   c,
+- _ic h_(_i)  d.
+Differentiating both sides by  yields
+cd()d = c p(,) d,
+d()d = [].
+Also, we have
+c^2()_j_k
+&=& c y_j p(,) (
+c y_j - c()_k) d y_j&=& ^2c^2 [y_jy_k] - ^2c^2 []_j []_k = 
+^2c^2 cov(y_j,y_k).
+Hence,
+1c^2()_j_k = cov(y_j,y_k) = (y_j - []_j)(y_k  - []_k) p(,)dy_jdy_k.
+Differentiating this again yields
+eq:third
+1c^3()_j_k_l
+&=& (y_j-[]_j)(y_k-[]_k)(y_l-[]_l) p(,)dy_jdy_kdy_l&=& [(y_j-[]_j)(y_k-[]_k)(y_l-[]_l)].
+Unfortunately, this relationship does not continue after the third order; the fourth derivative of 
+ is not exactly match to the fourth order central moment of . However,
+one can easily maintain the th order central moment by manipulating the th order derivative
+of , and th order central moment always have the constant term .
+
+Equation (40) of the paper is a simple consequence of the equation eq:third. To prove the equation (41) of the paper, we use the following relationship:
+[_(_c)_(_c)]
+[_(_c)][_(_c)] - cov(_(_c), _(_c))[_(_c)]^2 + [_(_c)]var[_(_c)][_(_c)]^3.
+Now it is easy to show that this equation converges to zero when ; all the expectations
+and variances can be obtained by differentiating  for as many times as needed.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

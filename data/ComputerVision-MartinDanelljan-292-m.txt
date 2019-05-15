@@ -1,0 +1,351 @@
+
+
+abstract
+Discriminative Correlation Filter (DCF) based methods have shown competitive performance on tracking benchmarks in recent years. Generally, DCF based trackers learn a rigid appearance model of the target. However, this reliance on a single rigid appearance model is insufficient in situations where the target undergoes non-rigid transformations. In this paper, we propose a unified formulation for learning a deformable convolution filter. In our framework, the deformable filter is represented as a linear combination of sub-filters. Both the sub-filter coefficients and their relative locations are inferred jointly in our formulation. Experiments are performed on three challenging tracking benchmarks: OTB-2015, TempleColor and VOT2016. Our approach improves the baseline method, leading to performance comparable to state-of-the-art.
+
+  
+
+Visual tracking
+abstract
+
+
+Introduction
+Generic visual object tracking is the computer vision problem of estimating the trajectory of a target throughout an image sequence, given only the initial target location. Visual tracking is useful in numerous applications, including autonomous driving, smart surveillance systems and intelligent robotics. The problem is challenging due to large variations in appearance of the target and background, as well as challenging situations involving motion blur, target deformation, in- and out-of-plane rotations, and fast motion.
+
+To tackle the problem of visual tracking, several paradigms exist in literatureVOT2016. Among different paradigms, approaches based on the Discriminative Correlation Filters (DCF) based framework have achieved superior results, evident from recent the Visual Object Tracking (VOT) challenge resultsVOT2015VOT2016. This improvement in performance, both in terms of precision and robustness, is largely attributed to the use of powerful multi-dimensional features such as HOG, Colornames, and deep featuresDanelljanCVPR2016aHCF_ICCV15DanelljanCVPR14, as well as sophisticated learning modelsDanelljanICCV2015DanelljanECCV2016.
+
+Despite the improvement in tracking performance, the aforementioned state-of-the-art DCF based approaches employ a single rigid model of the target. However, this reliance on a single rigid model is insufficient in situations involving rotations and deformable targets. In such complex situations, the rigid filters fail to capture information of the target parts that move relative to eachother. This desired information can be retained by integrating deformability in the DCF filters. Several recent works aim at introducing part-based information into the DCF frameworkliu2015realli2015reliablelukevzivc2016deformable. These approaches introduce an explicit component to integrate the part-based information in the learning. Different to these approaches, we investigate a deformable DCF  model, which can be learned in unified fashion.
+
+In many real-world situations, such as a running human or a rotating box, different regions of the target deform relative to each other. Ideally, such information should be integrated in the learning formulation by allowing the regions of the appearance model to deform accordingly. This flexibility in the tracking model reduces the need of highly invariant features, thereby increasing the discriminative power of the model. However, increasing the flexibility  and complexity of the model introduces the risk of over-fitting and complex inference mechanisms, which degrades the robustness of the tracker. In this paper, we therefore advocate a unified formulation, where the deformable filter is learned by optimizing a single joint objective function. Additionally, this unified strategy enables the careful incorporation of regularization models to tackle the risk of over-fitting.
+
+figure[!t]
+    girl25crop.jpg
+  girl26crop.jpg
+  girl290crop.jpg
+  girl296crop.jpg
+  7cm 5cm 7cm 6cm,clip]tpl_bikeshow_ce_0.jpg
+  7cm 5cm 7cm 6cm,clip]tpl_bikeshow_ce_2.jpg
+  7cm 5cm 7cm 6cm,clip]tpl_bikeshow_ce_5.jpg
+  7cm 5cm 7cm 6cm,clip]tpl_bikeshow_ce_8.jpg
+  10cm 8cm 10cm 8cm,clip]tpl_hurdle_ce1_0.jpg
+  10cm 8cm 10cm 8cm,clip]tpl_hurdle_ce1_1.jpg
+  10cm 8cm 10cm 8cm,clip]tpl_hurdle_ce1_2.jpg
+  10cm 8cm 10cm 8cm,clip]tpl_hurdle_ce1_3.jpg
+  
+  	Example tracking results of our deformable correlation filter approach on three challenging sequences. The circles mark sub-filter locations and the green box is the predicted target location. The red boxes (in the middle and lower rows) show the baseline predictions. The sub-filter locations deform according to the appearance changes of the target in the presence of deformations. 
+  
+  
+  fig:examples
+figure
+
+Contribution
+We propose a unified framework for learning a deformable convolution filter in a discriminative fashion. The deformable filter is represented as a linear combination of sub-filters. The deformable filter is learned by jointly optimizing the sub-filter coefficients and their relative locations. To avoid over-fitting, we propose to regularize the sub-filter locations with an affine deformation model. We further derive an efficient online optimization procedure to infer the parameters of the model. Experiments on three challenging tracking benchmarks suggest that our method improves the performance in challenging situations.
+
+
+Related Work
+In recent years, Discriminative Correlation Filters (DCF) based tracking methods have shown competitive performance in terms of accuracy and robustness on tracking  benchmarksVOT2016OTB2015. In particular, the success of DCF based methods is evident from the outcome of the Visual Object Tracking (VOT) 2014 and 2016 challengesVOT2016 where the top-rank trackers employ variants of the DCF framework. In DCF framework, a correlation filter is learned from a set of training samples to discriminate between the target and background appearance. The training of the filter is performed in a sliding-window manner by exploiting the properties of circular correlation. The original DCF based tracking approach by Bolme et al.MOSSE2010 was restricted to a single feature channel and was later extended to multi-channel feature mapsgaloogahiICCV13DanelljanCVPR14Henriques14. Most recent  advancement in DCF based tracking  performance is attributed to including scale estimationDanelljanBMVC14Li2014, deep featuresDanelljanVOT2015HCF_ICCV15, spatial regularizationDanelljanICCV2015, and continuous convolution filtersDanelljanECCV2016.
+
+Several recent works have shown that integrating the part-based information improve the tracking performance. The work ofliu2015real introduces a part-based approach where each part utilizes the kernalized correlation filter (KCF) tracker and argues that partial occlusions can effectively be handled by adaptive weighting of the parts. The work ofli2015reliable tracks several patches, each with a KCF, by fusing the information using a particle filter to estimate position, width and height. Lukezic et. al.lukevzivc2016deformable introduces a sophisticated model with several parts held together by a spring-like system by minimizing an energy function based on the part-filter responses.
+
+Our approach: Different to aforementioned approaches, we propose a theoretical framework by designing a single deformable correlation filter. In our approach, the coefficients and locations of all sub-filters are learned jointly in a unified framework. Additionally, we integrate our deformable correlation filter in a recently introduced state-of-the-art DCF tracking frameworkDanelljanECCV2016.
+
+
+Continuous Convolution Operators for Tracking
+sec:CCOT
+In this work, we propose a deformable correlation tracking formulation. As a starting point, we use the recent Continuous Convolution Operator Tracker (C-COT) formulationDanelljanECCV2016 due to two main advantages compared to current template based correlation filter trackers. Firstly, the continuous reformulation of the learning problem benefits from a natural integration of multi-resolution deep features and continuous-domain score map predictions. Secondly, it provides an efficient optimization framework based on the Conjugate Gradient method. For efficiency, we also employ components of its descendant tracker ECODanelljanCVPR2017.
+
+For a given target object in a video, the C-COT discriminatively learns a convolution filter  that acts as an instance-specific object detector. Different from previous approaches, the filter  is viewed as a continuous function represented by its Fourier series coefficients. The detection scores are computed by first extracting a -dimensional feature map  from the local image region of interest. Typically, the sample  consists of HOG or multi-resolution deep convolutional features. We let  denote the value of the -th feature channel at the spatial location  in the feature map. The continuous scores in the corresponding image region are determined by the convolution operation , where  is an interpolation operator mapping the samples from the discrete to the continuous domain.
+
+The filter  is trained in a supervised fashion, given a set of sample feature maps  and corresponding label score maps , by minimizing the objective,
+equation
+	eq:ccot_training
+  (f) = _c=1^C^cS_fx^c - y^c^2 + _d=1^Dw^df_d^2 .
+equation
+The first term penalizes classification errors of each sample using the squared -norm. The sample  is weighted by the positive weight factor , which is typically set using a learning rate parameter. The second term deploys a continuous spatial regularization function , that penalizes high magnitude filter coefficients to alleviate the periodic boundary effects. Element-wise multiplication is denoted as . The label score function  is generally set to a Gaussian function with a narrow peak at the target center. Note that a sample feature map  contains both target appearance and the surrounding background. The filter is hence trained to predict high activation scores at the target center and low scores at the neighboring background. In practice, training and detection is performed directly in the Fourier domain, utilizing the FFT algorithm and the convolution properties of the Fourier series.
+
+As related methods, the C-COT method works in two main steps. (i) When a new sample is received, the target position and scale are estimated, i.e.  is calculated using the estimated filter  for different scales using a scale pyramid. The new target state is then estimated as the position and scale that maximizes the detection score. (ii) To update the model, a sample  is first added to the training set, where  is extracted in the estimated target scale. The filter is then refined by minimizing the objective eq:ccot_training. This is done by using conjugate gradient to solve the arising normal equations. We refer toDanelljanECCV2016 for further details. To enhance the efficiency of the tracker, we further deploy the factorized convolution approach and update strategy recently proposed inDanelljanCVPR2017.
+
+
+Method
+
+Here, we introduce a deformable correlation filter tracking model. A classic DCF contains an assumption that the target is rigid and will not rotate. The filter can handle violations to this assumption if a significant part of the target still fulfills it, or by using features with sufficient invariance. Examples of such model violations are sequences showing humans running or a change of perspective. By dividing the filter into sub-filters which can move relative to each other, they can fit more accurately onto a smaller part of the target. A standard DCF may choose to discard or weigh down information about a moving part whereas our approach allows one sub-filter to focus on this information explicitly, and move with that part. By writing the filter as a linear combination of sub-filters we can optimize a joint loss over all the sub-filter coefficients and the sub-filter positions jointly.
+
+
+Deformable Correlation Filter
+We construct a deformable convolution filter as a linear combination of trainable sub-filters. The filter becomes deformable by allowing the relative locations of the filters to change along to the target transformations. Formally, we denote the sub-filter with  and let  be its relative location in the frame . The filter  at frame  is obtained as a linear combination of the shifted sub-filters,
+equation
+	eq:def_filter
+  f(t_1,t_2) = _m=1^M f^m(t_1-p_1^c,m,t_2-p_2^c,m).
+equation
+We jointly learn both the sub-filter coefficients  and their locations  by minimizing a joint loss.,
+equation
+  lossdeform
+  (f,p) = _1(f,p) + _2(f) + _3(p),
+equation
+where each term is described below.
+
+Classification Error
+The loss for the discrepancy between the desired response and the filter response for sample  is
+equation
+  _1(f,p) = _c=1^C^cS_fx^c - y^c^2 ,
+equation
+where  is the weight for sample . From the translation invariance of the convolution operation and the definition eq:def_filter, the classification scores can be computed as, 
+equation
+S_fx^c(t_1,t_2) = _m=1^M S_f^mx^c(t_1-p_1^c,m,t_2-p_2^c,m).
+equation
+The score operator  is defined as described in section sec:CCOT.
+
+Spatial Regularization
+A spatial regularization of the filters enforces low filter coefficients close to the edges,
+equation
+  _2(f) = _m=1^M_d=1^Dw^m,df_d^m^2,
+equation
+where  is the continuous spatial regularization function for filter . We assume different spatial regularization functions for the different sub-filters as it may be desireable for the sub-filters to track regions of different size. In our experiments, by using two different spatial regularizations where one is much tighter, we let one sub-filter track the whole target while the others track smaller patches. Please note that  does not depend on the sub-filter positions.
+
+
+Regularization of Sub-filter Positions
+To regularize the sub-filter positions, we add a deformable model that incorporates prior information of typical target deformations. In this work, we use a simple yet effective model, namely that the current sub-filter positions are related to their initial positions by a linear mapping. The resulting regularization term is thus given by,
+equation
+  _3(p) = _p_m=1^Mp^c,m - Rp^1,m^2 .
+equation
+Here,  is the position of sub-filter  in frame , and  is a transformation matrix. In our experiments we use a full linear transform, which is optimized jointly during the learning.  is a parameter determining the regularization impact. This part of the loss does not depend on the sub-filter coefficients.
+
+
+Fourier Domain Formulation
+The optimization is performed in the Fourier domain using Parseval's formula. This results in a finite representation of the continuous filters using truncated Fourier series.
+
+Let  denote the Fourier coefficients for any given, sufficiently nice function. By linearity of the Fourier transform
+equation
+  S_fx^c[k_1,k_2] = _m=1^M[k_1,k_2]S_f^mx^c[k_1,k_2]
+equation
+where
+equation
+  [k_1,k_2] = e^-i2p_1^c,mk_1/T_1e^-i2p_2^c,mk_2/T_2
+equation
+and
+equation
+S_f^mx^c[k_1,k_2] = (_d=1^Df_d^m[k_1,k_2]J^dx^c[k_1,k_2]).
+equation
+
+Given  samples, we optimize the filter in the C-COT framework. The objective lossdeform is minimized by using Parseval's formula. We get the corresponding objective
+equation
+  (f,p) = _c=1^C^cS_fx^c - y^c^2 + _m=1^M_d=1^Dw^m,d*f_d^m^2 + _p_m=1^Mp^c,m - Rp^1,m^2
+equation
+which will be minimized by an alternate optimization strategy where we iteratively update the sub-filter coefficients and positions.
+
+
+Updating the Filter Coefficients
+The Fourier coefficients are truncated such that for feature dimension  only the  first coefficients are used (resulting in  coefficients in total for that dimension). Also define . To minimize the functional we rewrite it as a least squares problem which can be solved via its normal equations. The normal equations are then solved using conjugate gradient. Let  be the conjugate transpose. We define a block matrix with  blocks
+equation
+  A = pmatrix
+    A^1
+
+    
+
+    A^C
+    pmatrix,  A^c = pmatrixA^c,1 & & A^c,Mpmatrix,  A^c,m = pmatrixA^c,m,1 & & A^c,m,Dpmatrix
+equation
+where  is a diagonal matrix of size 
+equation
+  A^c,m,d = diagpmatrix
+    [-K^d,-K^d]J^dx^c[-K^d,-K^d]
+
+    
+
+    [-K^d,K^d]J^dx^c[-K^d,K^d]
+
+    
+
+    [K^d,K^d]J^dx^c[K^d,K^d]
+
+  pmatrix.
+equation
+Further define
+equation
+  f = pmatrix
+    f^1
+
+    
+
+    f^M
+  pmatrix,  f^m = pmatrix
+    f_1^m
+
+    
+
+    f_D^m
+  pmatrix,  f_d^m = pmatrix
+    f_d^m[-K^d,-K^d]
+
+    
+
+    f_d^m[-K^d,K^d]
+
+    
+
+    f_d^m[K^d,K^d]
+  pmatrix
+equation
+and
+equation
+  y = pmatrix
+    y^1
+
+    
+
+    y^C
+  pmatrix.
+equation
+Lastly, let  denote a diagonal matrix containing the learning rate , of size ; and  denote a Toeplitz matrix corresponding to summation of the convolutions with . Using these definitions the objective becomes
+equation
+  (f,p) = _c=1^C^cA^cf - y^c^2 + Wf^2 + _3(p).
+equation
+We discard  while minimizing the objective over , as it will be addressed in the next step. The objective is then minimized by solving
+equation
+  (A^HA + W^HW)f = A^Hy
+equation
+using the method of conjugate gradient.
+
+
+Displacement Estimation of the Sub-Filters
+The sub-filters are moved by minimizing the objective with respect to the sub-filter positions. This problem is not convex, and we resort to gradient descent utilizing Barzilai-Borwein's methodbarzilai1988two. The perk of their method is that the steplength is adaptive. The gradient is found as
+equation
+  ddp^c,m(f) = ddp^c,m_1(f) + ddp^c,m_3(p)
+equation
+where
+equation
+  ddp^c,m_1(f) = 2(S_fx^c-y^c)e^-i2p_1^c,mk_1/T_1e^-i2p_2^c,mk_2/T_2S_f^mx^cpmatrix
+    -i2k_1/T
+
+    -i2k_2/T
+  pmatrix
+equation
+and
+equation
+  ddp^c,m_3(p) = 2_p(p^c,m - Rp^1,m).
+equation
+Note that  does not depend on the sub-filter positions, and hence the derivative with respect to the sub-filter positions is zero. In our experiments we let  be either the identity matrix, or an affine transform. The translation part of the affine transform is handled during the target position estimation described in section 3. Hence the affine transform can be considered equivalent to a linear transform. The linear transform is estimated in each step of gradient descent using a closed form expression. This is done by rewriting the problem as an over-determined linear system of equations and solve it via its normal equations.
+
+
+Experiment and Results
+We validate our approach by performing comprehensive experiments on three tracking benchmarks: OTB-2015OTB2015, TempleColorTempleColor and VOT2016VOT2016.
+
+table[!t]
+  Baseline comparison on the OTB-2015 dataset with the two different regularizations of the sub-filter positions. The affine transform provides the best results.
+  table:baselinetransf
+    
+    tabularlccc
+            &Baseline, no deformability&Affine &Identity
+      Mean OP&83.2&red83.9&blue83.4
+      Mean AUC&68.4&red69&blue68.5
+    tabular
+    
+    
+table
+
+table[!t]
+  Baseline comparison on the OTB-2015 dataset when using different set of features for the sub-filters.
+  table:baselinefeat
+  !
+    tabularlccccccc
+            &Baseline&Shallow  CN&Shallow&Shallow  Deep&Deep&CN
+      Mean OP&83.2&83.6&83.5&83.6&blue83.9&red83.9
+      Mean AUC&68.4&red69&blue68.9&blue68.9&red69&68.8
+    tabular
+  
+table
+
+
+
+Implementation Details
+In our experiments we employ two types of features: Color Names, and "Deep Features" extracted from the Convolutional Neural Network (CNN). We use the network VGG-m and extract features from the layers Conv-1 and Conv-5. We use different number of sub-filters depending on the target size. We employ a "root-filter" which is a subfilter that is always centered around the target and utilizes both shallow features and deep features from a CNN. The locations of the sub-filters are continuously updated and has a strong regularization to enforce locality. We test different feature sets for these sub-filters. The sub-filters are initialized in the first frame where they are placed in a grid. We use  on VOT2016 and TempleColor datasets, and use  on the OTB-2015 dataset. We use the same set of parameters for all videos in each dataset.
+
+
+Baseline Comparison
+We perform baseline comparisons on the OTB-2015 dataset with 100 videos. We compare different features for the sub-filters, and different regularization for their positions. We evaluate the tracking performance in terms of mean overlap precision (OP) and area-under-the-curve (AUC). The overlap precision (OP) is calculated as the fraction of frames in the video where the intersection-over-union (IoU) overlap with the ground truth exceeds a threshold of 0.5 (PASCAL criterion). The area-under-the-curve (AUC) is calculated from the success plot where the mean OP is plotted over the range of IoU thresholds over all videos.
+
+figure[!t]
+    otb_quality_plot_overlap_OPE_AUC.pdf
+  tpl_quality_plot_overlap_OPE_AUC.pdf
+  Success plots on the OTB-2015 (left) and TempleColor (right) datasets, compared to state-of-the-art. The AUC score of each tracker is shown in the legend. We show slight performance increases on both datasets.
+  fig:results
+figure
+  
+figure[!t]
+    scale_variations_overlap_OPE_AUC.pdf
+  in-plane_rotation_overlap_OPE_AUC.pdf
+  out-of-view_overlap_OPE_AUC.pdf
+  deformation_overlap_OPE_AUC.pdf
+  out-of-plane_rotation_overlap_OPE_AUC.pdf
+  occlusions_overlap_OPE_AUC.pdf
+  Attribute-based comparison on the OTB-2015 dataset. Success plots are shown for six attributes. Our approach achieves improved performance compared to existing trackers in these scenarios.
+  fig:attribute
+figure
+
+
+Table table:baselinetransf shows the results of the baseline and proposed approach with the sub-filter positions regularized either with an affine transform, or the identity transform (Sec. 4.4). The proposed approach based on an affine transform provides improved tracking performance. This shows that regularization of the sub-filter positions is important and using an affine transform is superior compared to an identity transform. Table table:baselinefeat shows the baseline comparison when using different set of features. The deep features provide improved performance. However, performance comparable to deep features is also achieved by using colornames.
+
+
+State-of-the-art Comparison
+OTB-2015
+Figure fig:results (on the left) shows the success plot for the OTB-2015 dataset which consists of 100 videos. The area-under-the-curve (AUC) score for each tracker is represented in the legend. Among existing approaches, the C-COT trackerDanelljanECCV2016 achieves an AUC score of . It is worth to mention that the recently introduced ECO trackerDanelljanCVPR2017 achieves the best results with an AUC score of . However, the ECO tracker also employs HOG features together with colornames (CN) and deep features. Instead, our deformable convolution filter approach achieves competetive performance without using HOG features, with an AUC score of . Figure fig:attribute shows the attribute based comparison on the OTB-2015 dataset. All videos in the OTB-2015 dataset are annotated with 11 different attributes. Our approach provides the best results on 7 attributes.
+
+TempleColor
+Figure fig:results (on the right) shows the success plot for the TempleColor dataset consisting of 128 videos. The SRDCF trackerDanelljanICCV2015 and its deep features variant (DeepSRDCF)DanelljanVOT2015 achieve AUC scores of  and  respectively. The C-COT tracker yields an AUC score of . Our approach improves the performance by  compared to the C-COT tracker.
+
+VOT2016
+The VOT2016 which consists of 60 videos compiled from a set of more than 300 videos. On the VOT2016 dataset, the tracking performance is evaluated both in terms of accuracy (average overlap during successful tracking) and robustness (failure rate). The overall tracking performance is calculated using Expected Average Overlap (EAO) which takes into account both accuracy and robustness. For more details, we refer toVOT2015. Table table:vot shows the comparison on the VOT2016 dataset. We present the results in terms of EAO, failure rate, and accuracy. Our approach provides competetive performance in terms of accuracy and provides the best results in terms of robustness, with a failure rate of .
+
+
+
+table[!t]
+  State-of-the-art in terms of expected area overlap (EAO), robustness (failure rate), and accuracy on the VOT2016 dataset. The proposed approach show a slight decrease in EAO but a slight improvement to failure rate.
+  table:vot
+  !
+    tabularl@ c@  c@  c@  c@  c@  c@  c@  c@  c@  c@  c
+            &SRBT&EBT&DDC&Staple&MLDF&SSAT&TCNN&C-COT&ECO&Proposed
+
+      &VOT2016&zhu2015tracking&VOT2016&Staple&VOT2016&VOT2016&TCNN&DanelljanECCV2016&DanelljanCVPR2017&Our
+      EAO&0.290&0.291&0.293&0.295&0.311&0.321&0.325&0.331&0.374&0.368
+
+      Fail. rt.&1.25&0.90&1.23&1.35&0.83&1.04&0.96&0.85&0.72&0.70
+
+      Acc.&0.50&0.44&0.53&0.54&0.48&0.57&0.54&0.52&0.54&0.54
+    tabular
+  
+  
+table
+  
+
+Conclusions
+We proposed a unified formulation to learn a deformable convolution filter. We represented our deformable filter as a linear combination of sub-filters. Both the coefficients and locations of all sub-filters are learned jointly in our framework. Experiments are performed on three challenging tracking datasets: OTB-2015, TempleColor and VOT2016. Our results clearly suggest that the proposed deformable convolution filter provides improved results compared to the baseline, leading to competitive performance compared to state-of-the-art trackers.
+
+Acknowledgments:
+This work has been supported by SSF (SymbiCloud), VR (EMC, starting grant 2016-05543), SNIC, WASP, and Nvidia.
+
+
+
+
+
+
+splncs03
+
+
+
+DCCO: Towards Deformable Continuous Convolution Operators for Visual Tracking
+
+
+Joakim Johnander, Martin Danelljan, Fahad Shahbaz Khan, Michael Felsberg
+J. Johnander, M. Danelljan, F.S. Khan, M. Felsberg
+
+Computer Vision Laboratory, Dept. of Electrical Engineering, Linkoping University
+
+
+
+
+
+
+
+
+
+

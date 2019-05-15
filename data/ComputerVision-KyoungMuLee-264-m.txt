@@ -1,0 +1,447 @@
+
+
+P[1]>p#1
+M[1]>m#1
+
+
+
+
+
+
+
+
+
+0026 
+-.5ex126
+
+
+empty	Enhanced Deep Residual Networks for Single Image Super-Resolution
+	
+	
+	Bee Lim Sanghyun Son Heewon Kim Seungjun Nah Kyoung Mu Lee 
+
+	Department of ECE, ASRI, Seoul National University, 08826, Seoul, Korea
+
+	forestrainee@gmail.com, thstkdgus35@snu.ac.kr, ghimhw@gmail.com
+
+	seungjun.nah@gmail.com, kyoungmu@snu.ac.kr
+	
+	
+		
+	
+	
+	
+	Recent research on super-resolution has progressed with the development of deep convolutional neural networks (DCNN). 
+	In particular, residual learning techniques exhibit improved performance. 
+	In this paper, we develop an enhanced deep super-resolution network (EDSR) with performance exceeding those of current state-of-the-art SR methods. 
+	The significant performance improvement of our model is due to optimization by removing unnecessary modules in conventional residual networks. 
+	The performance is further improved by expanding the model size while we stabilize the training procedure.
+	We also propose a new multi-scale deep super-resolution system (MDSR) and training method, which can reconstruct high-resolution images of different upscaling factors in a single model. 
+	The proposed methods show superior performance over the state-of-the-art methods on benchmark datasets and prove its excellence by winning the NTIRE2017 Super-Resolution Challenge. 
+
+		
+	
+	Introduction
+	
+	Image super-resolution (SR) problem, particularly single image super-resolution (SISR), has gained increasing research attention for decades.
+	SISR aims to reconstruct a high-resolution image  from a single low-resolution image . 
+	Generally, the relationship between  and the original high-resolution image  can vary depending on the situation. 
+	Many studies assume that  is a bicubic downsampled version of , but other degrading factors such as blur, decimation, or noise can also be considered for practical applications.
+	
+	
+	[subfloat]labelformat=empty
+	
+				
+	[b]c c c
+	2c2*[]
+	[0853 from DIV2K ]
+	
+	, clip]
+	figs/val_0853_Full_cut.png &
+	[HR  (PSNR / SSIM)]
+	 
+ [-0.3cm]& &
+	[Bicubic  (30.80 dB / 0.9537)]
+	 
+ [-0.3cm]
+	
+	[VDSR  (32.82 dB / 0.9623)]
+	 &
+	[SRResNet  (34.00 dB / 0.9679)]
+		&
+	[EDSR+ (Ours)  ( / )]
+		
+		
+	
+			justification=raggedright,singlelinecheck=false
+	 Super-resolution result of our single-scale SR method (EDSR) compared with existing algorithms.
+	
+		
+	Recently, deep neural networks   provide significantly improved performance in terms of peak signal-to-noise ratio (PSNR) in the SR problem. 
+	However, such networks exhibit limitations in terms of architecture optimality. 
+	First, the reconstruction performance of the neural network models is sensitive to minor architectural changes. 
+	Also, the same model achieves different levels of performance by different initialization and training techniques. 
+	Thus, carefully designed model architecture and sophisticated optimization methods are essential in training the neural networks.
+	
+	Second, most existing SR algorithms treat super-resolution of different scale factors as independent problems without considering and utilizing mutual relationships among different scales in SR.
+	As such, those algorithms require many scale-specific networks that need to to be trained independently to deal with various scales. 
+	Exceptionally, VDSR   can handle super-resolution of several scales jointly in the single network. Training the VDSR model with multiple scales boosts the performance substantially and outperforms scale-specific training, implying the redundancy among scale-specific models.
+	Nonetheless, VDSR style architecture requires bicubic interpolated image as the input, that leads to heavier computation time and memory compared to the architectures with scale-specific upsampling method .
+	
+	While SRResNet   successfully solved those time and memory issue with good performance, it simply employs the ResNet architecture from He et al. [9] without much modification. However, original ResNet was proposed to solve higher-level computer vision problems such as image classification and detection. Therefore, applying ResNet architecture directly to low-level vision problems like super-resolution can be suboptimal.
+	
+	To solve these problems, based on the SRResNet architecture, we first optimize it by analyzing and removing unnecessary modules to simplify the network architecture. Training a network becomes nontrivial when the model is complex. Thus, we train the network with appropriate loss function and careful model modification upon training. We experimentally show that the modified scheme produces better results. 
+	
+	Second, we investigate the model training method that transfers knowledge from a model trained at other scales. To utilize scale-independent information during training, we train high-scale models from pre-trained low-scale models. Furthermore, we propose a new multi-scale architecture that shares most of the parameters across different scales. The proposed multi-scale model uses significantly fewer parameters compared with multiple single-scale models but shows comparable performance.
+	
+	We evaluate our models on the standard benchmark datasets and on a newly provided DIV2K dataset. The proposed single- and multi-scale super-resolution networks show the state-of-the-art performances on all datasets in terms of PSNR and SSIM. Our methods ranked first and second, respectively, in the NTIRE 2017 Super-Resolution Challenge .
+	
+	
+	Related Works
+	
+	To solve the super-resolution problem, early approaches use interpolation techniques based on sampling theory . However, those methods exhibit limitations in predicting detailed, realistic textures.
+	Previous studies  adopted natural image statistics to the problem to reconstruct better high-resolution images.
+	
+	Advanced works aim to learn mapping functions between  and   image pairs.
+	Those learning methods rely on techniques ranging from neighbor embedding   to sparse coding .
+	Yang et al.  introduced another approach that clusters the patch spaces and learns the corresponding functions.
+	Some approaches utilize image self-similarities to avoid using external databases , and
+	increase the size of the limited internal dictionary by geometric transformation of patches   .
+	
+	Recently, the powerful capability of deep neural networks has led to dramatic improvements in SR.
+	Since Dong et al.  first proposed a deep learning-based SR method, various CNN architectures have been studied for SR.
+	Kim et al.  first introduced the residual network for training much deeper network architectures and achieved superior performance. In particular, they showed that skip-connection and recursive convolution alleviate the burden of carrying identity information in the super-resolution network.
+	Similarly to  , Mao et al.  tackled the general image restoration problem with encoder-decoder networks and symmetric skip connections. In  , they argue that those nested skip connections provide fast and improved convergence.
+	
+	In many deep learning based super-resolution algorithms, an input image is upsampled via bicubic interpolation before they fed into the network  . Rather than using an interpolated image as an input, training upsampling modules at the very end of the network is also possible as shown in  . By doing so, one can reduce much of computations without losing model capacity because the size of features decreases. However, those kinds of approaches have one disadvantage: They cannot deal with the multi-scale problem in a single framework as in VDSR .
+	In this work, we resolve the dilemma of multi-scale training and computational efficiency. 
+	We not only exploit the inter-relation of learned feature for each scale but also propose a new multi-scale model that efficiently reconstructs high-resolution images for various scales. 
+	Furthermore, we develop an appropriate training method that uses multiple scales for both single- and multi-scale models. 
+	
+	Several studies also have focused on the loss functions to better train network models. 
+	Mean squared error (MSE) or L2 loss is the most widely used loss function for general image restoration and is also major performance measure (PSNR) for those problems.
+	However, Zhao et al.   reported that training with L2 loss does not guarantee better performance compared to other loss functions in terms of PSNR and SSIM.
+	In their experiments, a network trained with L1 achieved improved performance compared with the network trained with L2.
+	
+	Proposed Methods
+	
+	In this section, we describe proposed model architectures. 
+	We first analyze recently published super-resolution network and suggest an enhanced version of the residual network architecture with the simpler structure. 
+	We show that our network outperforms the original ones while exhibiting improved computational efficiency. 
+	In the following sections, we suggest a single-scale architecture (EDSR) that handles a specific super-resolution scale and a multi-scale architecture (MDSR) that reconstructs various scales of high-resolution images in a single model.
+	
+	Residual blocks
+		
+	Recently, residual networks  exhibit excellent performance in computer vision problems from the low-level to high-level tasks. 
+	Although Ledig et al.  successfully applied the ResNet architecture to the super-resolution problem with SRResNet, we further improve the performance by employing better ResNet structure.
+	
+	
+	
+	[b]c c c	
+	[Original] &
+	[SRResNet] &
+	[Proposed]
+			
+	justification=raggedright,singlelinecheck=false
+	Comparison of residual blocks in original ResNet, SRResNet, and ours.
+			
+	In Fig. , we compare the building blocks of each network model from original ResNet , SRResNet , and our proposed networks. 
+	We remove the batch normalization layers from our network as Nah et al. presented in their image deblurring work. 
+	Since batch normalization layers normalize the features, they get rid of range flexibility from networks by normalizing the features, it is better to remove them.
+	We experimentally show that this simple modification increases the performance substantially as detailed in Sec. .
+	
+	Furthermore, GPU memory usage is also sufficiently reduced since the batch normalization layers consume the same amount of memory as the preceding convolutional layers.
+	Our baseline model without batch normalization layer saves approximately  of memory usage during training, compared to SRResNet.
+	Consequently, we can build up a larger model that has better performance than conventional ResNet structure under limited computational resources.
+	
+	
+	
+	
+			
+	justification=raggedright,singlelinecheck=false
+	The architecture of the proposed single-scale SR network (EDSR).
+			
+	Single-scale model 
+		
+	The simplest way to enhance the performance of the network model is to increase the number of parameters.
+	In the convolutional neural network, model performance can be enhanced by stacking many layers or by increasing the number of filters. 
+	General CNN architecture with depth (the number of layers)  and width (the number of feature channels)  occupies roughly  memory with  parameters. 
+	Therefore, increasing  instead of  can maximize the model capacity when considering limited computational resources.
+	
+	However, we found that increasing the number of feature maps above a certain level would make the training procedure numerically unstable. A similar phenomenon was reported by Szegedy et al. .
+	We resolve this issue by adopting the residual scaling  with factor 0.1.
+	In each residual block, constant scaling layers are placed after the last convolution layers.
+	These modules stabilize the training procedure greatly when using a large number of filters.
+	In the test phase, this layer can be integrated into the previous convolution layer for the computational efficiency.
+	
+	We construct our baseline (single-scale) model with our proposed residual blocks in Fig. .
+	The structure is similar to SRResNet , but our model does not have ReLU activation layers outside the residual blocks.
+	Also, our baseline model does not have residual scaling layers because we use only 64 feature maps for each convolution layer.
+	In our final single-scale model (EDSR), we expand the baseline model by setting ,  with a scaling factor 0.1.
+	The model architecture is displayed in Fig. .
+	
+	When training our model for upsampling factor  and , we initialize the model parameters with pre-trained  network.
+	This pre-training strategy accelerates the training and improves the final performance as clearly demonstrated in Fig. .
+	For upscaling , if we use a pre-trained scale  model (blue line), the training converges much faster than the one started from random initialization (green line).
+	
+	
+	
+	
+			justification=raggedright,singlelinecheck=false
+	Effect of using pre-trained  network for  model (EDSR). The red line indicates the best performance of green line. 10 images are used for validation during training.
+			
+	Multi-scale model
+	    
+	
+	From the observation in Fig. , we conclude that super-resolution at multiple scales is inter-related tasks.
+	We further explore this idea by building a multi-scale architecture that takes the advantage of inter-scale correlation as VDSR does.
+	We design our baseline (multi-scale) models to have a single main branch with  residual blocks so that most of the parameters are shared across different scales as shown in Fig. .
+	
+	In our multi-scale architecture, we introduce scale-specific processing modules to handle the super-resolution at multiple scales.
+	First, pre-processing modules are located at the head of networks to reduce the variance from input images of different scales.
+	Each of pre-processing module consists of two residual blocks with  kernels.
+	By adopting larger kernels for pre-processing modules, we can keep the scale-specific part shallow while the larger receptive field is covered in early stages of networks.
+	At the end of the multi-scale model, scale-specific upsampling modules are located in parallel to handle multi-scale reconstruction.
+	The architecture of the upsampling modules is similar to those of single-scale models described in the previous section.
+	
+	We construct our final multi-scale model (MDSR) with  and .
+	While our single-scale baseline models for 3 different scales have about 1.5M parameters each, totaling 4.5M, our baseline multi-scale model has only 3.2 million parameters. Nevertheless, the multi-scale model exhibits comparable performance as the single-scale models. Furthermore, our multi-scale model is scalable in terms of depth. Although our final MDSR has approximately 5 times more depth compared to the baseline multi-scale model, only 2.5 times more parameters are required, as the residual blocks are lighter than scale-specific parts. Note that MDSR also shows the comparable performance to the scale-specific EDSRs. The detailed performance comparison of our proposed models is presented in Table  and .
+	
+	
+	
+	
+			
+	justification=raggedright,singlelinecheck=false
+	The architecture of the proposed multi-scale SR network (MDSR).
+			
+	
+	
+				
+	
+		
+	Model specifications.
+			
+	Experiments
+		
+	Datasets
+	
+	DIV2K dataset  is a newly proposed high-quality (2K resolution) image dataset for image restoration tasks. 
+	The DIV2K dataset consists of 800 training images, 100 validation images, and 100 test images.
+	As the test dataset ground truth is not released, we report and compare the performances on the validation dataset.
+	
+	We also compare the performance on four standard benchmark datasets: Set5 , Set14 , B100 , and Urban100 .
+	
+	Training Details 
+		
+	
+	*[h]
+					
+		
+	justification=raggedright,singlelinecheck=false
+	Performance comparison between architectures on the DIV2K validation set (PSNR(dB) / SSIM). Red indicates the best performance and blue indicates the second best. EDSR+ and MDSR+ denote self-ensemble versions of EDSR and MDSR.
+			
+	For training, we use the RGB input patches of size  from LR image with the corresponding HR patches.
+	We augment the training data with random horizontal flips and 90° rotations.
+	We pre-process all the images by subtracting the mean RGB value of the DIV2K dataset.
+	We train our model with ADAM optimizer  by setting , , and .
+	We set minibatch size as 16.
+	The learning rate is initialized as  and halved at every  minibatch updates.
+	
+	For the single-scale models (EDSR), we train the networks as described in Sec. .
+	The  model is trained from scratch.
+	After the model converges, we use it as a pre-trained network for other scales.
+	
+	At each update of training a multi-scale model (MDSR), we construct the minibatch with a randomly selected scale among  and .
+	Only the modules that correspond to the selected scale are enabled and updated.
+	Hence, scale-specific residual blocks and upsampling modules that correspond to different scales other than the selected one are not enabled nor updated.
+	
+	We train our networks using L1 loss instead of L2. Minimizing L2 is generally preferred since it maximizes the PSNR. However, based on a series of experiments we empirically found that L1 loss provides better convergence than L2. The evaluation of this comparison is provided in Sec. 	
+	We implemented the proposed networks with the Torch7 framework and trained them using NVIDIA Titan X GPUs. It takes 8 days and 4 days to train EDSR and MDSR, respectively.
+	The source code is publicly available online.(https://github.com/LimBee/NTIRE2017)
+	
+	Geometric Self-ensemble
+		
+	In order to maximize the potential performance of our model, we adopt the self-ensemble strategy similarly to . During the test time, we flip and rotate the input image  to generate seven augmented inputs  for each sample, where  represents the 8 geometric transformations including indentity.
+	With those augmented low-resolution images, we generate corresponding super-resolved images  using the networks. We then apply inverse transform to those output images to get the original geometry . Finally, we average the transformed outputs all together to make the self-ensemble result as follows. 
+	.
+	
+	This self-ensemble method has an advantage over other ensembles as it does not require additional training of separate models. It is beneficial especially when the model size or training time matters. Although self-ensemble strategy keeps the total number of parameters same, we notice that it gives approximately same performance gain compared to conventional model ensemble method that requires individually trained models. We denote the methods using self-ensemble by adding '+' postfix to the method name; i.e. EDSR+/MDSR+. Note that geometric self-ensemble is valid only for symmetric downsampling methods such as bicubic downsampling. 
+	
+	
+	*[t]
+	[subfloat]labelformat=empty
+	
+					[b]c c c c c
+	2*[]
+	[img034 from Urban100 ]
+	 &
+	[HR (PSNR / SSIM)]
+	 &
+	[Bicubic (21.41 dB / 0.4810)]
+	 &
+	[A+ (22.21 dB / 0.5408)]
+	 &
+	[SRCNN (22.33 dB / 0.5461)]
+	 
+ [-0.2cm] &
+	[VDSR (22.62 dB / 0.5657)]
+	 &
+	[SRResNet (23.14 dB / 0.5891)]
+	 &
+	[EDSR+ (Ours) ( / )]
+	 &
+	[MDSR+ (Ours) ( / )]
+	 
+
+	
+	2*[]
+	[img062 from Urban100 ]
+	 &
+	[HR (PSNR / SSIM)]
+	 &
+	[Bicubic (19.82 dB / 0.6471)]
+	 &
+	[A+ (20.43 dB  0.7145)]
+	 &
+	[SRCNN (20.61 dB / 0.7218)]
+	 
+ [-0.2cm] &
+	[VDSR (20.75 dB / 0.7504)]
+	 &
+	[SRResNet (21.70 dB / 0.8054)]
+	 &
+	[EDSR+ (Ours) ( / )]
+	 &
+	[MDSR+ (Ours) ( / )]
+	 
+
+	
+	2*[]
+	[0869 from DIV2K ]
+	 &
+	[HR (PSNR / SSIM)]
+	 &
+	[Bicubic (22.66 dB / 0.8025)]
+	 &
+	[A+ (23.10 dB / 0.8251)]
+	 &
+	[SRCNN (23.14 dB / 0.8280)]
+	 
+ [-0.2cm] &
+	[VDSR (23.36 dB / 0.8365)]
+	 &
+	[SRResNet (23.71 dB / 0.8485)] 
+	 &
+	[EDSR+ (Ours) ( / )]
+	 &
+	[MDSR+ (Ours) ( )]
+	 
+
+					
+	Qualitative comparison of our models with other works on  super-resolution.
+		
+		
+	Evaluation on DIV2K Dataset
+		
+	We test our proposed networks on the DIV2K dataset. Starting from the SRResNet, we gradually change various settings to perform ablation tests. We train SRResNet on our own. 
+	(We confirmed our reproduction is correct by getting comparable results in an individual experiment, using the same settings of the paper. In our experiments, however, it became slightly different to match the settings of our baseline model training. See our codes at https://github.com/LimBee/NTIRE2017.)
+	(We used the original paper (https://arxiv.org/abs/1609.04802v3) as a reference.)
+	First, we change the loss function from L2 to L1, and then the network architecture is reformed as described in the previous section and summarized in Table  .
+	
+	We train all those models with  updates in this experiment. 
+	Evaluation is conducted on the 10 images of DIV2K validation set, with PSNR and SSIM criteria. For the evaluation, we use full RGB channels and ignore the (6 + scale) pixels from the border.
+	
+	Table  presents the quantitative results. SRResNet trained with L1 gives slightly better results than the original one trained with L2 for all scale factors. Modifications of the network give an even bigger margin of improvements. The last 2 columns of Table   show significant performance gains of our final bigger models, EDSR+ and MDSR+ with the geometric  self-ensemble technique.
+	Note that our models require much less GPU memory since they do not have batch normalization layers.
+	
+	
+	*[th]
+				width=1.1, center=+0.5cm
+	
+			
+	justification=raggedright,singlelinecheck=false
+	Public benchmark test results and DIV2K validation results (PSNR(dB) / SSIM). 
+	Red indicates the best performance and blue indicates the second best.
+	Note that DIV2K validation results are acquired from published demo codes.
+			
+	
+			3*DIV2K
+validation
+	&  &
+	31.01 / 0.9393 & 32.89 / 0.9570 & 33.05 / 0.9581 & 33.66 / 0.9625 & - / - &
+	35.03 / 0.9695 &	
+	34.96 / 0.9692 &
+	 /  &
+	 /  
+
+	&  &
+	28.22 / 0.8906 & 29.50 / 0.9116 & 29.64 / 0.9138 & 30.09 / 0.9208 & - / - &
+	31.26 / 0.9340 &	
+	31.25 / 0.9338 &
+	 /  &
+	 /  
+
+	&  &
+	26.66 / 0.8521 & 27.70 / 0.8736 & 27.78 / 0.8753 & 28.17 / 0.8841 & - / - &
+	29.25 / 0.9017 &
+	29.26 / 0.9016 &
+	 /  &
+	 /  
+      	
+		
+	Benchmark Results
+	
+	We provide the quantitative evaluation results of our final models (EDSR+, MDSR+) on public benchmark datasets in Table . 
+	The evaluation of the self-ensemble is also provided in the last two columns. We trained our models using  updates with batch size 16. We keep the other settings same as the baseline models. 
+	We compare our models with the state-of-the-art methods including A+ , SRCNN , VDSR , and SRResNet . For comparison, we measure PSNR and SSIM on the y channel and ignore the same amount of pixels as scales from the border.
+	We used MATLAB functions for evaluation. Comparative results on DVI2K dataset are also provided. Our models exhibit a significant improvement compared to the other methods. The gaps further increase after performing self-ensemble. We also present the qualitative results in Fig. . The proposed models successfully reconstruct the detailed textures and edges in the HR images and exhibit better-looking SR outputs compared with the previous works. 
+	
+	
+	NTIRE2017 SR Challenge
+	
+	This work is initially proposed for the purpose of participating in the NTIRE2017 Super-Resolution Challenge  .
+	The challenge aims to develop a single image super-resolution system with the highest PSNR. 
+	
+	
+	In the challenge, there exist two tracks for different degraders (bicubic, unknown) with three downsample scales  each.
+	Input images for the unknown track are not only downscaled but also suffer from severe blurring.
+	Therefore, more robust mechanisms are required to deal with the second track.
+	We submitted our two SR models (EDSR and MDSR) for each competition and prove that our algorithms are very robust to different downsampling conditions.
+	Some results of our algorithms on the unknown downsampling track are illustrated in Fig. . Our methods successfully reconstruct high-resolution images from severely degraded input images.
+	Our proposed EDSR+ and MDSR+ won the first and second places, respectively, with outstanding performances as shown in Table . 
+	*[t]
+	[subfloat]labelformat=empty
+	
+						[b]c c
+	
+	&  
+	
+		
+	
+	&  
+	
+			justification=raggedright,singlelinecheck=false
+	Our NTIRE2017 Super-Resolution Challenge results on unknown downscaling  category. In the challenge, we excluded images from 0791 to 0800 from training for validation. We did not use geometric self-ensemble for unknown downscaling category.
+			
+	*[h]
+		1.3
+	
+	
+		
+	justification=raggedright,singlelinecheck=false
+	Performance of our methods on the test dataset of NTIRE2017 Super-Resolution Challenge . The results of top 5 methods are displayed for two tracks and six categories. Red indicates the best performance and blue indicates the second best. 
+	
+			
+	Conclusion
+	
+	In this paper, we proposed an enhanced super-resolution algorithm. By removing unnecessary modules from conventional ResNet architecture, we achieve improved results while making our model compact. We also employ residual scaling techniques to stably train large models. Our proposed singe-scale model surpasses current models and achieves the state-of-the-art performance.
+	
+	Furthermore, we develop a multi-scale super-resolution network to reduce the model size and training time.
+	With scale-dependent modules and shared main network, our multi-scale model can effectively deal with various scales of super-resolution in a unified framework. While the multi-scale model remains compact compared with a set of single-scale models, it shows comparable performance to the single-scale SR model.
+	
+	Our proposed single-scale and multi-scale models have achieved the top ranks in both the standard benchmark datasets and the DIV2K dataset.
+	
+	
+		ieee
+		
+	
